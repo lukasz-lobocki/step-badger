@@ -5,13 +5,6 @@ const (
 )
 
 /*
-Status' configuration
-*/
-type tConfig struct {
-	emitFormat *tChoice
-}
-
-/*
 initChoices sets up Config struct for 'limited choice' flag
 */
 func initChoices() {
