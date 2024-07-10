@@ -39,9 +39,11 @@ var semReleaseVersion string = semVer +
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "step-badger",
-	Short:   "Exporting certificate data out of the badger database of step-ca.",
-	Long:    `Exporting certificate data out of the badger database of step-ca. Requires off-line database directory.`,
+	Short:   "Manage the badger database of step-ca.",
+	Long:    `Manage the badger database of step-ca. Requires off-line database directory.`,
 	Version: semReleaseVersion,
+
+	Example: "  step-badger export /home PIPA --name=p -b=true -o=n",
 
 	CompletionOptions: cobra.CompletionOptions{HiddenDefaultCmd: true},
 
@@ -85,5 +87,24 @@ func init() {
 	logInfo = log.New(os.Stderr, thisHiCyan("╭info\n╰"), 0)
 	logWarning = log.New(os.Stderr, thisHiYellow("╭warning\n╰"), log.Lshortfile)
 	logError = log.New(os.Stderr, thisHiRed("╭error\n╰"), log.Lshortfile)
+
+}
+
+/*
+checkLogginglevel confirms if logging level does not exceed maximum level.
+
+For convenience it also emits some log
+
+	'args' values emitted to log
+*/
+func checkLogginglevel(args []string) {
+	if loggingLevel > MAX_LOGGING_LEVEL {
+		logError.Fatalln(fmt.Errorf("%s", rootCmd.Flag("logging").Usage))
+	}
+
+	if loggingLevel >= 1 {
+		logInfo.Printf("len(args): %d. args: %+v\n", len(args), args)
+		logInfo.Printf("loggingLevel: %d. config: %+v\n", loggingLevel, config)
+	}
 
 }
