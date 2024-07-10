@@ -1,0 +1,48 @@
+name: goreleaser
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      -
+        name: Fetching git repo
+        run: git fetch --force --tags
+      -
+        name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          # Either one of below 2 lines
+          # go-version: stable
+          go-version-file: 'go.mod' # retrieving the exact version used, as declared in go.mod file
+          check-latest: true
+      -
+        name: Show version
+        run: go version
+      -
+        name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          # either 'goreleaser' (default) or 'goreleaser-pro'
+          distribution: goreleaser
+          version: latest
+          args: build --clean --snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
+          # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+      -
+        name: Running tests
+        run: go test -v ./...

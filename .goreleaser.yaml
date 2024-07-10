@@ -1,0 +1,86 @@
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # you may remove this if you don't need go generate
+    - go generate ./...
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+#      - windows
+#      - darwin
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      # For standard module
+      - -X main.semVer={{.Summary}}
+      - -X main.commitHash={{.ShortCommit}}
+      - -X main.isGitDirty={{.IsGitDirty}}
+      - -X main.isSnapshot={{.IsSnapshot}}
+      - -X main.goOs={{.Os}}
+      - -X main.goArch={{.Arch}}
+      - -X main.gitUrl={{.GitURL}}
+      - -X main.builtBranch={{.Branch}}
+      - -X main.builtDate={{.Date}}
+
+      # For cobra-based module
+      - -X {{.ModulePath}}/cmd.semVer={{.Summary}}
+      - -X {{.ModulePath}}/cmd.commitHash={{.ShortCommit}}
+      - -X {{.ModulePath}}/cmd.isGitDirty={{.IsGitDirty}}
+      - -X {{.ModulePath}}/cmd.isSnapshot={{.IsSnapshot}}
+      - -X {{.ModulePath}}/cmd.goOs={{.Os}}
+      - -X {{.ModulePath}}/cmd.goArch={{.Arch}}
+      - -X {{.ModulePath}}/cmd.gitUrl={{.GitURL}}
+      - -X {{.ModulePath}}/cmd.builtBranch={{.Branch}}
+      - -X {{.ModulePath}}/cmd.builtDate={{.Date}}
+
+archives:
+  - format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of uname.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+    - goos: windows
+      format: zip
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-dirty"
+
+changelog:
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "Bug fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Others
+      order: 999
+  sort: asc
+  filters:
+    exclude:
+      - '^chore:'
+
+announce:
+  skip: true
+
+# The lines beneath this are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
