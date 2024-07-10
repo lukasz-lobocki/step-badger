@@ -3,7 +3,7 @@
 ## Build
 
 ```bash
-goreleaser build --clean
+goreleaser build --clean --snapshot
 ```
 
 ## Typical release workflow
