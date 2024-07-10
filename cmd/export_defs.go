@@ -1,7 +1,7 @@
 package cmd
 
 /*
-Configuration
+Configuration structure for exportCmd
 */
 type tConfig struct {
 	emitFormat *tChoice

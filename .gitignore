@@ -1,3 +1,4 @@
 bin/*
 *.code-workspace
 dist/*
+db*/*
