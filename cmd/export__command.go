@@ -7,9 +7,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"os"
 	"strings"
-	"time"
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/pkg/errors"
@@ -31,7 +29,7 @@ var exportCmd = &cobra.Command{
 	},
 }
 
-var config tConfig // Holds status' configuration
+var config ConfigInfo // Holds status' configuration
 
 // Cobra initiation
 func init() {
@@ -78,7 +76,7 @@ func exportMain(args []string) {
 	}
 	defer db.Close()
 
-	retrieveCerts(db, []byte("x509_certs"), "/dev/stdout")
+	retrieveCerts(db)
 	// retrieveTableData(db, []byte("x509_certs_data"), "/dev/stdout")
 	// retrieveTableData(db, []byte("admins"), "/dev/stdout")
 	// retrieveTableData(db, []byte("provisioners"), "/dev/stdout")
@@ -115,38 +113,26 @@ func retrieveTableData(db *badger.DB, prefix []byte) {
 			continue
 		}
 
-		var bigos tCertificateRevocation
-
-		err := json.Unmarshal(valCopy, &bigos)
-		if err != nil {
-			fmt.Println("error:", err)
-		}
-
-		logInfo.Printf("DUPA=%s", bigos.RevokedAt)
 		logInfo.Printf("key=%s ::\nvalue=%s", strings.TrimSpace(string(item.Key())), strings.TrimSpace(string(valCopy)))
-
 	}
 }
 
-func retrieveCerts(db *badger.DB, prefix []byte, filename string) {
+func retrieveCerts(db *badger.DB) {
+	var allCertsAndRevos []CertificateAndRevocationInfo
+
+	prefix, err := badgerEncode([]byte("x509_certs"))
+	if err != nil {
+		panic(err)
+	}
+
 	txn := db.NewTransaction(false)
 	defer txn.Discard()
-	opts := badger.DefaultIteratorOptions
-	prefix, err := badgerEncode(prefix)
-	if err != nil {
-		panic(err)
-	}
 
-	iter := txn.NewIterator(opts)
+	iter := txn.NewIterator(badger.DefaultIteratorOptions)
 	defer iter.Close()
 
-	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-
 	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
+		var oneCertAndRevo CertificateAndRevocationInfo = CertificateAndRevocationInfo{}
 		item := iter.Item()
 
 		var valCopy []byte
@@ -182,58 +168,28 @@ func retrieveCerts(db *badger.DB, prefix []byte, filename string) {
 		}
 
 		// see if cert is revoked
-		revokedAt, flag := GetRevocationDate(db, cert)
+		revocationData := getRevocationData(db, cert)
 
-		today := time.Now()
-		if revokedAt == "" {
-			// Cert is still valid?
-			if today.Before(cert.NotAfter) {
-				flag = "V"
-			} else {
-				flag = "E"
-			}
-		}
+		/* 		fmt.Printf("Subject: %s\n", cert.Subject)
+		   		fmt.Printf("CertSN: %s\n", cert.SerialNumber)
+		   		fmt.Printf("RevoSN: %s\n", revocationData.Serial)
+		*/
+		oneCertAndRevo.Certificate = *cert
+		oneCertAndRevo.Revocation = revocationData
 
-		//	0) Entry type. May be "V" (valid), "R" (revoked) or "E" (expired).
-		//     Note that an expired may have the type "V" because the type has
-		//     not been updated. 'openssl ca updatedb' does such an update.
-		//  2) Revokation datetime. This is set for any entry of the type "R".
-		//  3) Serial number.
-
-		fmt.Fprintf(f, "\n\n******\n")
-
-		fmt.Printf("Subject: %s\n", cert.Subject)
-		fmt.Printf("Flag: %s\n", flag)
-		fmt.Printf("revokedAt: %s\n", revokedAt)
-		fmt.Printf("Not before: %s\n", cert.NotBefore)
-		fmt.Printf("Not after: %s\n", cert.NotAfter)
-		fmt.Printf("DNSNames: %s\n", cert.DNSNames)
-		fmt.Printf("EmailAddresses: %s\n", cert.EmailAddresses)
-		fmt.Printf("IPAddresses: %s\n", cert.IPAddresses)
-		fmt.Printf("URIs: %s\n", cert.URIs)
-		fmt.Printf("SerialNumber: %s\n", cert.SerialNumber)
-		fmt.Printf("SerialNumberHex: %X\n", cert.SerialNumber)
-		fmt.Printf("Issuer.CommonName: %s\n", cert.Issuer.CommonName)
-		fmt.Printf("CRLDistributionPoints: %s\n", cert.CRLDistributionPoints)
-		// fmt.Printf("IssuingCertificateURL: %s\n", cert.IssuingCertificateURL)
-		//fmt.Printf("Extensions: %v\n", cert.Extensions)
-
-		/* for _, ext := range cert.Extensions {
-			fmt.Printf("Extension: %s value:%v\n", ext.Id.String(), []byte(ext.Value))
-		} */
-
-		jsonInfo, err := json.MarshalIndent(cert, "", "  ")
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(string(jsonInfo))
+		allCertsAndRevos = append(allCertsAndRevos, oneCertAndRevo)
 	}
+	jsonInfo, err := json.MarshalIndent(allCertsAndRevos, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(jsonInfo))
+
 }
 
-func GetRevocationDate(db *badger.DB, cert *x509.Certificate) (string, string) {
-	flag := "X"
-	var revokedAt string
+func getRevocationData(db *badger.DB, cert *x509.Certificate) RevokedCertificateInfo {
 	var revocationItem *badger.Item
+	var revocationOptions RevokedCertificateInfo = RevokedCertificateInfo{}
 
 	revocationItem, err := getRevocationItem(db, []byte(cert.SerialNumber.String()))
 	if err != nil {
@@ -247,38 +203,26 @@ func GetRevocationDate(db *badger.DB, cert *x509.Certificate) (string, string) {
 		}
 
 		if len(strings.TrimSpace(string(valCopy))) > 0 {
-			var revocationOptions RevokeOptions
 			if err := json.Unmarshal(valCopy, &revocationOptions); err != nil {
 				panic(err)
 			}
-			revokedAt = fmt.Sprintf(revocationOptions.RevokedAt.UTC().Format(time.RFC3339))
-			flag = "R"
 		}
 	}
-	return revokedAt, flag
-}
-
-type RevokeOptions struct {
-	Serial      string
-	Reason      string
-	ReasonCode  int
-	PassiveOnly bool
-	RevokedAt   time.Time
-	MTLS        bool
+	return revocationOptions
 }
 
 /*
 getRevocationItem function returns revocation data (if exists) for the certificate of given serial number.
 
-	'val' given byte slice, that contains the key data.
+	'db' badger database.
+	'key' certificate serial number.
 */
 func getRevocationItem(db *badger.DB, key []byte) (*badger.Item, error) {
 	prefix := []byte("revoked_x509_certs")
 	badgerKey, _ := toBadgerKey(prefix, key)
+
 	txn := db.NewTransaction(false)
 	defer txn.Discard()
-	opts := badger.DefaultIteratorOptions
-	_ = opts
 
 	item, err := txn.Get(badgerKey)
 	if err != nil {

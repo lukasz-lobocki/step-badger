@@ -8,16 +8,16 @@ import (
 /*
 Configuration structure for exportCmd
 */
-type tConfig struct {
+type ConfigInfo struct {
 	emitFormat *tChoice
 }
 
-type tCertificate struct {
-	Cert       x509.Certificate       `json:"topLevelPath"` // Full path
-	Revocation tCertificateRevocation `json:"uniqueName"`   // Shortest unique path
+type CertificateAndRevocationInfo struct {
+	Certificate x509.Certificate       `json:"Certificate"`
+	Revocation  RevokedCertificateInfo `json:"Revocation,omitempty"`
 }
 
-type tCertificateRevocation struct {
+type RevokedCertificateInfo struct {
 	Serial        string    `json:"Serial"`
 	ProvisionerID string    `json:"ProvisionerID"`
 	ReasonCode    int       `json:"ReasonCode"`
