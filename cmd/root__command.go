@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -42,8 +39,8 @@ var semReleaseVersion string = semVer +
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "step-badger",
-	Short:   "A brief description of your application",
-	Long:    `A longer description that spans multiple lines and likely contains`,
+	Short:   "Exporting certificate data out of the badger database of step-ca.",
+	Long:    `Exporting certificate data out of the badger database of step-ca. Requires off-line database directory.`,
 	Version: semReleaseVersion,
 
 	CompletionOptions: cobra.CompletionOptions{HiddenDefaultCmd: true},
