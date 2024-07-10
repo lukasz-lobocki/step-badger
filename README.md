@@ -1,4 +1,4 @@
-# step-badger ![Static](https://img.shields.io/badge/[[RND_DICEWARE_PL]]-[[RND_DICEWARE_PL]]-[[RND_CSS_COLOR]]?style=for-the-badge&labelColor=[[RND_CSS_COLOR]])
+# step-badger ![Static](https://img.shields.io/badge/bulaj-biznes-darkorchid?style=for-the-badge&labelColor=darkslategray)
 
 Exporting certificate data out of the badger database of step-ca.
 
