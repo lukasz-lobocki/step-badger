@@ -6,11 +6,12 @@
 	],
 	"settings": {
 		"markdownlint.config": {
-			"MD033":false,
-			"MD024":false
+			"MD033": false,
+			"MD024": false
 		},
 		"cSpell.words": [
-			"fatih"
+			"fatih",
+			"Logginglevel"
 		]
 	}
 }

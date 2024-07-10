@@ -4,8 +4,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// shellCmd represents the shell command
-var shellCmd = &cobra.Command{
+// exportCmd represents the shell command
+var exportCmd = &cobra.Command{
 	Use:   "export [PATH] \"command\"",
 	Short: "Export certificates.",
 	Long:  `Export certificates' data out of the badger database of step-ca.`,
@@ -23,7 +23,11 @@ var config tConfig // Holds status' configuration
 
 // Cobra initiation
 func init() {
-	rootCmd.AddCommand(shellCmd)
+	rootCmd.AddCommand(exportCmd)
+
+	initChoices()
+
+	exportCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
 }
 
 /*

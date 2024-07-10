@@ -8,5 +8,12 @@ const (
 Status' configuration
 */
 type tConfig struct {
-	showUrl bool
+	emitFormat *tChoice
+}
+
+/*
+initChoices sets up Config struct for 'limited choice' flag
+*/
+func initChoices() {
+	config.emitFormat = newChoice([]string{"t", "j", "m"}, "t")
 }
