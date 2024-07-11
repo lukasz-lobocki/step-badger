@@ -73,6 +73,7 @@ func tableMain(args []string) {
 	// retrieveTableData(db, []byte("provisioners"), "/dev/stdout")
 	// retrieveTableData(db, []byte("authority_policies"), "/dev/stdout")
 	retrieveTableData(db, []byte("x509_certs_data"))
+	retrieveTableData(db, []byte("revoked_x509_certs"))
 
 }
 

@@ -23,13 +23,13 @@ type RevokedX509CertificateInfo struct {
 	ACME          bool      `json:"ACME"`
 }
 
-type X509CertificateProvisionerInfo struct {
-	ID   string `json:"-"`
-	Name string `json:"Name"`
-	Type string `json:"Type"`
-}
-
 type X509CertificateInfo struct {
 	Provisioner X509CertificateProvisionerInfo `json:"Provisioner,omitempty"`
 	RaInfo      *string                        `json:"-"`
+}
+
+type X509CertificateProvisionerInfo struct {
+	ID   string `json:"ID"`
+	Name string `json:"Name"`
+	Type string `json:"Type"`
 }

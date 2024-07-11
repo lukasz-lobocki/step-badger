@@ -94,6 +94,7 @@ func retrieveCerts(db *badger.DB) {
 
 		// Populate provisioner sub-info of the certificate.
 		certificateData := getX509CertificateProvisionerData(db, &oneCert)
+		oneCertAndRevocation.Provisioner.ID = certificateData.Provisioner.ID
 		oneCertAndRevocation.Provisioner.Name = certificateData.Provisioner.Name
 		oneCertAndRevocation.Provisioner.Type = certificateData.Provisioner.Type
 
