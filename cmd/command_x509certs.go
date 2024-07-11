@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/dgraph-io/badger/v2"
+	"github.com/fatih/color"
+	"github.com/lukasz-lobocki/tabby"
 	"github.com/spf13/cobra"
 )
 
@@ -89,23 +91,91 @@ func retrieveCerts(db *badger.DB) {
 		oneCertAndRevocation.Certificate = oneCert
 
 		// Populate revocation info of the certificate.
-		revocationData := getRevocationData(db, &oneCert)
-		oneCertAndRevocation.Revocation = revocationData
+		oneCertAndRevocation.Revocation = getRevocationData(db, &oneCert)
 
 		// Populate provisioner sub-info of the certificate.
-		certificateData := getX509CertificateProvisionerData(db, &oneCert)
-		oneCertAndRevocation.Provisioner.ID = certificateData.Provisioner.ID
-		oneCertAndRevocation.Provisioner.Name = certificateData.Provisioner.Name
-		oneCertAndRevocation.Provisioner.Type = certificateData.Provisioner.Type
+		oneCertAndRevocation.Provisioner = getX509CertificateProvisionerData(db, &oneCert).Provisioner
 
 		allCertsWithRevocations = append(allCertsWithRevocations, oneCertAndRevocation)
 	}
 
-	jsonInfo, err := json.MarshalIndent(allCertsWithRevocations, "", "  ")
-	if err != nil {
-		panic(err)
+	table := new(tabby.Table)
+
+	thisColumns := getColumns()
+
+	var thisHeader []string
+
+	/* Building slice of titles */
+
+	for _, thisColumn := range thisColumns {
+		if thisColumn.isShown() {
+
+			thisHeader = append(thisHeader,
+				color.New(thisColumn.titleColor).SprintFunc()(
+					thisColumn.title(),
+				),
+			)
+
+		}
 	}
-	fmt.Println(string(jsonInfo))
+
+	/* Set the header */
+
+	if err := table.SetHeader(thisHeader); err != nil {
+		panic(err) //"emitTable: setting header failed. %w", err)
+	}
+
+	if loggingLevel >= 1 {
+		logInfo.Println("header set.")
+	}
+
+	/* Populate the table */
+
+	for _, oneCertAndRevocation := range allCertsWithRevocations {
+
+		var thisRow []string
+
+		/* Building slice of columns within a single row*/
+
+		for _, thisColumn := range thisColumns {
+
+			if thisColumn.isShown() {
+				thisRow = append(thisRow,
+					color.New(thisColumn.contentColor(oneCertAndRevocation)).SprintFunc()(
+						thisColumn.contentSource(oneCertAndRevocation),
+					),
+				)
+			}
+		}
+
+		if err := table.AppendRow(thisRow); err != nil {
+			panic(err) //return fmt.Errorf("emitTable: appending row failed. %w", err)
+		}
+		// if loggingLevel >= 3 {
+		// 	logInfo.Printf("row [%s] appended.", thisCertWithRevocation.ShortName)
+		// }
+
+	}
+
+	if loggingLevel >= 2 {
+		logInfo.Printf("%d rows appended.\n", len(allCertsWithRevocations))
+	}
+
+	/* Emit the table */
+
+	if loggingLevel >= 3 {
+		table.Print(&tabby.Config{Spacing: "|", Padding: "."})
+	} else {
+		table.Print(nil)
+	}
+
+	// =========================
+
+	// jsonInfo, err := json.MarshalIndent(allCertsWithRevocations, "", "  ")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Println(string(jsonInfo))
 }
 
 func getCertificate(iter *badger.Iterator) (x509.Certificate, error) {
@@ -115,6 +185,7 @@ func getCertificate(iter *badger.Iterator) (x509.Certificate, error) {
 		valCopy []byte
 		cert    *x509.Certificate
 	)
+
 	valCopy, err := item.ValueCopy(nil)
 	if err != nil {
 		panic(err)
