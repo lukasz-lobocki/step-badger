@@ -79,51 +79,21 @@ func retrieveCerts(db *badger.DB) {
 		var (
 			oneCertAndRevocation X509CertificateAndRevocationInfo = X509CertificateAndRevocationInfo{}
 		)
-		item := iter.Item()
 
-		var valCopy []byte
-		valCopy, err = item.ValueCopy(nil)
+		oneCert, err := getCertificate(iter)
 		if err != nil {
-			panic(err)
-		}
-
-		if len(strings.TrimSpace(string(valCopy))) == 0 {
-			// Item is empty
 			continue
 		}
 
-		// read data to object
-		marshaledValue, err := json.Marshal(valCopy)
-		if err != nil {
-			panic(err)
-		}
-
-		// make cert-data from db decodable pem
-		// json contains ""
-		base64cert := fmt.Sprintf("-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----",
-			strings.ReplaceAll(string(marshaledValue), "\"", ""))
-		decodedPEMBlock, _ := pem.Decode([]byte(base64cert))
-
-		if decodedPEMBlock == nil {
-			panic("failed to parse certificate PEM")
-		}
-		cert, err := x509.ParseCertificate(decodedPEMBlock.Bytes)
-
-		if err != nil {
-			panic("failed to parse certificate: " + err.Error())
-		}
-
-		// Get additional certificate data.
-		revocationData := getRevocationData(db, cert)
-		certificateData := getX509CertificateProvisionerData(db, cert)
-
 		// Populate main info of the certificate.
-		oneCertAndRevocation.Certificate = *cert
+		oneCertAndRevocation.Certificate = oneCert
 
 		// Populate revocation info of the certificate.
+		revocationData := getRevocationData(db, &oneCert)
 		oneCertAndRevocation.Revocation = revocationData
 
 		// Populate provisioner sub-info of the certificate.
+		certificateData := getX509CertificateProvisionerData(db, &oneCert)
 		oneCertAndRevocation.Provisioner.Name = certificateData.Provisioner.Name
 		oneCertAndRevocation.Provisioner.Type = certificateData.Provisioner.Type
 
@@ -135,6 +105,48 @@ func retrieveCerts(db *badger.DB) {
 		panic(err)
 	}
 	fmt.Println(string(jsonInfo))
+}
+
+func getCertificate(iter *badger.Iterator) (x509.Certificate, error) {
+	item := iter.Item()
+
+	var (
+		valCopy []byte
+		cert    *x509.Certificate
+	)
+	valCopy, err := item.ValueCopy(nil)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(strings.TrimSpace(string(valCopy))) == 0 {
+		// Item is empty
+		return x509.Certificate{}, fmt.Errorf("empty")
+	} else {
+		// read data to object
+		marshaledValue, err := json.Marshal(valCopy)
+		if err != nil {
+			panic(err)
+		}
+
+		// make oneCert-data from db decodable pem
+		// json contains ""
+		base64cert := fmt.Sprintf("-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----",
+			strings.ReplaceAll(string(marshaledValue), "\"", ""))
+		decodedPEMBlock, _ := pem.Decode([]byte(base64cert))
+
+		if decodedPEMBlock == nil {
+			panic("failed to parse certificate PEM")
+		}
+
+		cert, err = x509.ParseCertificate(decodedPEMBlock.Bytes)
+		if err != nil {
+			panic("failed to parse certificate: " + err.Error())
+		}
+
+		return *cert, nil
+	}
+
 }
 
 func getRevocationData(db *badger.DB, cert *x509.Certificate) RevokedX509CertificateInfo {
