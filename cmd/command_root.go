@@ -68,6 +68,8 @@ func Execute() {
 	}
 }
 
+var config ConfigInfo // Holds configuration
+
 func init() {
 	// Hiding help command
 	rootCmd.SetHelpCommand(&cobra.Command{Hidden: true})

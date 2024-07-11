@@ -14,13 +14,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// exportCmd represents the shell command
-var exportCmd = &cobra.Command{
-	Use:   "export [PATH] \"command\"",
+// x509certsCmd represents the shell command
+var x509certsCmd = &cobra.Command{
+	Use:   "x509certs [PATH] \"command\"",
 	Short: "Export certificates.",
 	Long:  `Export certificates' data out of the badger database of step-ca.`,
 
-	Example: "  gitas EXPORT XXXXX -duda",
+	Example: "  gitas x509certsCmd XXXXX -duda",
 
 	Args: cobra.RangeArgs(1, 2),
 
@@ -29,15 +29,13 @@ var exportCmd = &cobra.Command{
 	},
 }
 
-var config ConfigInfo // Holds status' configuration
-
 // Cobra initiation
 func init() {
-	rootCmd.AddCommand(exportCmd)
+	rootCmd.AddCommand(x509certsCmd)
 
 	initChoices()
 
-	exportCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
+	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
 }
 
 /*
@@ -46,29 +44,10 @@ Export main function
 	'args' given command line arguments, that contain the command to be run by shell
 */
 func exportMain(args []string) {
-	/* 	var (
-	   		cmdArgs  []string // Args of the command to execute
-	   		givenDir string
-	   		err      error
-	   	)
-	*/
 
 	checkLogginglevel(args)
 
 	logInfo.Println(args[0])
-
-	/* Construct arguments */
-
-	/*
-		 	switch lenArgs := len(args); lenArgs {
-			case 1:
-				givenDir = "."
-				cmdArgs = append([]string{"-c"}, args[0])
-			case 2:
-				givenDir = args[0]
-				cmdArgs = append([]string{"-c"}, args[1])
-			}
-	*/
 
 	db, err := badger.Open(badger.DefaultOptions(args[0]).WithLogger(nil))
 	if err != nil {
@@ -81,44 +60,10 @@ func exportMain(args []string) {
 	// retrieveTableData(db, []byte("admins"), "/dev/stdout")
 	// retrieveTableData(db, []byte("provisioners"), "/dev/stdout")
 	// retrieveTableData(db, []byte("authority_policies"), "/dev/stdout")
-	retrieveTableData(db, []byte("revoked_x509_certs"))
-
-}
-
-func retrieveTableData(db *badger.DB, prefix []byte) {
-	txn := db.NewTransaction(false)
-	defer txn.Discard()
-
-	prefix, err := badgerEncode(prefix)
-	if err != nil {
-		panic(err)
-	}
-	logInfo.Printf("Encoded table prefix: %s", string(prefix))
-
-	opts := badger.DefaultIteratorOptions
-	iter := txn.NewIterator(opts)
-	defer iter.Close()
-
-	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
-		item := iter.Item()
-
-		var valCopy []byte
-		valCopy, err = item.ValueCopy(nil)
-		if err != nil {
-			panic(err)
-		}
-
-		if len(strings.TrimSpace(string(valCopy))) == 0 {
-			// Item is empty
-			continue
-		}
-
-		logInfo.Printf("key=%s ::\nvalue=%s", strings.TrimSpace(string(item.Key())), strings.TrimSpace(string(valCopy)))
-	}
 }
 
 func retrieveCerts(db *badger.DB) {
-	var allCertsAndRevos []CertificateAndRevocationInfo
+	var allCertsAndRevos []X509CertificateAndRevocationInfo
 
 	prefix, err := badgerEncode([]byte("x509_certs"))
 	if err != nil {
@@ -132,7 +77,7 @@ func retrieveCerts(db *badger.DB) {
 	defer iter.Close()
 
 	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
-		var oneCertAndRevo CertificateAndRevocationInfo = CertificateAndRevocationInfo{}
+		var oneCertAndRevo X509CertificateAndRevocationInfo = X509CertificateAndRevocationInfo{}
 		item := iter.Item()
 
 		var valCopy []byte
@@ -187,11 +132,11 @@ func retrieveCerts(db *badger.DB) {
 
 }
 
-func getRevocationData(db *badger.DB, cert *x509.Certificate) RevokedCertificateInfo {
+func getRevocationData(db *badger.DB, cert *x509.Certificate) RevokedX509CertificateInfo {
 	var revocationItem *badger.Item
-	var revocationOptions RevokedCertificateInfo = RevokedCertificateInfo{}
+	var revocationOptions RevokedX509CertificateInfo = RevokedX509CertificateInfo{}
 
-	revocationItem, err := getRevocationItem(db, []byte(cert.SerialNumber.String()))
+	revocationItem, err := getItem(db, []byte("revoked_x509_certs"), []byte(cert.SerialNumber.String()))
 	if err != nil {
 		// we skip errors on revoke (like not found)
 	} else {
@@ -212,13 +157,12 @@ func getRevocationData(db *badger.DB, cert *x509.Certificate) RevokedCertificate
 }
 
 /*
-getRevocationItem function returns revocation data (if exists) for the certificate of given serial number.
+getItem function returns revocation data (if exists) for the certificate of given serial number.
 
 	'db' badger database.
 	'key' certificate serial number.
 */
-func getRevocationItem(db *badger.DB, key []byte) (*badger.Item, error) {
-	prefix := []byte("revoked_x509_certs")
+func getItem(db *badger.DB, prefix []byte, key []byte) (*badger.Item, error) {
 	badgerKey, _ := toBadgerKey(prefix, key)
 
 	txn := db.NewTransaction(false)

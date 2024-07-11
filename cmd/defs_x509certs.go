@@ -12,13 +12,13 @@ type ConfigInfo struct {
 	emitFormat *tChoice
 }
 
-type CertificateAndRevocationInfo struct {
-	Certificate x509.Certificate       `json:"Certificate"`
-	Revocation  RevokedCertificateInfo `json:"Revocation,omitempty"`
+type X509CertificateAndRevocationInfo struct {
+	Certificate x509.Certificate           `json:"Certificate"`
+	Revocation  RevokedX509CertificateInfo `json:"Revocation,omitempty"`
 }
 
-type RevokedCertificateInfo struct {
-	Serial        string    `json:"Serial"`
+type RevokedX509CertificateInfo struct {
+	Serial        string    `json:"-"`
 	ProvisionerID string    `json:"ProvisionerID"`
 	ReasonCode    int       `json:"ReasonCode"`
 	Reason        string    `json:"Reason"`
