@@ -1,11 +1,15 @@
 package cmd
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/dgraph-io/badger/v2"
 	"github.com/fatih/color"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -90,6 +94,65 @@ func init() {
 	logWarning = log.New(os.Stderr, thisHiYellow("╭warning\n╰"), log.Lshortfile)
 	logError = log.New(os.Stderr, thisHiRed("╭error\n╰"), log.Lshortfile)
 
+}
+
+/*
+getItem function returns data item (if exists for the prefix) for the given key.
+
+	'db' badger database.
+	'prefix' badger prefix.
+	'key' badger key.
+*/
+func getItem(db *badger.DB, prefix []byte, key []byte) (*badger.Item, error) {
+	badgerKey, _ := toBadgerKey(prefix, key)
+
+	txn := db.NewTransaction(false)
+	defer txn.Discard()
+
+	item, err := txn.Get(badgerKey)
+	if err != nil {
+		return nil, err
+	}
+	return item, nil
+}
+
+/*
+badgerEncode function encodes a byte slice into a section of a BadgerKey.
+
+	'val' given byte slice, that contains the key data.
+*/
+func badgerEncode(val []byte) ([]byte, error) {
+	l := len(val)
+	switch {
+	case l == 0:
+		return nil, errors.Errorf("input cannot be empty")
+	case l > 65535:
+		return nil, errors.Errorf("length of input cannot be greater than 65535")
+	default:
+		lb := new(bytes.Buffer)
+		if err := binary.Write(lb, binary.LittleEndian, uint16(l)); err != nil {
+			return nil, errors.Wrap(err, "error doing binary Write")
+		}
+		return append(lb.Bytes(), val...), nil
+	}
+}
+
+/*
+toBadgerKey function encodes bucket and key into the BadgerKey.
+
+	'bucket' given byte slice, that bucket name.
+	'key' given byte slice, that key value.
+*/
+func toBadgerKey(bucket, key []byte) ([]byte, error) {
+	first, err := badgerEncode(bucket)
+	if err != nil {
+		return nil, err
+	}
+	second, err := badgerEncode(key)
+	if err != nil {
+		return nil, err
+	}
+	return append(first, second...), nil
 }
 
 /*

@@ -10,3 +10,10 @@ initChoices sets up Config struct for 'limited choice' flag
 func initChoices() {
 	config.emitFormat = newChoice([]string{"t", "j", "m"}, "t")
 }
+
+/*
+Configuration structure
+*/
+type ConfigInfo struct {
+	emitFormat *tChoice
+}

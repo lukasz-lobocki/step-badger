@@ -5,16 +5,10 @@ import (
 	"time"
 )
 
-/*
-Configuration structure for exportCmd
-*/
-type ConfigInfo struct {
-	emitFormat *tChoice
-}
-
 type X509CertificateAndRevocationInfo struct {
-	Certificate x509.Certificate           `json:"Certificate"`
-	Revocation  RevokedX509CertificateInfo `json:"Revocation,omitempty"`
+	Certificate x509.Certificate               `json:"Certificate"`
+	Revocation  RevokedX509CertificateInfo     `json:"Revocation,omitempty"`
+	Provisioner X509CertificateProvisionerInfo `json:"Provisioner,omitempty"`
 }
 
 type RevokedX509CertificateInfo struct {
@@ -27,4 +21,15 @@ type RevokedX509CertificateInfo struct {
 	TokenID       string    `json:"TokenID"`
 	MTLS          bool      `json:"MTLS"`
 	ACME          bool      `json:"ACME"`
+}
+
+type X509CertificateProvisionerInfo struct {
+	ID   string `json:"-"`
+	Name string `json:"Name"`
+	Type string `json:"Type"`
+}
+
+type X509CertificateInfo struct {
+	Provisioner X509CertificateProvisionerInfo `json:"Provisioner,omitempty"`
+	RaInfo      *string                        `json:"-"`
 }
