@@ -34,6 +34,8 @@ func init() {
 
 	initChoices()
 
+	x509certsCmd.Flags().SortFlags = false
+	x509certsCmd.Flags().VarP(config.sortOrder, "order", "o", "order: validity|before")           // Choice
 	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
 }
 

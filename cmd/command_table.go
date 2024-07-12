@@ -28,6 +28,7 @@ func init() {
 
 	initChoices()
 
+	tableCmd.Flags().SortFlags = false
 	tableCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
 }
 

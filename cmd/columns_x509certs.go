@@ -55,8 +55,8 @@ func getColumns() []tColumn {
 		},
 
 		tColumn{
-			isShown:    func() bool { return true },        // Always shown
-			title:      func() string { return "Subject" }, // Static title
+			isShown:    func() bool { return true },                      // Always shown
+			title:      func() string { return "CRLDistributionPoints" }, // Static title
 			titleColor: color.Bold,
 
 			contentSource: func(x X509CertificateAndRevocationInfo) string {
@@ -127,13 +127,13 @@ func getColumns() []tColumn {
 				}
 			},
 			contentColor: func(x X509CertificateAndRevocationInfo) color.Attribute {
-				if len(x.Revocation.ProvisionerID) > 0 && time.Now().After(x.Revocation.RevokedAt) {
-					return color.FgHiYellow
+				if len(x.Revocation.ProvisionerID) > 0 && time.Now().After(x.Revocation.RevokedAt) { // Dynamic color
+					return color.FgHiYellow // Revoked
 				} else {
 					if time.Now().After(x.Certificate.NotAfter) {
-						return color.FgHiBlack
+						return color.FgHiBlack // Expired
 					} else {
-						return color.FgGreen
+						return color.FgGreen // Valid
 					}
 				}
 			}, // Static color
