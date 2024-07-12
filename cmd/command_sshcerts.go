@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/spf13/cobra"
@@ -77,13 +78,16 @@ func retrieveSshCerts(db *badger.DB) {
 		// 	sshCertAndRevocation X509CertificateAndRevocationInfo = X509CertificateAndRevocationInfo{}
 		// )
 
-		err := getSshCertificate(iter)
+		sshCert, err := getSshCertificate(iter)
 		if err != nil {
 			continue
 		}
 
-		//logInfo.Printf("as %s", sshCert)
-
+		logInfo.Printf("sn %v\n", sshCert.Serial)
+		logInfo.Printf("keyid %+v\n", sshCert.KeyId)
+		logInfo.Printf("valprinc %+v\n", sshCert.ValidPrincipals)
+		logInfo.Printf("after %+v\n", time.Unix(int64(sshCert.ValidAfter), 0).UTC())
+		logInfo.Printf("before %+v\n", time.Unix(int64(sshCert.ValidBefore), 0).UTC())
 		// Populate main info of the certificate.
 		// sshCertAndRevocation.X509Certificate = sshCert
 
@@ -95,7 +99,7 @@ func retrieveSshCerts(db *badger.DB) {
 
 }
 
-func getSshCertificate(iter *badger.Iterator) error {
+func getSshCertificate(iter *badger.Iterator) (ssh.Certificate, error) {
 	item := iter.Item()
 
 	var (
@@ -109,7 +113,7 @@ func getSshCertificate(iter *badger.Iterator) error {
 
 	if len(strings.TrimSpace(string(valCopy))) == 0 {
 		// Item is empty
-		return fmt.Errorf("empty")
+		return ssh.Certificate{}, fmt.Errorf("empty")
 	} else {
 
 		// Parse the SSH certificate
@@ -123,12 +127,7 @@ func getSshCertificate(iter *badger.Iterator) error {
 			log.Fatalf("Key is not an SSH certificate")
 		}
 
-		fmt.Printf("Certificate: %+v\n", cert)
-		fmt.Printf("Valid After: %d\n", cert.ValidAfter)
-
-		panic("Stop")
-
-		return nil
+		return *cert, nil
 	}
 
 }

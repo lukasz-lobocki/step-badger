@@ -61,7 +61,7 @@ func exportX509Main(args []string) {
 
 func retrieveX509Certs(db *badger.DB) {
 	var (
-		x509CertsWithRevocations []X509CertificateAndRevocationInfo = []X509CertificateAndRevocationInfo{}
+		x509CertsWithRevocations []tX509CertificateAndRevocation = []tX509CertificateAndRevocation{}
 	)
 
 	prefix, err := badgerEncode([]byte("x509_certs"))
@@ -77,7 +77,7 @@ func retrieveX509Certs(db *badger.DB) {
 
 	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
 		var (
-			x509CertAndRevocation X509CertificateAndRevocationInfo = X509CertificateAndRevocationInfo{}
+			x509CertAndRevocation tX509CertificateAndRevocation = tX509CertificateAndRevocation{}
 		)
 
 		x509Cert, err := getX509Certificate(iter)
@@ -99,7 +99,7 @@ func retrieveX509Certs(db *badger.DB) {
 
 	table := new(tabby.Table)
 
-	thisColumns := getColumns()
+	thisColumns := getX509Columns()
 
 	var thisHeader []string
 
@@ -212,9 +212,9 @@ func getX509Certificate(iter *badger.Iterator) (x509.Certificate, error) {
 
 }
 
-func getX509RevocationData(db *badger.DB, cert *x509.Certificate) X509RevokedCertificateInfo {
+func getX509RevocationData(db *badger.DB, cert *x509.Certificate) tX509RevokedCertificate {
 	var item *badger.Item
-	var data X509RevokedCertificateInfo = X509RevokedCertificateInfo{}
+	var data tX509RevokedCertificate = tX509RevokedCertificate{}
 
 	item, err := getItem(db, []byte("revoked_x509_certs"), []byte(cert.SerialNumber.String()))
 	if err != nil {
@@ -236,9 +236,9 @@ func getX509RevocationData(db *badger.DB, cert *x509.Certificate) X509RevokedCer
 	return data
 }
 
-func getX509CertificateProvisionerData(db *badger.DB, cert *x509.Certificate) X509CertificateInfo {
+func getX509CertificateProvisionerData(db *badger.DB, cert *x509.Certificate) tX509Certificate {
 	var item *badger.Item
-	var info X509CertificateInfo = X509CertificateInfo{}
+	var info tX509Certificate = tX509Certificate{}
 
 	item, err := getItem(db, []byte("x509_certs_data"), []byte(cert.SerialNumber.String()))
 	if err != nil {

@@ -5,13 +5,13 @@ import (
 	"time"
 )
 
-type X509CertificateAndRevocationInfo struct {
-	X509Certificate x509.Certificate               `json:"Certificate"`
-	X509Revocation  X509RevokedCertificateInfo     `json:"Revocation,omitempty"`
-	X509Provisioner X509CertificateProvisionerInfo `json:"Provisioner,omitempty"`
+type tX509CertificateAndRevocation struct {
+	X509Certificate x509.Certificate            `json:"Certificate"`
+	X509Revocation  tX509RevokedCertificate     `json:"Revocation,omitempty"`
+	X509Provisioner tX509CertificateProvisioner `json:"Provisioner,omitempty"`
 }
 
-type X509RevokedCertificateInfo struct {
+type tX509RevokedCertificate struct {
 	Serial        string    `json:"-"`
 	ProvisionerID string    `json:"ProvisionerID"`
 	ReasonCode    int       `json:"ReasonCode"`
@@ -23,12 +23,12 @@ type X509RevokedCertificateInfo struct {
 	ACME          bool      `json:"ACME"`
 }
 
-type X509CertificateInfo struct {
-	Provisioner X509CertificateProvisionerInfo `json:"Provisioner,omitempty"`
-	RaInfo      *string                        `json:"-"`
+type tX509Certificate struct {
+	Provisioner tX509CertificateProvisioner `json:"Provisioner,omitempty"`
+	RaInfo      *string                     `json:"-"`
 }
 
-type X509CertificateProvisionerInfo struct {
+type tX509CertificateProvisioner struct {
 	ID   string `json:"ID"`
 	Name string `json:"Name"`
 	Type string `json:"Type"`

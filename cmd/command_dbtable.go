@@ -71,7 +71,6 @@ func dbTableMain(args []string) {
 	retrieveDbTableData(db, []byte("ssh_hosts"))
 	retrieveDbTableData(db, []byte("ssh_host_principals"))
 	retrieveDbTableData(db, []byte("ssh_users"))
-	retrieveDbTableData(db, []byte("ssh_certs"))
 
 }
 

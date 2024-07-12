@@ -15,7 +15,7 @@ func initChoices() {
 /*
 Configuration structure
 */
-type ConfigInfo struct {
+type tConfig struct {
 	emitFormat *tChoice
 	sortOrder  *tChoice
 }

@@ -40,6 +40,8 @@ var semReleaseVersion string = semVer +
 		}
 	}(".", commitHash)
 
+var config tConfig // Holds configuration
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "step-badger",
@@ -71,8 +73,6 @@ func Execute() {
 		os.Exit(1)
 	}
 }
-
-var config ConfigInfo // Holds configuration
 
 func init() {
 	// Hiding help command

@@ -13,109 +13,109 @@ const (
 	ALIGN_RIGHT
 )
 
-type tColumn struct {
+type tX509Column struct {
 	isShown         func() bool
 	title           func() string
 	titleColor      color.Attribute
-	contentSource   func(X509CertificateAndRevocationInfo) string
-	contentColor    func(X509CertificateAndRevocationInfo) color.Attribute
+	contentSource   func(tX509CertificateAndRevocation) string
+	contentColor    func(tX509CertificateAndRevocation) color.Attribute
 	contentAlignMD  int
 	contentEscapeMD bool
 }
 
 /*
-getColumns defines look and content of table's emitted columns
+getX509Columns defines look and content of table's emitted columns
 */
-func getColumns() []tColumn {
+func getX509Columns() []tX509Column {
 
-	var thisColumns []tColumn
+	var thisColumns []tX509Column
 
 	thisColumns = append(thisColumns,
 
-		tColumn{
+		tX509Column{
 			isShown:    func() bool { return true },              // Always shown
 			title:      func() string { return "Serial number" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource:   func(x X509CertificateAndRevocationInfo) string { return x.X509Certificate.SerialNumber.String() },
-			contentColor:    func(_ X509CertificateAndRevocationInfo) color.Attribute { return color.FgWhite }, // Static color
+			contentSource:   func(x tX509CertificateAndRevocation) string { return x.X509Certificate.SerialNumber.String() },
+			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgWhite }, // Static color
 			contentAlignMD:  ALIGN_RIGHT,
 			contentEscapeMD: false,
 		},
 
-		tColumn{
+		tX509Column{
 			isShown:    func() bool { return true },        // Always shown
 			title:      func() string { return "Subject" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource:   func(x X509CertificateAndRevocationInfo) string { return x.X509Certificate.Subject.String() },
-			contentColor:    func(_ X509CertificateAndRevocationInfo) color.Attribute { return color.FgHiWhite }, // Static color
+			contentSource:   func(x tX509CertificateAndRevocation) string { return x.X509Certificate.Subject.String() },
+			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgHiWhite }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
 
-		tColumn{
+		tX509Column{
 			isShown:    func() bool { return true },                      // Always shown
 			title:      func() string { return "CRLDistributionPoints" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x X509CertificateAndRevocationInfo) string {
+			contentSource: func(x tX509CertificateAndRevocation) string {
 				return strings.Join(x.X509Certificate.CRLDistributionPoints, ", ")
 			},
-			contentColor:    func(_ X509CertificateAndRevocationInfo) color.Attribute { return color.FgHiWhite }, // Static color
+			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgHiWhite }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
 
-		tColumn{
+		tX509Column{
 			isShown:    func() bool { return true },           // Always shown
 			title:      func() string { return "Not before" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x X509CertificateAndRevocationInfo) string {
+			contentSource: func(x tX509CertificateAndRevocation) string {
 				return x.X509Certificate.NotBefore.UTC().Format(time.DateOnly)
 			},
-			contentColor:    func(_ X509CertificateAndRevocationInfo) color.Attribute { return color.FgHiBlack }, // Static color
+			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgHiBlack }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
 
-		tColumn{
+		tX509Column{
 			isShown:    func() bool { return true },          // Always shown
 			title:      func() string { return "Not after" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x X509CertificateAndRevocationInfo) string {
+			contentSource: func(x tX509CertificateAndRevocation) string {
 				return x.X509Certificate.NotAfter.UTC().Format(time.DateOnly)
 			},
-			contentColor:    func(_ X509CertificateAndRevocationInfo) color.Attribute { return color.FgHiBlack }, // Static color
+			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgHiBlack }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
 
-		tColumn{
+		tX509Column{
 			isShown:    func() bool { return true },           // Always shown
 			title:      func() string { return "Revoked at" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x X509CertificateAndRevocationInfo) string {
+			contentSource: func(x tX509CertificateAndRevocation) string {
 				if len(x.X509Revocation.ProvisionerID) > 0 {
 					return x.X509Revocation.RevokedAt.UTC().Format(time.DateOnly)
 				} else {
 					return ""
 				}
 			},
-			contentColor:    func(_ X509CertificateAndRevocationInfo) color.Attribute { return color.FgHiBlack }, // Static color
+			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgHiBlack }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
 
-		tColumn{
+		tX509Column{
 			isShown:    func() bool { return true },         // Always shown
 			title:      func() string { return "Validity" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x X509CertificateAndRevocationInfo) string {
+			contentSource: func(x tX509CertificateAndRevocation) string {
 				if len(x.X509Revocation.ProvisionerID) > 0 && time.Now().After(x.X509Revocation.RevokedAt) {
 					return "Revoked"
 				} else {
@@ -126,7 +126,7 @@ func getColumns() []tColumn {
 					}
 				}
 			},
-			contentColor: func(x X509CertificateAndRevocationInfo) color.Attribute {
+			contentColor: func(x tX509CertificateAndRevocation) color.Attribute {
 				if len(x.X509Revocation.ProvisionerID) > 0 && time.Now().After(x.X509Revocation.RevokedAt) { // Dynamic color
 					return color.FgHiYellow // Revoked
 				} else {
