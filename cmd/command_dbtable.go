@@ -68,11 +68,6 @@ func dbTableMain(args []string) {
 	}
 	defer db.Close()
 
-	// retrieveCerts(db)
-	// retrieveTableData(db, []byte("x509_certs_data"), "/dev/stdout")
-	// retrieveTableData(db, []byte("admins"), "/dev/stdout")
-	// retrieveTableData(db, []byte("provisioners"), "/dev/stdout")
-	// retrieveTableData(db, []byte("authority_policies"), "/dev/stdout")
 	retrieveDbTableData(db, []byte("ssh_hosts"))
 	retrieveDbTableData(db, []byte("ssh_host_principals"))
 	retrieveDbTableData(db, []byte("ssh_users"))

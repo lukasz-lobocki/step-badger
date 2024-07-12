@@ -1,0 +1,16 @@
+package cmd
+
+type SshCertificate struct {
+	Nonce           []byte
+	Key             PublicKey
+	Serial          uint64
+	CertType        uint32
+	KeyId           string
+	ValidPrincipals []string
+	ValidAfter      uint64
+	ValidBefore     uint64
+	Permissions
+	Reserved     []byte
+	SignatureKey PublicKey
+	Signature    *Signature
+}
