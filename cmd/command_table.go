@@ -73,8 +73,10 @@ func tableMain(args []string) {
 	// retrieveTableData(db, []byte("admins"), "/dev/stdout")
 	// retrieveTableData(db, []byte("provisioners"), "/dev/stdout")
 	// retrieveTableData(db, []byte("authority_policies"), "/dev/stdout")
-	retrieveTableData(db, []byte("x509_certs_data"))
-	retrieveTableData(db, []byte("revoked_x509_certs"))
+	retrieveTableData(db, []byte("ssh_hosts"))
+	retrieveTableData(db, []byte("ssh_host_principals"))
+	retrieveTableData(db, []byte("ssh_users"))
+	retrieveTableData(db, []byte("ssh_certs"))
 
 }
 

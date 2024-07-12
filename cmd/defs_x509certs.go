@@ -7,11 +7,11 @@ import (
 
 type X509CertificateAndRevocationInfo struct {
 	Certificate x509.Certificate               `json:"Certificate"`
-	Revocation  RevokedX509CertificateInfo     `json:"Revocation,omitempty"`
+	Revocation  X509RevokedCertificateInfo     `json:"Revocation,omitempty"`
 	Provisioner X509CertificateProvisionerInfo `json:"Provisioner,omitempty"`
 }
 
-type RevokedX509CertificateInfo struct {
+type X509RevokedCertificateInfo struct {
 	Serial        string    `json:"-"`
 	ProvisionerID string    `json:"ProvisionerID"`
 	ReasonCode    int       `json:"ReasonCode"`
