@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// tableCmd represents the shell command
-var tableCmd = &cobra.Command{
-	Use:   "table [PATH] \"command\"",
+// dbTableCmd represents the shell command
+var dbTableCmd = &cobra.Command{
+	Use:   "dbTable [PATH] \"command\"",
 	Short: "Export table.",
 	Long:  `Export table data out of the badger database of step-ca.`,
 
@@ -18,18 +18,18 @@ var tableCmd = &cobra.Command{
 	Args: cobra.RangeArgs(1, 2),
 
 	Run: func(cmd *cobra.Command, args []string) {
-		tableMain(args)
+		dbTableMain(args)
 	},
 }
 
 // Cobra initiation
 func init() {
-	rootCmd.AddCommand(tableCmd)
+	rootCmd.AddCommand(dbTableCmd)
 
 	initChoices()
 
-	tableCmd.Flags().SortFlags = false
-	tableCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
+	dbTableCmd.Flags().SortFlags = false
+	dbTableCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
 }
 
 /*
@@ -37,7 +37,7 @@ table main function
 
 	'args' given command line arguments, that contain the command to be run by shell
 */
-func tableMain(args []string) {
+func dbTableMain(args []string) {
 	/* 	var (
 	   		cmdArgs  []string // Args of the command to execute
 	   		givenDir string
@@ -73,14 +73,14 @@ func tableMain(args []string) {
 	// retrieveTableData(db, []byte("admins"), "/dev/stdout")
 	// retrieveTableData(db, []byte("provisioners"), "/dev/stdout")
 	// retrieveTableData(db, []byte("authority_policies"), "/dev/stdout")
-	retrieveTableData(db, []byte("ssh_hosts"))
-	retrieveTableData(db, []byte("ssh_host_principals"))
-	retrieveTableData(db, []byte("ssh_users"))
-	retrieveTableData(db, []byte("ssh_certs"))
+	retrieveDbTableData(db, []byte("ssh_hosts"))
+	retrieveDbTableData(db, []byte("ssh_host_principals"))
+	retrieveDbTableData(db, []byte("ssh_users"))
+	retrieveDbTableData(db, []byte("ssh_certs"))
 
 }
 
-func retrieveTableData(db *badger.DB, prefix []byte) {
+func retrieveDbTableData(db *badger.DB, prefix []byte) {
 	txn := db.NewTransaction(false)
 	defer txn.Discard()
 

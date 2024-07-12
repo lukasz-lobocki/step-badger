@@ -15,7 +15,7 @@ import (
 
 // x509certsCmd represents the shell command
 var x509certsCmd = &cobra.Command{
-	Use:   "x509certs [PATH] \"command\"",
+	Use:   "x509Certs [PATH] \"command\"",
 	Short: "Export certificates.",
 	Long:  `Export certificates' data out of the badger database of step-ca.`,
 

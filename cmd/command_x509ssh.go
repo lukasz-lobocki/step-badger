@@ -15,7 +15,7 @@ import (
 
 // sshCertsCmd represents the shell command
 var sshCertsCmd = &cobra.Command{
-	Use:   "x509certs [PATH] \"command\"",
+	Use:   "sshCerts [PATH] \"command\"",
 	Short: "Export certificates.",
 	Long:  `Export certificates' data out of the badger database of step-ca.`,
 
@@ -57,18 +57,14 @@ func exportSshMain(args []string) {
 	defer db.Close()
 
 	retrieveSshCerts(db)
-	// retrieveTableData(db, []byte("x509_certs_data"), "/dev/stdout")
-	// retrieveTableData(db, []byte("admins"), "/dev/stdout")
-	// retrieveTableData(db, []byte("provisioners"), "/dev/stdout")
-	// retrieveTableData(db, []byte("authority_policies"), "/dev/stdout")
 }
 
 func retrieveSshCerts(db *badger.DB) {
 	var (
-		allCertsWithRevocations []X509CertificateAndRevocationInfo = []X509CertificateAndRevocationInfo{}
+		sshCertsWithRevocations []X509CertificateAndRevocationInfo = []X509CertificateAndRevocationInfo{}
 	)
 
-	prefix, err := badgerEncode([]byte("x509_certs"))
+	prefix, err := badgerEncode([]byte("ssh_certs"))
 	if err != nil {
 		panic(err)
 	}
@@ -81,21 +77,21 @@ func retrieveSshCerts(db *badger.DB) {
 
 	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
 		var (
-			oneCertAndRevocation X509CertificateAndRevocationInfo = X509CertificateAndRevocationInfo{}
+			sshCertAndRevocation X509CertificateAndRevocationInfo = X509CertificateAndRevocationInfo{}
 		)
 
-		oneCert, err := getSshCertificate(iter)
+		sshCert, err := getSshCertificate(iter)
 		if err != nil {
 			continue
 		}
 
 		// Populate main info of the certificate.
-		oneCertAndRevocation.X509Certificate = oneCert
+		sshCertAndRevocation.X509Certificate = sshCert
 
 		// Populate revocation info of the certificate.
-		oneCertAndRevocation.X509Revocation = getSshRevocationData(db, &oneCert)
+		// sshCertAndRevocation.X509Revocation = getSshRevocationData(db, &sshCert)
 
-		allCertsWithRevocations = append(allCertsWithRevocations, oneCertAndRevocation)
+		sshCertsWithRevocations = append(sshCertsWithRevocations, sshCertAndRevocation)
 	}
 
 	table := new(tabby.Table)
@@ -130,7 +126,7 @@ func retrieveSshCerts(db *badger.DB) {
 
 	/* Populate the table */
 
-	for _, oneCertAndRevocation := range allCertsWithRevocations {
+	for _, sshCertAndRevocation := range sshCertsWithRevocations {
 
 		var thisRow []string
 
@@ -140,8 +136,8 @@ func retrieveSshCerts(db *badger.DB) {
 
 			if thisColumn.isShown() {
 				thisRow = append(thisRow,
-					color.New(thisColumn.contentColor(oneCertAndRevocation)).SprintFunc()(
-						thisColumn.contentSource(oneCertAndRevocation),
+					color.New(thisColumn.contentColor(sshCertAndRevocation)).SprintFunc()(
+						thisColumn.contentSource(sshCertAndRevocation),
 					),
 				)
 			}
@@ -157,7 +153,7 @@ func retrieveSshCerts(db *badger.DB) {
 	}
 
 	if loggingLevel >= 2 {
-		logInfo.Printf("%d rows appended.\n", len(allCertsWithRevocations))
+		logInfo.Printf("%d rows appended.\n", len(sshCertsWithRevocations))
 	}
 
 	/* Emit the table */
@@ -170,7 +166,7 @@ func retrieveSshCerts(db *badger.DB) {
 
 	// =========================
 
-	// jsonInfo, err := json.MarshalIndent(allCertsWithRevocations, "", "  ")
+	// jsonInfo, err := json.MarshalIndent(sshCertsWithRevocations, "", "  ")
 	// if err != nil {
 	// 	panic(err)
 	// }
@@ -200,7 +196,7 @@ func getSshCertificate(iter *badger.Iterator) (x509.Certificate, error) {
 			panic(err)
 		}
 
-		// make oneCert-data from db decodable pem
+		// make sshCert-data from db decodable pem
 		// json contains ""
 		base64cert := fmt.Sprintf("-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----",
 			strings.ReplaceAll(string(marshaledValue), "\"", ""))
@@ -220,7 +216,7 @@ func getSshCertificate(iter *badger.Iterator) (x509.Certificate, error) {
 
 }
 
-func getSshRevocationData(db *badger.DB, cert *x509.Certificate) X509RevokedCertificateInfo {
+/* func getSshRevocationData(db *badger.DB, cert *x509.Certificate) X509RevokedCertificateInfo {
 	var item *badger.Item
 	var data X509RevokedCertificateInfo = X509RevokedCertificateInfo{}
 
@@ -243,3 +239,4 @@ func getSshRevocationData(db *badger.DB, cert *x509.Certificate) X509RevokedCert
 	}
 	return data
 }
+*/
