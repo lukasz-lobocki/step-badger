@@ -37,7 +37,7 @@ func getColumns() []tColumn {
 			title:      func() string { return "Serial number" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource:   func(x X509CertificateAndRevocationInfo) string { return x.Certificate.SerialNumber.String() },
+			contentSource:   func(x X509CertificateAndRevocationInfo) string { return x.X509Certificate.SerialNumber.String() },
 			contentColor:    func(_ X509CertificateAndRevocationInfo) color.Attribute { return color.FgWhite }, // Static color
 			contentAlignMD:  ALIGN_RIGHT,
 			contentEscapeMD: false,
@@ -48,7 +48,7 @@ func getColumns() []tColumn {
 			title:      func() string { return "Subject" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource:   func(x X509CertificateAndRevocationInfo) string { return x.Certificate.Subject.String() },
+			contentSource:   func(x X509CertificateAndRevocationInfo) string { return x.X509Certificate.Subject.String() },
 			contentColor:    func(_ X509CertificateAndRevocationInfo) color.Attribute { return color.FgHiWhite }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
@@ -60,7 +60,7 @@ func getColumns() []tColumn {
 			titleColor: color.Bold,
 
 			contentSource: func(x X509CertificateAndRevocationInfo) string {
-				return strings.Join(x.Certificate.CRLDistributionPoints, ", ")
+				return strings.Join(x.X509Certificate.CRLDistributionPoints, ", ")
 			},
 			contentColor:    func(_ X509CertificateAndRevocationInfo) color.Attribute { return color.FgHiWhite }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
@@ -73,7 +73,7 @@ func getColumns() []tColumn {
 			titleColor: color.Bold,
 
 			contentSource: func(x X509CertificateAndRevocationInfo) string {
-				return x.Certificate.NotBefore.UTC().Format(time.DateOnly)
+				return x.X509Certificate.NotBefore.UTC().Format(time.DateOnly)
 			},
 			contentColor:    func(_ X509CertificateAndRevocationInfo) color.Attribute { return color.FgHiBlack }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
@@ -86,7 +86,7 @@ func getColumns() []tColumn {
 			titleColor: color.Bold,
 
 			contentSource: func(x X509CertificateAndRevocationInfo) string {
-				return x.Certificate.NotAfter.UTC().Format(time.DateOnly)
+				return x.X509Certificate.NotAfter.UTC().Format(time.DateOnly)
 			},
 			contentColor:    func(_ X509CertificateAndRevocationInfo) color.Attribute { return color.FgHiBlack }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
@@ -99,8 +99,8 @@ func getColumns() []tColumn {
 			titleColor: color.Bold,
 
 			contentSource: func(x X509CertificateAndRevocationInfo) string {
-				if len(x.Revocation.ProvisionerID) > 0 {
-					return x.Revocation.RevokedAt.UTC().Format(time.DateOnly)
+				if len(x.X509Revocation.ProvisionerID) > 0 {
+					return x.X509Revocation.RevokedAt.UTC().Format(time.DateOnly)
 				} else {
 					return ""
 				}
@@ -116,10 +116,10 @@ func getColumns() []tColumn {
 			titleColor: color.Bold,
 
 			contentSource: func(x X509CertificateAndRevocationInfo) string {
-				if len(x.Revocation.ProvisionerID) > 0 && time.Now().After(x.Revocation.RevokedAt) {
+				if len(x.X509Revocation.ProvisionerID) > 0 && time.Now().After(x.X509Revocation.RevokedAt) {
 					return "Revoked"
 				} else {
-					if time.Now().After(x.Certificate.NotAfter) {
+					if time.Now().After(x.X509Certificate.NotAfter) {
 						return "Expired"
 					} else {
 						return "Valid"
@@ -127,10 +127,10 @@ func getColumns() []tColumn {
 				}
 			},
 			contentColor: func(x X509CertificateAndRevocationInfo) color.Attribute {
-				if len(x.Revocation.ProvisionerID) > 0 && time.Now().After(x.Revocation.RevokedAt) { // Dynamic color
+				if len(x.X509Revocation.ProvisionerID) > 0 && time.Now().After(x.X509Revocation.RevokedAt) { // Dynamic color
 					return color.FgHiYellow // Revoked
 				} else {
-					if time.Now().After(x.Certificate.NotAfter) {
+					if time.Now().After(x.X509Certificate.NotAfter) {
 						return color.FgHiBlack // Expired
 					} else {
 						return color.FgGreen // Valid

@@ -86,13 +86,13 @@ func retrieveX509Certs(db *badger.DB) {
 		}
 
 		// Populate main info of the certificate.
-		x509CertAndRevocation.Certificate = x509Cert
+		x509CertAndRevocation.X509Certificate = x509Cert
 
 		// Populate revocation info of the certificate.
-		x509CertAndRevocation.Revocation = getX509RevocationData(db, &x509Cert)
+		x509CertAndRevocation.X509Revocation = getX509RevocationData(db, &x509Cert)
 
 		// Populate provisioner sub-info of the certificate.
-		x509CertAndRevocation.Provisioner = getX509CertificateProvisionerData(db, &x509Cert).Provisioner
+		x509CertAndRevocation.X509Provisioner = getX509CertificateProvisionerData(db, &x509Cert).Provisioner
 
 		x509CertsWithRevocations = append(x509CertsWithRevocations, x509CertAndRevocation)
 	}

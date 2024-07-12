@@ -6,9 +6,9 @@ import (
 )
 
 type X509CertificateAndRevocationInfo struct {
-	Certificate x509.Certificate               `json:"Certificate"`
-	Revocation  X509RevokedCertificateInfo     `json:"Revocation,omitempty"`
-	Provisioner X509CertificateProvisionerInfo `json:"Provisioner,omitempty"`
+	X509Certificate x509.Certificate               `json:"Certificate"`
+	X509Revocation  X509RevokedCertificateInfo     `json:"Revocation,omitempty"`
+	X509Provisioner X509CertificateProvisionerInfo `json:"Provisioner,omitempty"`
 }
 
 type X509RevokedCertificateInfo struct {

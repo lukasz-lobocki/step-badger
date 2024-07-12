@@ -90,10 +90,10 @@ func retrieveSshCerts(db *badger.DB) {
 		}
 
 		// Populate main info of the certificate.
-		oneCertAndRevocation.Certificate = oneCert
+		oneCertAndRevocation.X509Certificate = oneCert
 
 		// Populate revocation info of the certificate.
-		oneCertAndRevocation.Revocation = getSshRevocationData(db, &oneCert)
+		oneCertAndRevocation.X509Revocation = getSshRevocationData(db, &oneCert)
 
 		allCertsWithRevocations = append(allCertsWithRevocations, oneCertAndRevocation)
 	}
