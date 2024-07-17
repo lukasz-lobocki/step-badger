@@ -33,3 +33,9 @@ type tX509CertificateProvisioner struct {
 	Name string `json:"Name"`
 	Type string `json:"Type"`
 }
+
+const (
+	ALIGN_LEFT = iota
+	ALIGN_CENTER
+	ALIGN_RIGHT
+)

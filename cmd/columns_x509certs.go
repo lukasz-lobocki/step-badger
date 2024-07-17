@@ -7,12 +7,6 @@ import (
 	"github.com/fatih/color"
 )
 
-const (
-	ALIGN_LEFT = iota
-	ALIGN_CENTER
-	ALIGN_RIGHT
-)
-
 type tX509Column struct {
 	isShown         func() bool
 	title           func() string
