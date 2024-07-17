@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/dgraph-io/badger/v2"
@@ -96,6 +97,10 @@ func retrieveX509Certs(db *badger.DB) {
 
 		x509CertsWithRevocations = append(x509CertsWithRevocations, x509CertAndRevocation)
 	}
+
+	sort.SliceStable(x509CertsWithRevocations, func(i, j int) bool {
+		return x509CertsWithRevocations[i].X509Certificate.NotAfter.Before(x509CertsWithRevocations[j].X509Certificate.NotAfter)
+	})
 
 	table := new(tabby.Table)
 

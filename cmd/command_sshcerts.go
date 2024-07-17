@@ -58,9 +58,6 @@ func exportSshMain(args []string) {
 }
 
 func retrieveSshCerts(db *badger.DB) {
-	/* var (
-		sshCertsWithRevocations []X509CertificateAndRevocationInfo = []X509CertificateAndRevocationInfo{}
-	) */
 
 	prefix, err := badgerEncode([]byte("ssh_certs"))
 	if err != nil {
@@ -131,28 +128,3 @@ func getSshCertificate(iter *badger.Iterator) (ssh.Certificate, error) {
 	}
 
 }
-
-/* func getSshRevocationData(db *badger.DB, cert *x509.Certificate) X509RevokedCertificateInfo {
-	var item *badger.Item
-	var data X509RevokedCertificateInfo = X509RevokedCertificateInfo{}
-
-	item, err := getItem(db, []byte("revoked_x509_certs"), []byte(cert.SerialNumber.String()))
-	if err != nil {
-		// we skip errors (like not found)
-	} else {
-		// we have found a revoked cert
-		var valCopy []byte
-		valCopy, err = item.ValueCopy(nil)
-		if err != nil {
-			panic(err)
-		}
-
-		if len(strings.TrimSpace(string(valCopy))) > 0 {
-			if err := json.Unmarshal(valCopy, &data); err != nil {
-				panic(err)
-			}
-		}
-	}
-	return data
-}
-*/
