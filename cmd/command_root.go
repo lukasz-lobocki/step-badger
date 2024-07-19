@@ -45,11 +45,9 @@ var config tConfig // Holds configuration
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "step-badger",
-	Short:   "Manage the badger database of step-ca.",
-	Long:    `Manage the badger database of step-ca. Requires off-line database directory.`,
+	Short:   "Export step-ca data from badger.",
+	Long:    `Export certificate or table data from the badger database of step-ca. Requires off-line database directory.`,
 	Version: semReleaseVersion,
-
-	Example: "  step-badger export /home PIPA --name=p -b=true -o=n",
 
 	CompletionOptions: cobra.CompletionOptions{HiddenDefaultCmd: true},
 
