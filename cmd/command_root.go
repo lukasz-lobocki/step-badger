@@ -170,4 +170,10 @@ func checkLogginglevel(args []string) {
 		logInfo.Printf("loggingLevel: %d. config: %+v\n", loggingLevel, config)
 	}
 
+	/*
+		loggingLevel = 1 : often
+		loggingLevel = 2 : average
+		loggingLevel = 3 : seldom
+	*/
+
 }
