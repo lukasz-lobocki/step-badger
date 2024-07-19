@@ -5,7 +5,6 @@ import (
 	"log"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/fatih/color"
@@ -88,11 +87,6 @@ func retrieveSshCerts(db *badger.DB) {
 
 		sshCerts = append(sshCerts, sshCert)
 
-		logInfo.Printf("sn %v\n", sshCert.Serial)
-		logInfo.Printf("keyid %+v\n", sshCert.KeyId)
-		logInfo.Printf("valprinc %+v\n", sshCert.ValidPrincipals)
-		logInfo.Printf("after %+v\n", time.Unix(int64(sshCert.ValidAfter), 0).UTC())
-		logInfo.Printf("before %+v\n", time.Unix(int64(sshCert.ValidBefore), 0).UTC())
 	}
 
 	sort.SliceStable(sshCerts, func(i, j int) bool {
