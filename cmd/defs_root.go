@@ -19,3 +19,12 @@ type tConfig struct {
 	emitFormat *tChoice
 	sortOrder  *tChoice
 }
+
+/*
+Alignment of markdown table
+*/
+const (
+	ALIGN_LEFT = iota
+	ALIGN_CENTER
+	ALIGN_RIGHT
+)
