@@ -33,9 +33,9 @@ var x509certsCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(x509certsCmd)
 
-	initChoices()
+	//initChoices()
 
-	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
+	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
 }
 
 /*
@@ -47,25 +47,35 @@ func exportX509Main(args []string) {
 
 	checkLogginglevel(args)
 
-	logInfo.Println(args[0])
-
 	db, err := badger.Open(badger.DefaultOptions(args[0]).WithLogger(nil))
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
 
-	retrieveX509Certs(db)
+	x509CertsWithRevocations := retrieveX509Certs(db)
+
+	sort.SliceStable(x509CertsWithRevocations, func(i, j int) bool {
+		return x509CertsWithRevocations[i].X509Certificate.NotAfter.Before(x509CertsWithRevocations[j].X509Certificate.NotAfter)
+	})
+
+	switch thisFormat := config.emitFormat.Value; thisFormat {
+	case "j":
+		emitX509CertsWithRevocationsJson(x509CertsWithRevocations)
+	case "t":
+		emitX509Table(x509CertsWithRevocations)
+	}
+
 }
 
-func retrieveX509Certs(db *badger.DB) {
+func retrieveX509Certs(db *badger.DB) []tX509CertificateAndRevocation {
 	var (
 		x509CertsWithRevocations []tX509CertificateAndRevocation = []tX509CertificateAndRevocation{}
 	)
 
 	prefix, err := badgerEncode([]byte("x509_certs"))
 	if err != nil {
-		panic(err)
+		logError.Panic(err)
 	}
 
 	txn := db.NewTransaction(false)
@@ -95,11 +105,10 @@ func retrieveX509Certs(db *badger.DB) {
 
 		x509CertsWithRevocations = append(x509CertsWithRevocations, x509CertAndRevocation)
 	}
+	return x509CertsWithRevocations
+}
 
-	sort.SliceStable(x509CertsWithRevocations, func(i, j int) bool {
-		return x509CertsWithRevocations[i].X509Certificate.NotAfter.Before(x509CertsWithRevocations[j].X509Certificate.NotAfter)
-	})
-
+func emitX509Table(x509CertsWithRevocations []tX509CertificateAndRevocation) {
 	table := new(tabby.Table)
 
 	thisColumns := getX509Columns()
@@ -123,7 +132,7 @@ func retrieveX509Certs(db *badger.DB) {
 	/* Set the header */
 
 	if err := table.SetHeader(thisHeader); err != nil {
-		panic(err) //"emitTable: setting header failed. %w", err)
+		logError.Panic("Setting header failed. %w", err)
 	}
 
 	if loggingLevel >= 1 {
@@ -135,9 +144,7 @@ func retrieveX509Certs(db *badger.DB) {
 	for _, x509CertAndRevocation := range x509CertsWithRevocations {
 
 		var thisRow []string
-
 		/* Building slice of columns within a single row*/
-
 		for _, thisColumn := range thisColumns {
 
 			if thisColumn.isShown() {
@@ -150,7 +157,7 @@ func retrieveX509Certs(db *badger.DB) {
 		}
 
 		if err := table.AppendRow(thisRow); err != nil {
-			panic(err)
+			logError.Panic(err)
 		}
 		if loggingLevel >= 3 {
 			logInfo.Printf("row [%s] appended.", x509CertAndRevocation.X509Certificate.SerialNumber.String())
@@ -169,7 +176,6 @@ func retrieveX509Certs(db *badger.DB) {
 	} else {
 		table.Print(nil)
 	}
-
 }
 
 func getX509Certificate(iter *badger.Iterator) (x509.Certificate, error) {
@@ -182,7 +188,7 @@ func getX509Certificate(iter *badger.Iterator) (x509.Certificate, error) {
 
 	valCopy, err := item.ValueCopy(nil)
 	if err != nil {
-		panic(err)
+		logError.Fatalf("Error parsing item value: %v", err)
 	}
 
 	if len(strings.TrimSpace(string(valCopy))) == 0 {
@@ -192,7 +198,7 @@ func getX509Certificate(iter *badger.Iterator) (x509.Certificate, error) {
 		// read data to object
 		marshaledValue, err := json.Marshal(valCopy)
 		if err != nil {
-			panic(err)
+			logError.Panic(err)
 		}
 
 		// make x509Cert-data from db decodable pem
@@ -202,12 +208,12 @@ func getX509Certificate(iter *badger.Iterator) (x509.Certificate, error) {
 		decodedPEMBlock, _ := pem.Decode([]byte(base64cert))
 
 		if decodedPEMBlock == nil {
-			panic("failed to parse certificate PEM")
+			logError.Fatalf("failed to parse certificate PEM")
 		}
 
 		x509cert, err = x509.ParseCertificate(decodedPEMBlock.Bytes)
 		if err != nil {
-			panic("failed to parse certificate: " + err.Error())
+			logError.Fatalf("failed to parse certificate: " + err.Error())
 		}
 
 		return *x509cert, nil
@@ -227,12 +233,12 @@ func getX509RevocationData(db *badger.DB, cert *x509.Certificate) tX509RevokedCe
 		var valCopy []byte
 		valCopy, err = item.ValueCopy(nil)
 		if err != nil {
-			panic(err)
+			logError.Panic(err)
 		}
 
 		if len(strings.TrimSpace(string(valCopy))) > 0 {
 			if err := json.Unmarshal(valCopy, &data); err != nil {
-				panic(err)
+				logError.Panic(err)
 			}
 		}
 	}
@@ -251,14 +257,25 @@ func getX509CertificateProvisionerData(db *badger.DB, cert *x509.Certificate) tX
 		var valCopy []byte
 		valCopy, err = item.ValueCopy(nil)
 		if err != nil {
-			panic(err)
+			logError.Panic(err)
 		}
 
 		if len(strings.TrimSpace(string(valCopy))) > 0 {
 			if err := json.Unmarshal(valCopy, &info); err != nil {
-				panic(err)
+				logError.Panic(err)
 			}
 		}
 	}
 	return info
+}
+
+func emitX509CertsWithRevocationsJson(x509CertsWithRevocations []tX509CertificateAndRevocation) {
+	jsonInfo, err := json.MarshalIndent(x509CertsWithRevocations, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(jsonInfo))
+	if loggingLevel >= 2 {
+		logInfo.Printf("%d records marshalled.\n", len(x509CertsWithRevocations))
+	}
 }

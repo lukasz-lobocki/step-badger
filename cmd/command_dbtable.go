@@ -28,7 +28,7 @@ var dbTableCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(dbTableCmd)
 
-	initChoices()
+	// initChoices()
 
 }
 
@@ -97,10 +97,10 @@ func retrieveDbTableData(db *badger.DB, prefix []byte) {
 		}
 	}
 
-	emitJson(dbRecords)
+	emitDbRecordsJson(dbRecords)
 }
 
-func emitJson(dbRecords []tDbRecord) {
+func emitDbRecordsJson(dbRecords []tDbRecord) {
 	jsonInfo, err := json.MarshalIndent(dbRecords, "", "  ")
 	if err != nil {
 		panic(err)

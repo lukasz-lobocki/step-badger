@@ -73,6 +73,8 @@ func Execute() {
 }
 
 func init() {
+	initChoices()
+
 	// Hiding help command
 	rootCmd.SetHelpCommand(&cobra.Command{Hidden: true})
 

@@ -8,7 +8,7 @@ const (
 initChoices sets up Config struct for 'limited choice' flag
 */
 func initChoices() {
-	config.emitFormat = newChoice([]string{"t", "j", "m"}, "t")
+	config.emitFormat = newChoice([]string{"t", "j"}, "t")
 }
 
 /*

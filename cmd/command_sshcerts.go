@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
 	"sort"
 	"strings"
 
@@ -32,9 +32,10 @@ var sshCertsCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(sshCertsCmd)
 
-	initChoices()
+	//initChoices()
 
-	sshCertsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
+	sshCertsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
+	logInfo.Printf(config.emitFormat.Value)
 }
 
 /*
@@ -46,25 +47,34 @@ func exportSshMain(args []string) {
 
 	checkLogginglevel(args)
 
-	logInfo.Println(args[0])
-
 	db, err := badger.Open(badger.DefaultOptions(args[0]).WithLogger(nil))
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
 
-	retrieveSshCerts(db)
+	sshCerts := retrieveSshCerts(db)
+
+	sort.SliceStable(sshCerts, func(i, j int) bool {
+		return sshCerts[i].ValidBefore < sshCerts[j].ValidBefore
+	})
+
+	switch thisFormat := config.emitFormat.Value; thisFormat {
+	case "j":
+		emitSshCertsJson(sshCerts)
+	case "t":
+		emitSshCertsTable(sshCerts)
+	}
 }
 
-func retrieveSshCerts(db *badger.DB) {
+func retrieveSshCerts(db *badger.DB) []ssh.Certificate {
 	var (
 		sshCerts []ssh.Certificate = []ssh.Certificate{}
 	)
 
 	prefix, err := badgerEncode([]byte("ssh_certs"))
 	if err != nil {
-		panic(err)
+		logError.Panic(err)
 	}
 
 	txn := db.NewTransaction(false)
@@ -74,9 +84,6 @@ func retrieveSshCerts(db *badger.DB) {
 	defer iter.Close()
 
 	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
-		// var (
-		// 	sshCertAndRevocation X509CertificateAndRevocationInfo = X509CertificateAndRevocationInfo{}
-		// )
 
 		sshCert, err := getSshCertificate(iter)
 		if err != nil {
@@ -87,18 +94,17 @@ func retrieveSshCerts(db *badger.DB) {
 
 	}
 
-	sort.SliceStable(sshCerts, func(i, j int) bool {
-		return sshCerts[i].ValidBefore < sshCerts[j].ValidBefore
-	})
+	return sshCerts
 
+}
+
+func emitSshCertsTable(sshCerts []ssh.Certificate) {
 	table := new(tabby.Table)
 
 	thisColumns := getSshColumns()
 
 	var thisHeader []string
-
 	/* Building slice of titles */
-
 	for _, thisColumn := range thisColumns {
 		if thisColumn.isShown() {
 			thisHeader = append(thisHeader,
@@ -112,7 +118,7 @@ func retrieveSshCerts(db *badger.DB) {
 	/* Set the header */
 
 	if err := table.SetHeader(thisHeader); err != nil {
-		panic(err) //"emitTable: setting header failed. %w", err)
+		logError.Panic("Setting header failed. %w", err)
 	}
 
 	if loggingLevel >= 1 {
@@ -124,7 +130,6 @@ func retrieveSshCerts(db *badger.DB) {
 	for _, sshCert := range sshCerts {
 
 		var thisRow []string
-
 		/* Building slice of columns within a single row*/
 
 		for _, thisColumn := range thisColumns {
@@ -139,7 +144,7 @@ func retrieveSshCerts(db *badger.DB) {
 		}
 
 		if err := table.AppendRow(thisRow); err != nil {
-			panic(err)
+			logError.Panic(err)
 		}
 		if loggingLevel >= 3 {
 			logInfo.Printf("row [%s] appended.", string(sshCert.Serial))
@@ -169,7 +174,7 @@ func getSshCertificate(iter *badger.Iterator) (ssh.Certificate, error) {
 
 	valCopy, err := item.ValueCopy(nil)
 	if err != nil {
-		panic(err)
+		logError.Fatalf("Error parsing item value: %v", err)
 	}
 
 	if len(strings.TrimSpace(string(valCopy))) == 0 {
@@ -180,15 +185,26 @@ func getSshCertificate(iter *badger.Iterator) (ssh.Certificate, error) {
 		// Parse the SSH certificate
 		pubKey, err := ssh.ParsePublicKey(valCopy)
 		if err != nil {
-			log.Fatalf("Error parsing SSH certificate: %v", err)
+			logError.Fatalf("Error parsing SSH certificate: %v", err)
 		}
 
 		cert, ok := pubKey.(*ssh.Certificate)
 		if !ok {
-			log.Fatalf("Key is not an SSH certificate")
+			logError.Fatalf("Key is not an SSH certificate")
 		}
 
 		return *cert, nil
 	}
 
+}
+
+func emitSshCertsJson(sshCerts []ssh.Certificate) {
+	jsonInfo, err := json.MarshalIndent(sshCerts, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(jsonInfo))
+	if loggingLevel >= 2 {
+		logInfo.Printf("%d records marshalled.\n", len(sshCerts))
+	}
 }
