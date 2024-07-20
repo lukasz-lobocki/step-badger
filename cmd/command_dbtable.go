@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/dgraph-io/badger/v2"
@@ -9,13 +11,13 @@ import (
 
 // dbTableCmd represents the shell command
 var dbTableCmd = &cobra.Command{
-	Use:   "dbTable [PATH]",
+	Use:   "dbTable BADGERPATH TABLE",
 	Short: "Export table.",
 	Long:  `Export data table out of the badger database of step-ca.`,
 
-	Example: "  step-badger dbTable ./db",
+	Example: "  step-badger dbTable ./db ssh_host_principals",
 
-	Args: cobra.RangeArgs(1, 2),
+	Args: cobra.ExactArgs(2),
 
 	Run: func(cmd *cobra.Command, args []string) {
 		dbTableMain(args)
@@ -28,8 +30,6 @@ func init() {
 
 	initChoices()
 
-	dbTableCmd.Flags().SortFlags = false
-	dbTableCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
 }
 
 /*
@@ -52,6 +52,9 @@ func dbTableMain(args []string) {
 }
 
 func retrieveDbTableData(db *badger.DB, prefix []byte) {
+	var (
+		dbRecords []tDbRecord = []tDbRecord{}
+	)
 	txn := db.NewTransaction(false)
 	defer txn.Discard()
 
@@ -69,6 +72,9 @@ func retrieveDbTableData(db *badger.DB, prefix []byte) {
 	defer iter.Close()
 
 	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
+		var (
+			dbRecord tDbRecord = tDbRecord{}
+		)
 		item := iter.Item()
 
 		var valCopy []byte
@@ -81,8 +87,26 @@ func retrieveDbTableData(db *badger.DB, prefix []byte) {
 			// Item is empty
 			continue
 		}
+
+		dbRecord.Key = string(item.Key())
+		dbRecord.Value = valCopy
+		dbRecords = append(dbRecords, dbRecord)
+
 		if loggingLevel >= 3 {
 			logInfo.Printf("[key=%s] [value=%s]", strings.TrimSpace(string(item.Key())), strings.TrimSpace(string(valCopy)))
 		}
+	}
+
+	emitJson(dbRecords)
+}
+
+func emitJson(dbRecords []tDbRecord) {
+	jsonInfo, err := json.MarshalIndent(dbRecords, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(jsonInfo))
+	if loggingLevel >= 2 {
+		logInfo.Printf("%d records marshalled.\n", len(dbRecords))
 	}
 }
