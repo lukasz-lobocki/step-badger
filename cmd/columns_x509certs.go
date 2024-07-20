@@ -33,7 +33,7 @@ func getX509Columns() []tX509Column {
 
 			contentSource:   func(x tX509CertificateAndRevocation) string { return x.X509Certificate.SerialNumber.String() },
 			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgWhite }, // Static color
-			contentAlignMD:  ALIGN_RIGHT,
+			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: false,
 		},
 
