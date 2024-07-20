@@ -12,7 +12,7 @@ import (
 // dbTableCmd represents the shell command
 var dbTableCmd = &cobra.Command{
 	Use:   "dbTable BADGERPATH TABLE",
-	Short: "Export table.",
+	Short: "Export badger table.",
 	Long:  `Export data table out of the badger database of step-ca.`,
 
 	Example: "  step-badger dbTable ./db ssh_host_principals",

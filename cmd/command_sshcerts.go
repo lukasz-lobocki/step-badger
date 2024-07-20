@@ -15,13 +15,13 @@ import (
 
 // sshCertsCmd represents the shell command
 var sshCertsCmd = &cobra.Command{
-	Use:   "sshCerts [PATH] \"command\"",
-	Short: "Export certificates.",
-	Long:  `Export certificates' data out of the badger database of step-ca.`,
+	Use:   "sshCerts BADGERPATH",
+	Short: "Export ssh certificates.",
+	Long:  `Export ssh certificates' data out of the badger database of step-ca.`,
 
-	Example: "  gitas x509certs XXXXX -duda",
+	Example: "  step-badger ssCerts ./db",
 
-	Args: cobra.RangeArgs(1, 2),
+	Args: cobra.ExactArgs(1),
 
 	Run: func(cmd *cobra.Command, args []string) {
 		exportSshMain(args)
@@ -34,8 +34,6 @@ func init() {
 
 	initChoices()
 
-	sshCertsCmd.Flags().SortFlags = false
-	sshCertsCmd.Flags().VarP(config.sortOrder, "order", "o", "order: validity|before")           // Choice
 	sshCertsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
 }
 
@@ -103,13 +101,11 @@ func retrieveSshCerts(db *badger.DB) {
 
 	for _, thisColumn := range thisColumns {
 		if thisColumn.isShown() {
-
 			thisHeader = append(thisHeader,
 				color.New(thisColumn.titleColor).SprintFunc()(
 					thisColumn.title(),
 				),
 			)
-
 		}
 	}
 
@@ -143,11 +139,11 @@ func retrieveSshCerts(db *badger.DB) {
 		}
 
 		if err := table.AppendRow(thisRow); err != nil {
-			panic(err) //return fmt.Errorf("emitTable: appending row failed. %w", err)
+			panic(err)
 		}
-		// if loggingLevel >= 3 {
-		// 	logInfo.Printf("row [%s] appended.", thisCertWithRevocation.ShortName)
-		// }
+		if loggingLevel >= 3 {
+			logInfo.Printf("row [%s] appended.", string(sshCert.Serial))
+		}
 
 	}
 

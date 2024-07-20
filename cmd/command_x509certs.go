@@ -16,13 +16,13 @@ import (
 
 // x509certsCmd represents the shell command
 var x509certsCmd = &cobra.Command{
-	Use:   "x509Certs [PATH] \"command\"",
-	Short: "Export certificates.",
-	Long:  `Export certificates' data out of the badger database of step-ca.`,
+	Use:   "x509Certs BADGERPATH",
+	Short: "Export x509 certificates.",
+	Long:  `Export x509 certificates' data out of the badger database of step-ca.`,
 
-	Example: "  gitas x509certs XXXXX -duda",
+	Example: "  step-badger x509certs ./db",
 
-	Args: cobra.RangeArgs(1, 2),
+	Args: cobra.ExactArgs(1),
 
 	Run: func(cmd *cobra.Command, args []string) {
 		exportX509Main(args)
@@ -35,8 +35,6 @@ func init() {
 
 	initChoices()
 
-	x509certsCmd.Flags().SortFlags = false
-	x509certsCmd.Flags().VarP(config.sortOrder, "order", "o", "order: validity|before")           // Choice
 	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
 }
 
@@ -152,11 +150,11 @@ func retrieveX509Certs(db *badger.DB) {
 		}
 
 		if err := table.AppendRow(thisRow); err != nil {
-			panic(err) //return fmt.Errorf("emitTable: appending row failed. %w", err)
+			panic(err)
 		}
-		// if loggingLevel >= 3 {
-		// 	logInfo.Printf("row [%s] appended.", thisCertWithRevocation.ShortName)
-		// }
+		if loggingLevel >= 3 {
+			logInfo.Printf("row [%s] appended.", x509CertAndRevocation.X509Certificate.SerialNumber.String())
+		}
 
 	}
 
