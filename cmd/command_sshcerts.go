@@ -28,7 +28,9 @@ var sshCertsCmd = &cobra.Command{
 	},
 }
 
-// Cobra initiation
+/*
+Cobra initiation.
+*/
 func init() {
 	rootCmd.AddCommand(sshCertsCmd)
 
@@ -36,7 +38,7 @@ func init() {
 }
 
 /*
-Export main function
+ExportSsh main function.
 
 	'args' given command line arguments, that contain the command to be run by shell
 */
@@ -50,12 +52,15 @@ func exportSshMain(args []string) {
 	}
 	defer db.Close()
 
-	sshCerts := retrieveSshCerts(db)
+	// Get.
+	sshCerts := getSshCerts(db)
 
+	// Sort.
 	sort.SliceStable(sshCerts, func(i, j int) bool {
 		return sshCerts[i].ValidBefore < sshCerts[j].ValidBefore
 	})
 
+	// Output.
 	switch thisFormat := config.emitFormat.Value; thisFormat {
 	case "j":
 		emitSshCertsJson(sshCerts)
@@ -64,7 +69,12 @@ func exportSshMain(args []string) {
 	}
 }
 
-func retrieveSshCerts(db *badger.DB) []ssh.Certificate {
+/*
+getSshCerts returns struct with ssh certificates.
+
+	'thisDb' badger database
+*/
+func getSshCerts(thisDb *badger.DB) []ssh.Certificate {
 	var (
 		sshCerts []ssh.Certificate = []ssh.Certificate{}
 	)
@@ -74,7 +84,7 @@ func retrieveSshCerts(db *badger.DB) []ssh.Certificate {
 		logError.Panic(err)
 	}
 
-	txn := db.NewTransaction(false)
+	txn := thisDb.NewTransaction(false)
 	defer txn.Discard()
 
 	iter := txn.NewIterator(badger.DefaultIteratorOptions)
@@ -95,7 +105,48 @@ func retrieveSshCerts(db *badger.DB) []ssh.Certificate {
 
 }
 
-func emitSshCertsTable(sshCerts []ssh.Certificate) {
+/*
+getSshCertificate returns ssh certificate.
+*/
+func getSshCertificate(iter *badger.Iterator) (ssh.Certificate, error) {
+	item := iter.Item()
+
+	var (
+		valCopy []byte
+	)
+
+	valCopy, err := item.ValueCopy(nil)
+	if err != nil {
+		logError.Panicf("Error parsing item value: %v", err)
+	}
+
+	if len(strings.TrimSpace(string(valCopy))) == 0 {
+		// Item is empty
+		return ssh.Certificate{}, fmt.Errorf("empty")
+	} else {
+
+		// Parse the SSH certificate
+		pubKey, err := ssh.ParsePublicKey(valCopy)
+		if err != nil {
+			logError.Panicf("Error parsing SSH certificate: %v", err)
+		}
+
+		cert, ok := pubKey.(*ssh.Certificate)
+		if !ok {
+			logError.Panicf("Key is not an SSH certificate")
+		}
+
+		return *cert, nil
+	}
+
+}
+
+/*
+emitSshCertsTable prints result in the form of a table.
+
+	'thisSshCerts' slice of structures describing the ssh certificates
+*/
+func emitSshCertsTable(thisSshCerts []ssh.Certificate) {
 	table := new(tabby.Table)
 
 	thisColumns := getSshColumns()
@@ -124,7 +175,7 @@ func emitSshCertsTable(sshCerts []ssh.Certificate) {
 
 	/* Populate the table */
 
-	for _, sshCert := range sshCerts {
+	for _, sshCert := range thisSshCerts {
 
 		var thisRow []string
 		/* Building slice of columns within a single row*/
@@ -150,7 +201,7 @@ func emitSshCertsTable(sshCerts []ssh.Certificate) {
 	}
 
 	if loggingLevel >= 2 {
-		logInfo.Printf("%d rows appended.\n", len(sshCerts))
+		logInfo.Printf("%d rows appended.\n", len(thisSshCerts))
 	}
 
 	/* Emit the table */
@@ -162,46 +213,18 @@ func emitSshCertsTable(sshCerts []ssh.Certificate) {
 	}
 }
 
-func getSshCertificate(iter *badger.Iterator) (ssh.Certificate, error) {
-	item := iter.Item()
+/*
+emitSshCertsJson prints result in the form of a json
 
-	var (
-		valCopy []byte
-	)
-
-	valCopy, err := item.ValueCopy(nil)
-	if err != nil {
-		logError.Fatalf("Error parsing item value: %v", err)
-	}
-
-	if len(strings.TrimSpace(string(valCopy))) == 0 {
-		// Item is empty
-		return ssh.Certificate{}, fmt.Errorf("empty")
-	} else {
-
-		// Parse the SSH certificate
-		pubKey, err := ssh.ParsePublicKey(valCopy)
-		if err != nil {
-			logError.Fatalf("Error parsing SSH certificate: %v", err)
-		}
-
-		cert, ok := pubKey.(*ssh.Certificate)
-		if !ok {
-			logError.Fatalf("Key is not an SSH certificate")
-		}
-
-		return *cert, nil
-	}
-
-}
-
-func emitSshCertsJson(sshCerts []ssh.Certificate) {
-	jsonInfo, err := json.MarshalIndent(sshCerts, "", "  ")
+	'thisSshCerts' slice of structures describing the ssh certificates
+*/
+func emitSshCertsJson(thisSshCerts []ssh.Certificate) {
+	jsonInfo, err := json.MarshalIndent(thisSshCerts, "", "  ")
 	if err != nil {
 		logError.Panic(err)
 	}
 	fmt.Println(string(jsonInfo))
 	if loggingLevel >= 2 {
-		logInfo.Printf("%d records marshalled.\n", len(sshCerts))
+		logInfo.Printf("%d records marshalled.\n", len(thisSshCerts))
 	}
 }

@@ -5,12 +5,18 @@ import (
 	"time"
 )
 
+/*
+Combined information of certificate, revocation and provisioner.
+*/
 type tX509CertificateAndRevocation struct {
 	X509Certificate x509.Certificate            `json:"Certificate"`
 	X509Revocation  tX509RevokedCertificate     `json:"Revocation,omitempty"`
 	X509Provisioner tX509CertificateProvisioner `json:"Provisioner,omitempty"`
 }
 
+/*
+Certificate revocation information.
+*/
 type tX509RevokedCertificate struct {
 	Serial        string    `json:"-"`
 	ProvisionerID string    `json:"ProvisionerID"`
@@ -28,6 +34,9 @@ type tX509Certificate struct {
 	RaInfo      *string                     `json:"-"`
 }
 
+/*
+Certificate provisioner information.
+*/
 type tX509CertificateProvisioner struct {
 	ID   string `json:"ID"`
 	Name string `json:"Name"`
