@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/dgraph-io/badger/v2"
@@ -195,7 +196,7 @@ func emitSshCertsTable(thisSshCerts []ssh.Certificate) {
 			logError.Panic(err)
 		}
 		if loggingLevel >= 3 {
-			logInfo.Printf("row [%s] appended.", string(sshCert.Serial))
+			logInfo.Printf("row [%s] appended.", strconv.FormatUint(sshCert.Serial, 10))
 		}
 
 	}
