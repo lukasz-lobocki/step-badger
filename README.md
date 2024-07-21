@@ -14,7 +14,7 @@ Export data of x509 certificates.
 step-badger x509Certs PATH
 ```
 
-See `--emit=j` parameter to export JSON.
+See `--emit=j` parameter to export much richer JSON.
 
 ### Example
 
@@ -28,7 +28,7 @@ Export data of ssh certificates.
 step-badger sshCerts PATH
 ```
 
-See `--emit=j` parameter to export JSON.
+See `--emit=j` parameter to export much richer JSON.
 
 ### Example
 
