@@ -1,6 +1,6 @@
 # step-badger ![Static](https://img.shields.io/badge/bulaj-biznes-darkorchid?style=for-the-badge&labelColor=darkslategray)
 
-Exporting certificate data out of the badger database of step-ca.
+Exporting data out of the badger database of step-ca.
 
 ## Build
 
