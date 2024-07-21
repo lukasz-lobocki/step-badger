@@ -35,6 +35,9 @@ Cobra initiation.
 func init() {
 	rootCmd.AddCommand(x509certsCmd)
 
+	//Do not sort flags
+	x509certsCmd.Flags().SortFlags = false
+
 	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
 	x509certsCmd.Flags().BoolVarP(&config.showCrl, "crl", "c", false, "crl shown")
 }
