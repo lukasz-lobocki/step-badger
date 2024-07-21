@@ -1,16 +1,50 @@
 # step-badger ![Static](https://img.shields.io/badge/bulaj-biznes-darkorchid?style=for-the-badge&labelColor=darkslategray)
 
-Exporting data out of the badger database of step-ca.
+This tool has 3 features:
+
+- display issued [x509 certificates](#step-badger-x509certs) from step-ca badger database.
+- display issued [ssh certificates](#step-badger-sshcerts) from step-ca badger database.
+- display [content of a given data prefix](#step-badger-dbtable) from step-ca badger database.
+
+## step-badger x509Certs
+
+Export data of x509 certificates.
+
+```bash
+step-badger x509Certs PATH
+```
+
+### Example
 
 ![alt text](samples/out-x509.png)
 
+## step-badger sshCerts
+
+Export data of ssh certificates.
+
+```bash
+step-badger sshCerts PATH
+```
+
+### Example
+
 ![alt text](samples/out-ssh.png)
+
+## step-badger dbTable
+
+Export data of a given table.
+
+```bash
+step-badger dbTable PATH TABLE
+```
+
+### Example
+
+![alt text](samples/out-dbtable.png)
 
 ## Build
 
-```bash
-goreleaser build --clean
-```
+See [BUILD.md](BUILD.md) file.
 
 ## License
 
