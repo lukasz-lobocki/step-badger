@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/dgraph-io/badger/v2"
-	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -22,23 +21,23 @@ var (
 	semVer     string
 	commitHash string
 	goArch     string
-)
 
-var semReleaseVersion string = semVer +
-	func(pre string, txt string) string {
-		if len(txt) > 0 {
-			return pre + txt
-		} else {
-			return ""
-		}
-	}("+", goArch) +
-	func(pre string, txt string) string {
-		if len(txt) > 0 {
-			return pre + txt
-		} else {
-			return ""
-		}
-	}(".", commitHash)
+	semReleaseVersion string = semVer +
+		func(pre string, txt string) string {
+			if len(txt) > 0 {
+				return pre + txt
+			} else {
+				return ""
+			}
+		}("+", goArch) +
+		func(pre string, txt string) string {
+			if len(txt) > 0 {
+				return pre + txt
+			} else {
+				return ""
+			}
+		}(".", commitHash)
+)
 
 var config tConfig // Holds configuration
 
@@ -73,40 +72,32 @@ func Execute() {
 }
 
 func init() {
+	initLoggers()
 	initChoices()
 
 	// Hiding help command
 	rootCmd.SetHelpCommand(&cobra.Command{Hidden: true})
 
+	//Do not sort flags
 	rootCmd.Flags().SortFlags = false
 
 	// Adding global ie. persistent logging level flag
 	rootCmd.PersistentFlags().IntVar(&loggingLevel, "logging", 0,
 		fmt.Sprintf("logging level [0...%d] (default 0)", MAX_LOGGING_LEVEL))
 
-	/* Init loggers */
-
-	thisHiCyan := color.New(color.FgHiCyan).SprintFunc()
-	thisHiYellow := color.New(color.FgHiYellow).SprintFunc()
-	thisHiRed := color.New(color.FgHiRed).SprintFunc()
-
-	logInfo = log.New(os.Stderr, thisHiCyan("╭info\n╰"), 0)
-	logWarning = log.New(os.Stderr, thisHiYellow("╭warning\n╰"), log.Lshortfile)
-	logError = log.New(os.Stderr, thisHiRed("╭error\n╰"), log.Lshortfile)
-
 }
 
 /*
 getItem function returns data item (if exists for the prefix) for the given key.
 
-	'db' badger database.
-	'prefix' badger prefix.
-	'key' badger key.
+	'thisDb' badger database.
+	'thisPrefix' badger prefix.
+	'thisKey' badger key.
 */
-func getItem(db *badger.DB, prefix []byte, key []byte) (*badger.Item, error) {
-	badgerKey, _ := toBadgerKey(prefix, key)
+func getItem(thisDb *badger.DB, thisPrefix []byte, thisKey []byte) (*badger.Item, error) {
+	badgerKey, _ := toBadgerKey(thisPrefix, thisKey)
 
-	txn := db.NewTransaction(false)
+	txn := thisDb.NewTransaction(false)
 	defer txn.Discard()
 
 	item, err := txn.Get(badgerKey)
@@ -119,7 +110,7 @@ func getItem(db *badger.DB, prefix []byte, key []byte) (*badger.Item, error) {
 /*
 badgerEncode function encodes a byte slice into a section of a BadgerKey.
 
-	'val' given byte slice, that contains the key data.
+	'val' byte slice, that contains the key data.
 */
 func badgerEncode(val []byte) ([]byte, error) {
 	l := len(val)
@@ -140,15 +131,15 @@ func badgerEncode(val []byte) ([]byte, error) {
 /*
 toBadgerKey function encodes bucket and key into the BadgerKey.
 
-	'bucket' given byte slice, that bucket name.
-	'key' given byte slice, that key value.
+	'thisBucket' byte slice, that bucket name.
+	'thisKey' byte slice, that key value.
 */
-func toBadgerKey(bucket, key []byte) ([]byte, error) {
-	first, err := badgerEncode(bucket)
+func toBadgerKey(thisBucket, thisKey []byte) ([]byte, error) {
+	first, err := badgerEncode(thisBucket)
 	if err != nil {
 		return nil, err
 	}
-	second, err := badgerEncode(key)
+	second, err := badgerEncode(thisKey)
 	if err != nil {
 		return nil, err
 	}
@@ -158,24 +149,21 @@ func toBadgerKey(bucket, key []byte) ([]byte, error) {
 /*
 checkLogginglevel confirms if logging level does not exceed maximum level.
 
-For convenience it also emits some log
+	loggingLevel = 1 : often
+	loggingLevel = 2 : average
+	loggingLevel = 3 : seldom
 
-	'args' values emitted to log
+For convenience it also emits some log if loggingLevel >= 1.
+
+	'thisArgs' values emitted to log
 */
-func checkLogginglevel(args []string) {
+func checkLogginglevel(thisArgs []string) {
 	if loggingLevel > MAX_LOGGING_LEVEL {
 		logError.Fatalln(fmt.Errorf("%s", rootCmd.Flag("logging").Usage))
 	}
 
 	if loggingLevel >= 1 {
-		logInfo.Printf("len(args): %d. args: %+v\n", len(args), args)
+		logInfo.Printf("len(args): %d. args: %+v\n", len(thisArgs), thisArgs)
 		logInfo.Printf("loggingLevel: %d. config: %+v\n", loggingLevel, config)
 	}
-
-	/*
-		loggingLevel = 1 : often
-		loggingLevel = 2 : average
-		loggingLevel = 3 : seldom
-	*/
-
 }

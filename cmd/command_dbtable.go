@@ -11,9 +11,9 @@ import (
 
 // dbTableCmd represents the shell command
 var dbTableCmd = &cobra.Command{
-	Use:   "dbTable BADGERPATH TABLE",
+	Use:   "dbTable PATH TABLE",
 	Short: "Export badger table.",
-	Long:  `Export data table out of the badger database of step-ca.`,
+	Long:  `Export data table out of the badger database of step-ca. For list of tables see: https://raw.githubusercontent.com/smallstep/certificates/master/db/db.go`,
 
 	Example: "  step-badger dbTable ./db ssh_host_principals",
 
@@ -27,9 +27,6 @@ var dbTableCmd = &cobra.Command{
 // Cobra initiation
 func init() {
 	rootCmd.AddCommand(dbTableCmd)
-
-	// initChoices()
-
 }
 
 /*
@@ -43,35 +40,41 @@ func dbTableMain(args []string) {
 
 	db, err := badger.Open(badger.DefaultOptions(args[0]).WithLogger(nil))
 	if err != nil {
-		panic(err)
+		logError.Panic(err)
 	}
 	defer db.Close()
 
-	retrieveDbTableData(db, []byte(args[1]))
-
+	dbRecords := retrieveDbTableData(db, []byte(args[1]))
+	emitDbRecordsJson(dbRecords)
 }
 
-func retrieveDbTableData(db *badger.DB, prefix []byte) {
+/*
+retrieveDbTableData returns the structure containing data table from Badger database.
+
+	'thisDb' source database
+	'thisPrefix' prefix/name of the table
+*/
+func retrieveDbTableData(thisDb *badger.DB, thisPrefix []byte) []tDbRecord {
 	var (
 		dbRecords []tDbRecord = []tDbRecord{}
 	)
-	txn := db.NewTransaction(false)
+	txn := thisDb.NewTransaction(false)
 	defer txn.Discard()
 
-	prefix, err := badgerEncode(prefix)
+	thisPrefix, err := badgerEncode(thisPrefix)
 	if err != nil {
-		panic(err)
+		logError.Panic(err)
 	}
 
 	if loggingLevel >= 2 {
-		logInfo.Printf("Encoded table prefix: %s", string(prefix))
+		logInfo.Printf("Encoded table prefix: %s", string(thisPrefix))
 	}
 
 	opts := badger.DefaultIteratorOptions
 	iter := txn.NewIterator(opts)
 	defer iter.Close()
 
-	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
+	for iter.Seek(thisPrefix); iter.ValidForPrefix(thisPrefix); iter.Next() {
 		var (
 			dbRecord tDbRecord = tDbRecord{}
 		)
@@ -80,7 +83,7 @@ func retrieveDbTableData(db *badger.DB, prefix []byte) {
 		var valCopy []byte
 		valCopy, err = item.ValueCopy(nil)
 		if err != nil {
-			panic(err)
+			logError.Panic(err)
 		}
 
 		if len(strings.TrimSpace(string(valCopy))) == 0 {
@@ -96,17 +99,21 @@ func retrieveDbTableData(db *badger.DB, prefix []byte) {
 			logInfo.Printf("[key=%s] [value=%s]", strings.TrimSpace(string(item.Key())), strings.TrimSpace(string(valCopy)))
 		}
 	}
-
-	emitDbRecordsJson(dbRecords)
+	return dbRecords
 }
 
-func emitDbRecordsJson(dbRecords []tDbRecord) {
-	jsonInfo, err := json.MarshalIndent(dbRecords, "", "  ")
+/*
+emitDbRecordsJson prints result in the form of a json
+
+	'thisDbRecords' slice of structures describing the records
+*/
+func emitDbRecordsJson(thisDbRecords []tDbRecord) {
+	jsonInfo, err := json.MarshalIndent(thisDbRecords, "", "  ")
 	if err != nil {
-		panic(err)
+		logError.Panic(err)
 	}
 	fmt.Println(string(jsonInfo))
 	if loggingLevel >= 2 {
-		logInfo.Printf("%d records marshalled.\n", len(dbRecords))
+		logInfo.Printf("%d records marshalled.\n", len(thisDbRecords))
 	}
 }

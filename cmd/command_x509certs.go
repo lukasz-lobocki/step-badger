@@ -33,8 +33,6 @@ var x509certsCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(x509certsCmd)
 
-	//initChoices()
-
 	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
 }
 
@@ -272,7 +270,7 @@ func getX509CertificateProvisionerData(db *badger.DB, cert *x509.Certificate) tX
 func emitX509CertsWithRevocationsJson(x509CertsWithRevocations []tX509CertificateAndRevocation) {
 	jsonInfo, err := json.MarshalIndent(x509CertsWithRevocations, "", "  ")
 	if err != nil {
-		panic(err)
+		logError.Panic(err)
 	}
 	fmt.Println(string(jsonInfo))
 	if loggingLevel >= 2 {

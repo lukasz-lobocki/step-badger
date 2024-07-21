@@ -15,7 +15,7 @@ import (
 
 // sshCertsCmd represents the shell command
 var sshCertsCmd = &cobra.Command{
-	Use:   "sshCerts BADGERPATH",
+	Use:   "sshCerts PATH",
 	Short: "Export ssh certificates.",
 	Long:  `Export ssh certificates' data out of the badger database of step-ca.`,
 
@@ -32,10 +32,7 @@ var sshCertsCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(sshCertsCmd)
 
-	//initChoices()
-
 	sshCertsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
-	logInfo.Printf(config.emitFormat.Value)
 }
 
 /*
@@ -49,7 +46,7 @@ func exportSshMain(args []string) {
 
 	db, err := badger.Open(badger.DefaultOptions(args[0]).WithLogger(nil))
 	if err != nil {
-		panic(err)
+		logError.Panic(err)
 	}
 	defer db.Close()
 
@@ -201,7 +198,7 @@ func getSshCertificate(iter *badger.Iterator) (ssh.Certificate, error) {
 func emitSshCertsJson(sshCerts []ssh.Certificate) {
 	jsonInfo, err := json.MarshalIndent(sshCerts, "", "  ")
 	if err != nil {
-		panic(err)
+		logError.Panic(err)
 	}
 	fmt.Println(string(jsonInfo))
 	if loggingLevel >= 2 {
