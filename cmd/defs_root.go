@@ -38,6 +38,7 @@ Configuration structure
 type tConfig struct {
 	emitFormat *tChoice
 	showCrl    bool
+	showKeyId  bool
 }
 
 /*
