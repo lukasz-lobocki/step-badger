@@ -14,6 +14,8 @@ Export data of x509 certificates.
 step-badger x509Certs PATH
 ```
 
+See `--emit=j` parameter to export JSON.
+
 ### Example
 
 ![alt text](samples/out-x509.png)
@@ -26,6 +28,8 @@ Export data of ssh certificates.
 step-badger sshCerts PATH
 ```
 
+See `--emit=j` parameter to export JSON.
+
 ### Example
 
 ![alt text](samples/out-ssh.png)
@@ -37,6 +41,8 @@ Export data of a given table.
 ```bash
 step-badger dbTable PATH TABLE
 ```
+
+See [this](https://github.com/smallstep/certificates/blob/077f688e2d781fa12fd3d702cfab5b6f989a4391/db/db.go#L18) for table names.
 
 ### Example
 
