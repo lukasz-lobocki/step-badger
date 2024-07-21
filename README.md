@@ -2,6 +2,10 @@
 
 Exporting data out of the badger database of step-ca.
 
+![alt text](samples/out-x509.png)
+
+![alt text](samples/out-ssh.png)
+
 ## Build
 
 ```bash
