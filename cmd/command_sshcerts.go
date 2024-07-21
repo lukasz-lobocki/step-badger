@@ -35,7 +35,11 @@ Cobra initiation.
 func init() {
 	rootCmd.AddCommand(sshCertsCmd)
 
+	//Do not sort flags
+	sshCertsCmd.Flags().SortFlags = false
+
 	sshCertsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
+	sshCertsCmd.Flags().BoolVarP(&config.showKeyId, "kid", "k", false, "Key ID shown")
 }
 
 /*
@@ -155,7 +159,7 @@ func emitSshCertsTable(thisSshCerts []ssh.Certificate) {
 	var thisHeader []string
 	/* Building slice of titles */
 	for _, thisColumn := range thisColumns {
-		if thisColumn.isShown() {
+		if thisColumn.isShown(config) {
 			thisHeader = append(thisHeader,
 				color.New(thisColumn.titleColor).SprintFunc()(
 					thisColumn.title(),
@@ -183,7 +187,7 @@ func emitSshCertsTable(thisSshCerts []ssh.Certificate) {
 
 		for _, thisColumn := range thisColumns {
 
-			if thisColumn.isShown() {
+			if thisColumn.isShown(config) {
 				thisRow = append(thisRow,
 					color.New(thisColumn.contentColor(sshCert)).SprintFunc()(
 						thisColumn.contentSource(sshCert),
