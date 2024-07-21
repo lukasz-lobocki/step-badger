@@ -36,6 +36,7 @@ func init() {
 	rootCmd.AddCommand(x509certsCmd)
 
 	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
+	x509certsCmd.Flags().BoolVarP(&config.showCrl, "crl", "c", false, "crl shown")
 }
 
 /*
@@ -237,7 +238,7 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateAndRevocation)
 	/* Building slice of titles */
 
 	for _, thisColumn := range thisColumns {
-		if thisColumn.isShown() {
+		if thisColumn.isShown(config) {
 
 			thisHeader = append(thisHeader,
 				color.New(thisColumn.titleColor).SprintFunc()(
@@ -266,7 +267,7 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateAndRevocation)
 		/* Building slice of columns within a single row*/
 		for _, thisColumn := range thisColumns {
 
-			if thisColumn.isShown() {
+			if thisColumn.isShown(config) {
 				thisRow = append(thisRow,
 					color.New(thisColumn.contentColor(x509CertAndRevocation)).SprintFunc()(
 						thisColumn.contentSource(x509CertAndRevocation),

@@ -8,7 +8,7 @@ import (
 )
 
 type tX509Column struct {
-	isShown         func() bool
+	isShown         func(tConfig) bool
 	title           func() string
 	titleColor      color.Attribute
 	contentSource   func(tX509CertificateAndRevocation) string
@@ -27,7 +27,7 @@ func getX509Columns() []tX509Column {
 	thisColumns = append(thisColumns,
 
 		tX509Column{
-			isShown:    func() bool { return true },              // Always shown
+			isShown:    func(_ tConfig) bool { return true },     // Always shown
 			title:      func() string { return "Serial number" }, // Static title
 			titleColor: color.Bold,
 
@@ -38,8 +38,8 @@ func getX509Columns() []tX509Column {
 		},
 
 		tX509Column{
-			isShown:    func() bool { return true },        // Always shown
-			title:      func() string { return "Subject" }, // Static title
+			isShown:    func(_ tConfig) bool { return true }, // Always shown
+			title:      func() string { return "Subject" },   // Static title
 			titleColor: color.Bold,
 
 			contentSource:   func(x tX509CertificateAndRevocation) string { return x.X509Certificate.Subject.String() },
@@ -49,7 +49,7 @@ func getX509Columns() []tX509Column {
 		},
 
 		tX509Column{
-			isShown:    func() bool { return true },                      // Always shown
+			isShown:    func(tc tConfig) bool { return tc.showCrl },
 			title:      func() string { return "CRLDistributionPoints" }, // Static title
 			titleColor: color.Bold,
 
@@ -62,7 +62,7 @@ func getX509Columns() []tX509Column {
 		},
 
 		tX509Column{
-			isShown:    func() bool { return true },           // Always shown
+			isShown:    func(_ tConfig) bool { return true },  // Always shown
 			title:      func() string { return "Not before" }, // Static title
 			titleColor: color.Bold,
 
@@ -75,7 +75,7 @@ func getX509Columns() []tX509Column {
 		},
 
 		tX509Column{
-			isShown:    func() bool { return true },          // Always shown
+			isShown:    func(_ tConfig) bool { return true }, // Always shown
 			title:      func() string { return "Not after" }, // Static title
 			titleColor: color.Bold,
 
@@ -88,7 +88,7 @@ func getX509Columns() []tX509Column {
 		},
 
 		tX509Column{
-			isShown:    func() bool { return true },           // Always shown
+			isShown:    func(_ tConfig) bool { return true },  // Always shown
 			title:      func() string { return "Revoked at" }, // Static title
 			titleColor: color.Bold,
 
@@ -105,8 +105,8 @@ func getX509Columns() []tX509Column {
 		},
 
 		tX509Column{
-			isShown:    func() bool { return true },         // Always shown
-			title:      func() string { return "Validity" }, // Static title
+			isShown:    func(_ tConfig) bool { return true }, // Always shown
+			title:      func() string { return "Validity" },  // Static title
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateAndRevocation) string {
