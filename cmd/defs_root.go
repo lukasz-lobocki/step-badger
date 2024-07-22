@@ -38,10 +38,13 @@ func initChoices() {
 Configuration structure
 */
 type tConfig struct {
-	emitFormat *tChoice
-	showCrl    bool
-	showKeyId  bool
-	sortOrder  *tChoice
+	emitFormat  *tChoice
+	showCrl     bool
+	showKeyId   bool
+	sortOrder   *tChoice
+	showValid   bool
+	showExpired bool
+	showRevoked bool
 }
 
 /*
@@ -66,4 +69,21 @@ type tRevokedCertificate struct {
 	TokenID       string    `json:"TokenID"`
 	MTLS          bool      `json:"MTLS"`
 	ACME          bool      `json:"ACME"`
+}
+
+const (
+	VALID_STR   string = "Valid"
+	EXPIRED_STR string = "Expired"
+	REVOKED_STR string = "Revoked"
+)
+
+/*
+getThisABColor maps given ahead / behind status string to appropriate color
+*/
+func getThisValidityColor() map[string]color.Attribute {
+	return map[string]color.Attribute{
+		VALID_STR:   color.FgGreen,
+		EXPIRED_STR: color.FgHiBlack,
+		REVOKED_STR: color.FgHiYellow,
+	}
 }

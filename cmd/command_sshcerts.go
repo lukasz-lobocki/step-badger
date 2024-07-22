@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/fatih/color"
@@ -41,6 +42,9 @@ func init() {
 	sshCertsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
 	sshCertsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish") // Choice
 	sshCertsCmd.Flags().BoolVarP(&config.showKeyId, "kid", "k", false, "Key ID shown")
+	sshCertsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid shown")
+	sshCertsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", true, "revoked shown")
+	sshCertsCmd.Flags().BoolVarP(&config.showExpired, "expired", "x", false, "expired shown")
 }
 
 /*
@@ -115,9 +119,25 @@ func getSshCerts(thisDb *badger.DB) []tSshCertificateAndRevocation {
 
 		// Populate main info of the certificate.
 		sshCertsWithRevocation.SshCertificate = sshCert
+
+		// Populate revocation info of the certificate.
 		sshCertsWithRevocation.SshRevocation = getSshRevocationData(thisDb, &sshCert)
 
-		sshCertsWithRevocations = append(sshCertsWithRevocations, sshCertsWithRevocation)
+		// Populate validity info of the certificate.
+		if len(sshCertsWithRevocation.SshRevocation.ProvisionerID) > 0 && time.Now().After(sshCertsWithRevocation.SshRevocation.RevokedAt) {
+			sshCertsWithRevocation.Validity = REVOKED_STR
+		} else {
+			if time.Now().After(time.Unix(int64(sshCertsWithRevocation.SshCertificate.ValidBefore), 0)) {
+				sshCertsWithRevocation.Validity = EXPIRED_STR
+			} else {
+				sshCertsWithRevocation.Validity = VALID_STR
+			}
+		}
+		if (config.showExpired && sshCertsWithRevocation.Validity == EXPIRED_STR) ||
+			(config.showRevoked && sshCertsWithRevocation.Validity == REVOKED_STR) ||
+			(config.showValid && sshCertsWithRevocation.Validity == VALID_STR) {
+			sshCertsWithRevocations = append(sshCertsWithRevocations, sshCertsWithRevocation)
+		}
 
 	}
 

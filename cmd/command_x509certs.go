@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/fatih/color"
@@ -41,6 +42,9 @@ func init() {
 	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
 	x509certsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish") // Choice
 	x509certsCmd.Flags().BoolVarP(&config.showCrl, "crl", "c", false, "crl shown")
+	x509certsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid shown")
+	x509certsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", true, "revoked shown")
+	x509certsCmd.Flags().BoolVarP(&config.showExpired, "expired", "x", false, "expired shown")
 }
 
 /*
@@ -123,7 +127,22 @@ func getX509Certs(thisDb *badger.DB) []tX509CertificateAndRevocation {
 		// Populate provisioner sub-info of the certificate.
 		x509CertAndRevocation.X509Provisioner = getX509CertificateProvisionerData(thisDb, &x509Cert).Provisioner
 
-		x509CertsWithRevocations = append(x509CertsWithRevocations, x509CertAndRevocation)
+		// Populate validity info of the certificate.
+		if len(x509CertAndRevocation.X509Revocation.ProvisionerID) > 0 && time.Now().After(x509CertAndRevocation.X509Revocation.RevokedAt) {
+			x509CertAndRevocation.Validity = REVOKED_STR
+		} else {
+			if time.Now().After(x509CertAndRevocation.X509Certificate.NotAfter) {
+				x509CertAndRevocation.Validity = EXPIRED_STR
+			} else {
+				x509CertAndRevocation.Validity = VALID_STR
+			}
+		}
+
+		if (config.showExpired && x509CertAndRevocation.Validity == EXPIRED_STR) ||
+			(config.showRevoked && x509CertAndRevocation.Validity == REVOKED_STR) ||
+			(config.showValid && x509CertAndRevocation.Validity == VALID_STR) {
+			x509CertsWithRevocations = append(x509CertsWithRevocations, x509CertAndRevocation)
+		}
 	}
 	return x509CertsWithRevocations
 }
