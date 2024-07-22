@@ -30,6 +30,7 @@ initChoices sets up Config struct for 'limited choice' flag
 */
 func initChoices() {
 	config.emitFormat = newChoice([]string{"t", "j"}, "t")
+	config.sortOrder = newChoice([]string{"s", "f"}, "f")
 }
 
 /*
@@ -39,6 +40,7 @@ type tConfig struct {
 	emitFormat *tChoice
 	showCrl    bool
 	showKeyId  bool
+	sortOrder  *tChoice
 }
 
 /*
