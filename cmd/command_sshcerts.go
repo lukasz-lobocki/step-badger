@@ -39,6 +39,7 @@ func init() {
 	sshCertsCmd.Flags().SortFlags = false
 
 	sshCertsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
+	sshCertsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish") // Choice
 	sshCertsCmd.Flags().BoolVarP(&config.showKeyId, "kid", "k", false, "Key ID shown")
 }
 
@@ -61,9 +62,16 @@ func exportSshMain(args []string) {
 	sshCerts := getSshCerts(db)
 
 	// Sort.
-	sort.SliceStable(sshCerts, func(i, j int) bool {
-		return sshCerts[i].ValidBefore < sshCerts[j].ValidBefore
-	})
+	switch thisSort := config.sortOrder.Value; thisSort {
+	case "f":
+		sort.SliceStable(sshCerts, func(i, j int) bool {
+			return sshCerts[i].ValidBefore < sshCerts[j].ValidBefore
+		})
+	case "s":
+		sort.SliceStable(sshCerts, func(i, j int) bool {
+			return sshCerts[i].ValidAfter < sshCerts[j].ValidAfter
+		})
+	}
 
 	// Output.
 	switch thisFormat := config.emitFormat.Value; thisFormat {

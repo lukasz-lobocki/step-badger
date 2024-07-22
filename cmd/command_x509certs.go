@@ -39,6 +39,7 @@ func init() {
 	x509certsCmd.Flags().SortFlags = false
 
 	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
+	x509certsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish") // Choice
 	x509certsCmd.Flags().BoolVarP(&config.showCrl, "crl", "c", false, "crl shown")
 }
 
@@ -61,9 +62,16 @@ func exportX509Main(args []string) {
 	x509CertsWithRevocations := getX509Certs(db)
 
 	// Sort.
-	sort.SliceStable(x509CertsWithRevocations, func(i, j int) bool {
-		return x509CertsWithRevocations[i].X509Certificate.NotAfter.Before(x509CertsWithRevocations[j].X509Certificate.NotAfter)
-	})
+	switch thisSort := config.sortOrder.Value; thisSort {
+	case "f":
+		sort.SliceStable(x509CertsWithRevocations, func(i, j int) bool {
+			return x509CertsWithRevocations[i].X509Certificate.NotAfter.Before(x509CertsWithRevocations[j].X509Certificate.NotAfter)
+		})
+	case "s":
+		sort.SliceStable(x509CertsWithRevocations, func(i, j int) bool {
+			return x509CertsWithRevocations[i].X509Certificate.NotBefore.Before(x509CertsWithRevocations[j].X509Certificate.NotBefore)
+		})
+	}
 
 	// Output.
 	switch thisFormat := config.emitFormat.Value; thisFormat {
