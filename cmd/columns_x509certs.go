@@ -110,27 +110,11 @@ func getX509Columns() []tX509Column {
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateAndRevocation) string {
-				if len(x.X509Revocation.ProvisionerID) > 0 && time.Now().After(x.X509Revocation.RevokedAt) {
-					return "Revoked"
-				} else {
-					if time.Now().After(x.X509Certificate.NotAfter) {
-						return "Expired"
-					} else {
-						return "Valid"
-					}
-				}
+				return x.Validity
 			},
 			contentColor: func(x tX509CertificateAndRevocation) color.Attribute {
-				if len(x.X509Revocation.ProvisionerID) > 0 && time.Now().After(x.X509Revocation.RevokedAt) { // Dynamic color
-					return color.FgHiYellow // Revoked
-				} else {
-					if time.Now().After(x.X509Certificate.NotAfter) {
-						return color.FgHiBlack // Expired
-					} else {
-						return color.FgGreen // Valid
-					}
-				}
-			}, // Static color
+				return getThisValidityColor()[x.Validity]
+			}, // Dynamic color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},

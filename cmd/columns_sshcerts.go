@@ -46,7 +46,7 @@ func getSshColumns() []tSshColumn {
 			contentSource: func(x tSshCertificateAndRevocation) string { return getThisCertType()[int(x.SshCertificate.CertType)] },
 			contentColor: func(x tSshCertificateAndRevocation) color.Attribute {
 				return getThisCertTypeColor()[int(x.SshCertificate.CertType)]
-			}, // Static color
+			}, // Dynamic color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
@@ -124,31 +124,11 @@ func getSshColumns() []tSshColumn {
 			titleColor: color.Bold,
 
 			contentSource: func(x tSshCertificateAndRevocation) string {
-
-				if len(x.SshRevocation.ProvisionerID) > 0 && time.Now().After(x.SshRevocation.RevokedAt) {
-					return "Revoked"
-				} else {
-					if time.Now().After(time.Unix(int64(x.SshCertificate.ValidBefore), 0)) {
-						return "Expired"
-					} else {
-						return "Valid"
-					}
-				}
-
+				return x.Validity
 			},
 			contentColor: func(x tSshCertificateAndRevocation) color.Attribute {
-
-				if len(x.SshRevocation.ProvisionerID) > 0 && time.Now().After(x.SshRevocation.RevokedAt) {
-					return color.FgHiYellow
-				} else {
-					if time.Now().After(time.Unix(int64(x.SshCertificate.ValidBefore), 0)) {
-						return color.FgHiBlack // Expired
-					} else {
-						return color.FgGreen // Valid
-					}
-				}
-
-			}, // Static color
+				return getThisValidityColor()[x.Validity]
+			}, // Dynamic color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
