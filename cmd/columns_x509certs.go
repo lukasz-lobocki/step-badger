@@ -62,8 +62,8 @@ func getX509Columns() []tX509Column {
 		},
 
 		tX509Column{
-			isShown:    func(_ tConfig) bool { return true },  // Always shown
-			title:      func() string { return "Not before" }, // Static title
+			isShown:    func(_ tConfig) bool { return true }, // Always shown
+			title:      func() string { return "Start" },     // Static title
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateAndRevocation) string {
@@ -76,7 +76,7 @@ func getX509Columns() []tX509Column {
 
 		tX509Column{
 			isShown:    func(_ tConfig) bool { return true }, // Always shown
-			title:      func() string { return "Not after" }, // Static title
+			title:      func() string { return "Finish" },    // Static title
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateAndRevocation) string {

@@ -62,8 +62,8 @@ func getSshColumns() []tSshColumn {
 		},
 
 		tSshColumn{
-			isShown:    func(_ tConfig) bool { return true },  // Always shown
-			title:      func() string { return "Not before" }, // Static title
+			isShown:    func(_ tConfig) bool { return true }, // Always shown
+			title:      func() string { return "Start" },     // Static title
 			titleColor: color.Bold,
 
 			contentSource: func(x ssh.Certificate) string {
@@ -76,7 +76,7 @@ func getSshColumns() []tSshColumn {
 
 		tSshColumn{
 			isShown:    func(_ tConfig) bool { return true }, // Always shown
-			title:      func() string { return "Not after" }, // Static title
+			title:      func() string { return "Finish" },    // Static title
 			titleColor: color.Bold,
 
 			contentSource: func(x ssh.Certificate) string {
