@@ -40,6 +40,17 @@ func getSshColumns() []tSshColumn {
 		},
 
 		tSshColumn{
+			isShown:    func(_ tConfig) bool { return true }, // Always shown
+			title:      func() string { return "Type" },      // Static title
+			titleColor: color.Bold,
+
+			contentSource:   func(x ssh.Certificate) string { return getThisCertType()[int(x.CertType)] },
+			contentColor:    func(x ssh.Certificate) color.Attribute { return getThisCertTypeColor()[int(x.CertType)] }, // Static color
+			contentAlignMD:  ALIGN_LEFT,
+			contentEscapeMD: true,
+		},
+
+		tSshColumn{
 			isShown:    func(_ tConfig) bool { return true },        // Always shown
 			title:      func() string { return "Valid principals" }, // Static title
 			titleColor: color.Bold,
@@ -116,4 +127,24 @@ func getSshColumns() []tSshColumn {
 	)
 
 	return thisColumns
+}
+
+/*
+getThisCertType maps given CertType to string to be displayed.
+*/
+func getThisCertType() map[int]string {
+	return map[int]string{
+		1: `User`,
+		2: `Host`,
+	}
+}
+
+/*
+getThisCertTypeColor maps given CertType to color to be used.
+*/
+func getThisCertTypeColor() map[int]color.Attribute {
+	return map[int]color.Attribute{
+		1: color.FgCyan,
+		2: color.FgMagenta,
+	}
 }
