@@ -11,7 +11,7 @@ This tool has 3 features:
 Export data of x509 certificates.
 
 ```bash
-step-badger x509Certs PATH
+step-badger x509Certs PATH [flags]
 ```
 
 ```text
@@ -33,7 +33,7 @@ Flags:
 Export data of ssh certificates.
 
 ```bash
-step-badger sshCerts PATH
+step-badger sshCerts PATH [flags]
 ```
 
 ```text
