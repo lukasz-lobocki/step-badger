@@ -65,11 +65,11 @@ func exportSshMain(args []string) {
 	switch thisSort := config.sortOrder.Value; thisSort {
 	case "f":
 		sort.SliceStable(sshCerts, func(i, j int) bool {
-			return sshCerts[i].ValidBefore < sshCerts[j].ValidBefore
+			return sshCerts[i].SshCertificate.ValidBefore < sshCerts[j].SshCertificate.ValidBefore
 		})
 	case "s":
 		sort.SliceStable(sshCerts, func(i, j int) bool {
-			return sshCerts[i].ValidAfter < sshCerts[j].ValidAfter
+			return sshCerts[i].SshCertificate.ValidAfter < sshCerts[j].SshCertificate.ValidAfter
 		})
 	}
 
@@ -87,9 +87,9 @@ getSshCerts returns struct with ssh certificates.
 
 	'thisDb' badger database
 */
-func getSshCerts(thisDb *badger.DB) []ssh.Certificate {
+func getSshCerts(thisDb *badger.DB) []tSshCertificateAndRevocation {
 	var (
-		sshCerts []ssh.Certificate = []ssh.Certificate{}
+		sshCertsWithRevocations []tSshCertificateAndRevocation = []tSshCertificateAndRevocation{}
 	)
 
 	prefix, err := badgerEncode([]byte("ssh_certs"))
@@ -104,17 +104,24 @@ func getSshCerts(thisDb *badger.DB) []ssh.Certificate {
 	defer iter.Close()
 
 	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
+		var (
+			sshCertsWithRevocation tSshCertificateAndRevocation = tSshCertificateAndRevocation{}
+		)
 
 		sshCert, err := getSshCertificate(iter)
 		if err != nil {
 			continue
 		}
 
-		sshCerts = append(sshCerts, sshCert)
+		// Populate main info of the certificate.
+		sshCertsWithRevocation.SshCertificate = sshCert
+		sshCertsWithRevocation.SshRevocation = getSshRevocationData(thisDb, &sshCert)
+
+		sshCertsWithRevocations = append(sshCertsWithRevocations, sshCertsWithRevocation)
 
 	}
 
-	return sshCerts
+	return sshCertsWithRevocations
 
 }
 
@@ -155,11 +162,41 @@ func getSshCertificate(iter *badger.Iterator) (ssh.Certificate, error) {
 }
 
 /*
+getSshRevocationData returns revocation information for a given certificate, if exists.
+
+	'thisDb' Badger database
+	'thisCert' certificate to get revocation information
+*/
+func getSshRevocationData(thisDb *badger.DB, thisCert *ssh.Certificate) tRevokedCertificate {
+	var item *badger.Item
+	var data tRevokedCertificate = tRevokedCertificate{}
+
+	item, err := getItem(thisDb, []byte("revoked_ssh_certs"), []byte(strconv.FormatUint(thisCert.Serial, 10)))
+	if err != nil {
+		// we skip errors (like not found)
+	} else {
+		// we have found a revoked cert
+		var valCopy []byte
+		valCopy, err = item.ValueCopy(nil)
+		if err != nil {
+			logError.Panic(err)
+		}
+
+		if len(strings.TrimSpace(string(valCopy))) > 0 {
+			if err := json.Unmarshal(valCopy, &data); err != nil {
+				logError.Panic(err)
+			}
+		}
+	}
+	return data
+}
+
+/*
 emitSshCertsTable prints result in the form of a table.
 
 	'thisSshCerts' slice of structures describing the ssh certificates
 */
-func emitSshCertsTable(thisSshCerts []ssh.Certificate) {
+func emitSshCertsTable(thisSshCerts []tSshCertificateAndRevocation) {
 	table := new(tabby.Table)
 
 	thisColumns := getSshColumns()
@@ -208,7 +245,7 @@ func emitSshCertsTable(thisSshCerts []ssh.Certificate) {
 			logError.Panic(err)
 		}
 		if loggingLevel >= 3 {
-			logInfo.Printf("row [%s] appended.", strconv.FormatUint(sshCert.Serial, 10))
+			logInfo.Printf("row [%s] appended.", strconv.FormatUint(sshCert.SshCertificate.Serial, 10))
 		}
 
 	}
@@ -231,7 +268,7 @@ emitSshCertsJson prints result in the form of a json
 
 	'thisSshCerts' slice of structures describing the ssh certificates
 */
-func emitSshCertsJson(thisSshCerts []ssh.Certificate) {
+func emitSshCertsJson(thisSshCerts []tSshCertificateAndRevocation) {
 	jsonInfo, err := json.MarshalIndent(thisSshCerts, "", "  ")
 	if err != nil {
 		logError.Panic(err)

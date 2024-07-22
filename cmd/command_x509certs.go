@@ -180,9 +180,9 @@ getX509RevocationData returns revocation information for a given certificate, if
 	'thisDb' Badger database
 	'thisCert' certificate to get revocation information
 */
-func getX509RevocationData(thisDb *badger.DB, thisCert *x509.Certificate) tX509RevokedCertificate {
+func getX509RevocationData(thisDb *badger.DB, thisCert *x509.Certificate) tRevokedCertificate {
 	var item *badger.Item
-	var data tX509RevokedCertificate = tX509RevokedCertificate{}
+	var data tRevokedCertificate = tRevokedCertificate{}
 
 	item, err := getItem(thisDb, []byte("revoked_x509_certs"), []byte(thisCert.SerialNumber.String()))
 	if err != nil {

@@ -3,6 +3,7 @@ package cmd
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/fatih/color"
 )
@@ -51,3 +52,18 @@ const (
 	ALIGN_CENTER
 	ALIGN_RIGHT
 )
+
+/*
+Certificate revocation information. Bots ssh & x509.
+*/
+type tRevokedCertificate struct {
+	Serial        string    `json:"-"`
+	ProvisionerID string    `json:"ProvisionerID"`
+	ReasonCode    int       `json:"ReasonCode"`
+	Reason        string    `json:"Reason"`
+	RevokedAt     time.Time `json:"RevokedAt"`
+	ExpiresAt     time.Time `json:"ExpiresAt"`
+	TokenID       string    `json:"TokenID"`
+	MTLS          bool      `json:"MTLS"`
+	ACME          bool      `json:"ACME"`
+}
