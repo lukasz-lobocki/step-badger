@@ -38,13 +38,14 @@ func initChoices() {
 Configuration structure
 */
 type tConfig struct {
-	emitFormat  *tChoice
-	showCrl     bool
-	showKeyId   bool
-	sortOrder   *tChoice
-	showValid   bool
-	showExpired bool
-	showRevoked bool
+	emitFormat      *tChoice
+	showCrl         bool
+	showKeyId       bool
+	sortOrder       *tChoice
+	showValid       bool
+	showExpired     bool
+	showRevoked     bool
+	showProvisioner bool
 }
 
 /*

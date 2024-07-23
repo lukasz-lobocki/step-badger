@@ -94,7 +94,7 @@ func getSshColumns() []tSshColumn {
 			titleColor: color.Bold,
 
 			contentSource: func(x tSshCertificateAndRevocation) string {
-				return time.Unix(int64(x.SshCertificate.ValidBefore), 0).UTC().Format(time.DateOnly)
+				return time.Unix(int64(x.SshCertificate.ValidBefore), 0).UTC().Format(time.RFC3339)
 			},
 			contentColor:    func(_ tSshCertificateAndRevocation) color.Attribute { return color.FgHiBlack }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
