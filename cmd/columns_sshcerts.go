@@ -36,7 +36,7 @@ func getSshColumns() []tSshColumn {
 				return strconv.FormatUint(x.SshCertificate.Serial, 10)
 			},
 			contentColor:    func(_ tSshCertificateAndRevocation) color.Attribute { return color.FgWhite }, // Static color
-			contentAlignMD:  ALIGN_LEFT,
+			contentAlignMD:  ALIGN_RIGHT,
 			contentEscapeMD: false,
 		},
 

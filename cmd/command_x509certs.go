@@ -10,8 +10,6 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v2"
-	"github.com/fatih/color"
-	"github.com/lukasz-lobocki/tabby"
 	"github.com/spf13/cobra"
 )
 
@@ -39,9 +37,9 @@ func init() {
 	//Do not sort flags
 	x509certsCmd.Flags().SortFlags = false
 
-	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
-	x509certsCmd.Flags().VarP(config.timeFormat, "time", "t", "time shown: iso|short")   // Choice
-	x509certsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish") // Choice
+	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
+	x509certsCmd.Flags().VarP(config.timeFormat, "time", "t", "time shown: iso|short")            // Choice
+	x509certsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")          // Choice
 	x509certsCmd.Flags().BoolVarP(&config.showCrl, "crl", "c", false, "crl shown")
 	x509certsCmd.Flags().BoolVarP(&config.showProvisioner, "provisioner", "p", false, "provisioner shown")
 	x509certsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid shown")
@@ -85,6 +83,8 @@ func exportX509Main(args []string) {
 		emitX509CertsWithRevocationsJson(x509CertsWithRevocations)
 	case "t":
 		emitX509Table(x509CertsWithRevocations)
+	case "m":
+		emitX509Markdown(x509CertsWithRevocations)
 	}
 
 }
@@ -253,95 +253,4 @@ func getX509CertificateProvisionerData(thisDb *badger.DB, thisCert *x509.Certifi
 		}
 	}
 	return info
-}
-
-/*
-emitX509Table prints result in the form of a table
-
-	'thisX509CertsWithRevocations' slice of structures describing the x509 certificates
-*/
-func emitX509Table(thisX509CertsWithRevocations []tX509CertificateAndRevocation) {
-	table := new(tabby.Table)
-
-	thisColumns := getX509Columns()
-
-	var thisHeader []string
-
-	/* Building slice of titles */
-
-	for _, thisColumn := range thisColumns {
-		if thisColumn.isShown(config) {
-
-			thisHeader = append(thisHeader,
-				color.New(thisColumn.titleColor).SprintFunc()(
-					thisColumn.title(),
-				),
-			)
-
-		}
-	}
-
-	/* Set the header */
-
-	if err := table.SetHeader(thisHeader); err != nil {
-		logError.Panic("Setting header failed. %w", err)
-	}
-
-	if loggingLevel >= 1 {
-		logInfo.Println("header set.")
-	}
-
-	/* Populate the table */
-
-	for _, x509CertAndRevocation := range thisX509CertsWithRevocations {
-
-		var thisRow []string
-		/* Building slice of columns within a single row*/
-		for _, thisColumn := range thisColumns {
-
-			if thisColumn.isShown(config) {
-				thisRow = append(thisRow,
-					color.New(thisColumn.contentColor(x509CertAndRevocation)).SprintFunc()(
-						thisColumn.contentSource(x509CertAndRevocation, config),
-					),
-				)
-			}
-		}
-
-		if err := table.AppendRow(thisRow); err != nil {
-			logError.Panic(err)
-		}
-		if loggingLevel >= 3 {
-			logInfo.Printf("row [%s] appended.", x509CertAndRevocation.X509Certificate.SerialNumber.String())
-		}
-
-	}
-
-	if loggingLevel >= 2 {
-		logInfo.Printf("%d rows appended.\n", len(thisX509CertsWithRevocations))
-	}
-
-	/* Emit the table */
-
-	if loggingLevel >= 3 {
-		table.Print(&tabby.Config{Spacing: "|", Padding: "."})
-	} else {
-		table.Print(nil)
-	}
-}
-
-/*
-emitX509CertsWithRevocationsJson prints result in the form of a json
-
-	'thisX509CertsWithRevocations' slice of structures describing the x509 certificates
-*/
-func emitX509CertsWithRevocationsJson(thisX509CertsWithRevocations []tX509CertificateAndRevocation) {
-	jsonInfo, err := json.MarshalIndent(thisX509CertsWithRevocations, "", "  ")
-	if err != nil {
-		logError.Panic(err)
-	}
-	fmt.Println(string(jsonInfo))
-	if loggingLevel >= 2 {
-		logInfo.Printf("%d records marshalled.\n", len(thisX509CertsWithRevocations))
-	}
 }

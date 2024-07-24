@@ -3,6 +3,7 @@ package cmd
 import (
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -30,7 +31,7 @@ func initLoggers() {
 initChoices sets up Config struct for 'limited choice' flag
 */
 func initChoices() {
-	config.emitFormat = newChoice([]string{"t", "j"}, "t")
+	config.emitFormat = newChoice([]string{"t", "j", "m"}, "t")
 	config.sortOrder = newChoice([]string{"s", "f"}, "f")
 	config.timeFormat = newChoice([]string{"i", "s"}, "i")
 }
@@ -89,4 +90,39 @@ func getThisValidityColor() map[string]color.Attribute {
 		EXPIRED_STR: color.FgHiBlack,
 		REVOKED_STR: color.FgHiYellow,
 	}
+}
+
+/*
+getThisAlignChar amps given alignment to appropriate markdown string to be used in header separator
+*/
+func getThisAlignChar() map[int]string {
+	return map[int]string{
+		ALIGN_LEFT:   `:-`,
+		ALIGN_CENTER: `:-:`,
+		ALIGN_RIGHT:  `-:`,
+	}
+}
+
+/*
+escapeMarkdown returns same string but safeguarderd against markdown interpretation
+
+	'text' text to be safeguarded
+*/
+func escapeMarkdown(text string) string {
+
+	// These characters need to be escaped in Markdown in order to appear as literal characters instead of performing some markdown functions
+	needEscape := []string{
+		`\`, "`", "*", "_",
+		"{", "}",
+		"[", "]",
+		"(", ")",
+		"#", ".", "!",
+		"+", "-",
+	}
+
+	for _, thisNeed := range needEscape {
+		text = strings.Replace(text, thisNeed, `\`+thisNeed, -1)
+	}
+
+	return text
 }
