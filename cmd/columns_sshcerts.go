@@ -12,7 +12,7 @@ type tSshColumn struct {
 	isShown         func(tConfig) bool
 	title           func() string
 	titleColor      color.Attribute
-	contentSource   func(tSshCertificateAndRevocation) string
+	contentSource   func(tSshCertificateAndRevocation, tConfig) string
 	contentColor    func(tSshCertificateAndRevocation) color.Attribute
 	contentAlignMD  int
 	contentEscapeMD bool
@@ -32,7 +32,9 @@ func getSshColumns() []tSshColumn {
 			title:      func() string { return "Serial number" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource:   func(x tSshCertificateAndRevocation) string { return strconv.FormatUint(x.SshCertificate.Serial, 10) },
+			contentSource: func(x tSshCertificateAndRevocation, _ tConfig) string {
+				return strconv.FormatUint(x.SshCertificate.Serial, 10)
+			},
 			contentColor:    func(_ tSshCertificateAndRevocation) color.Attribute { return color.FgWhite }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: false,
@@ -43,7 +45,9 @@ func getSshColumns() []tSshColumn {
 			title:      func() string { return "Type" },      // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x tSshCertificateAndRevocation) string { return getThisCertType()[int(x.SshCertificate.CertType)] },
+			contentSource: func(x tSshCertificateAndRevocation, _ tConfig) string {
+				return getThisCertType()[int(x.SshCertificate.CertType)]
+			},
 			contentColor: func(x tSshCertificateAndRevocation) color.Attribute {
 				return getThisCertTypeColor()[int(x.SshCertificate.CertType)]
 			}, // Dynamic color
@@ -56,7 +60,7 @@ func getSshColumns() []tSshColumn {
 			title:      func() string { return "Valid principals" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x tSshCertificateAndRevocation) string {
+			contentSource: func(x tSshCertificateAndRevocation, _ tConfig) string {
 				return strings.Join(x.SshCertificate.ValidPrincipals, ",")
 			},
 			contentColor:    func(_ tSshCertificateAndRevocation) color.Attribute { return color.FgHiWhite }, // Static color
@@ -69,7 +73,7 @@ func getSshColumns() []tSshColumn {
 			title:      func() string { return "Key ID" },             // Static title
 			titleColor: color.Bold,
 
-			contentSource:   func(x tSshCertificateAndRevocation) string { return x.SshCertificate.KeyId },
+			contentSource:   func(x tSshCertificateAndRevocation, _ tConfig) string { return x.SshCertificate.KeyId },
 			contentColor:    func(_ tSshCertificateAndRevocation) color.Attribute { return color.FgHiWhite }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
@@ -80,8 +84,12 @@ func getSshColumns() []tSshColumn {
 			title:      func() string { return "Start" },     // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x tSshCertificateAndRevocation) string {
-				return time.Unix(int64(x.SshCertificate.ValidAfter), 0).UTC().Format(time.DateOnly)
+			contentSource: func(x tSshCertificateAndRevocation, tc tConfig) string {
+				if tc.timeFormat.Value == "s" {
+					return time.Unix(int64(x.SshCertificate.ValidAfter), 0).UTC().Format(time.DateOnly)
+				} else {
+					return time.Unix(int64(x.SshCertificate.ValidAfter), 0).UTC().Format(time.RFC3339)
+				}
 			},
 			contentColor:    func(_ tSshCertificateAndRevocation) color.Attribute { return color.FgHiBlack }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
@@ -93,8 +101,12 @@ func getSshColumns() []tSshColumn {
 			title:      func() string { return "Finish" },    // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x tSshCertificateAndRevocation) string {
-				return time.Unix(int64(x.SshCertificate.ValidBefore), 0).UTC().Format(time.RFC3339)
+			contentSource: func(x tSshCertificateAndRevocation, tc tConfig) string {
+				if tc.timeFormat.Value == "s" {
+					return time.Unix(int64(x.SshCertificate.ValidBefore), 0).UTC().Format(time.DateOnly)
+				} else {
+					return time.Unix(int64(x.SshCertificate.ValidBefore), 0).UTC().Format(time.RFC3339)
+				}
 			},
 			contentColor:    func(_ tSshCertificateAndRevocation) color.Attribute { return color.FgHiBlack }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
@@ -106,9 +118,13 @@ func getSshColumns() []tSshColumn {
 			title:      func() string { return "Revoked at" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x tSshCertificateAndRevocation) string {
+			contentSource: func(x tSshCertificateAndRevocation, tc tConfig) string {
 				if len(x.SshRevocation.ProvisionerID) > 0 {
-					return x.SshRevocation.RevokedAt.UTC().Format(time.DateOnly)
+					if tc.timeFormat.Value == "s" {
+						return x.SshRevocation.RevokedAt.UTC().Format(time.DateOnly)
+					} else {
+						return x.SshRevocation.RevokedAt.UTC().Format(time.RFC3339)
+					}
 				} else {
 					return ""
 				}
@@ -123,7 +139,7 @@ func getSshColumns() []tSshColumn {
 			title:      func() string { return "Validity" },  // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x tSshCertificateAndRevocation) string {
+			contentSource: func(x tSshCertificateAndRevocation, _ tConfig) string {
 				return x.Validity
 			},
 			contentColor: func(x tSshCertificateAndRevocation) color.Attribute {
