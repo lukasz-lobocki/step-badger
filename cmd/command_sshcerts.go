@@ -40,6 +40,7 @@ func init() {
 	sshCertsCmd.Flags().SortFlags = false
 
 	sshCertsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
+	sshCertsCmd.Flags().VarP(config.timeFormat, "time", "t", "time shown: iso|short")   // Choice
 	sshCertsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish") // Choice
 	sshCertsCmd.Flags().BoolVarP(&config.showKeyId, "kid", "k", false, "Key ID shown")
 	sshCertsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid shown")
@@ -255,7 +256,7 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateAndRevocation) {
 			if thisColumn.isShown(config) {
 				thisRow = append(thisRow,
 					color.New(thisColumn.contentColor(sshCert)).SprintFunc()(
-						thisColumn.contentSource(sshCert),
+						thisColumn.contentSource(sshCert, config),
 					),
 				)
 			}

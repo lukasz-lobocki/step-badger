@@ -40,6 +40,7 @@ func init() {
 	x509certsCmd.Flags().SortFlags = false
 
 	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
+	x509certsCmd.Flags().VarP(config.timeFormat, "time", "t", "time shown: iso|short")   // Choice
 	x509certsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish") // Choice
 	x509certsCmd.Flags().BoolVarP(&config.showCrl, "crl", "c", false, "crl shown")
 	x509certsCmd.Flags().BoolVarP(&config.showProvisioner, "provisioner", "p", false, "provisioner shown")
@@ -301,7 +302,7 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateAndRevocation)
 			if thisColumn.isShown(config) {
 				thisRow = append(thisRow,
 					color.New(thisColumn.contentColor(x509CertAndRevocation)).SprintFunc()(
-						thisColumn.contentSource(x509CertAndRevocation),
+						thisColumn.contentSource(x509CertAndRevocation, config),
 					),
 				)
 			}
