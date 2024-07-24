@@ -16,13 +16,14 @@ step-badger x509Certs PATH [flags]
 
 ```text
 Flags:
-  -e, --emit {t|j}    emit format: table|json (default t)
-  -s, --sort {s|f}    sort order: start|finish (default f)
-  -c, --crl           crl shown
-  -p, --provisioner   provisioner shown
-  -v, --valid         valid shown (default true)
-  -r, --revoked       revoked shown (default true)
-  -x, --expired       expired shown
+  -e, --emit {t|j|m}   emit format: table|json|markdown (default t)
+  -t, --time {i|s}     time shown: iso|short (default i)
+  -s, --sort {s|f}     sort order: start|finish (default f)
+  -c, --crl            crl shown
+  -p, --provisioner    provisioner shown
+  -v, --valid          valid shown (default true)
+  -r, --revoked        revoked shown (default true)
+  -x, --expired        expired shown
 ```
 
 ### Example
@@ -39,12 +40,13 @@ step-badger sshCerts PATH [flags]
 
 ```text
 Flags:
-  -e, --emit {t|j}   emit format: table|json (default t)
-  -s, --sort {s|f}   sort order: start|finish (default f)
-  -k, --kid          Key ID shown
-  -v, --valid        valid shown (default true)
-  -r, --revoked      revoked shown (default true)
-  -x, --expired      expired shown
+  -e, --emit {t|j|m}   emit format: table|json|markdown (default t)
+  -t, --time {i|s}     time shown: iso|short (default i)
+  -s, --sort {s|f}     sort order: start|finish (default f)
+  -k, --kid            Key ID shown
+  -v, --valid          valid shown (default true)
+  -r, --revoked        revoked shown (default true)
+  -x, --expired        expired shown
 ```
 
 ### Example
