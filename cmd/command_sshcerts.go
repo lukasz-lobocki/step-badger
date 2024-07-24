@@ -9,8 +9,6 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v2"
-	"github.com/fatih/color"
-	"github.com/lukasz-lobocki/tabby"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 )
@@ -39,9 +37,9 @@ func init() {
 	//Do not sort flags
 	sshCertsCmd.Flags().SortFlags = false
 
-	sshCertsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json") // Choice
-	sshCertsCmd.Flags().VarP(config.timeFormat, "time", "t", "time shown: iso|short")   // Choice
-	sshCertsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish") // Choice
+	sshCertsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
+	sshCertsCmd.Flags().VarP(config.timeFormat, "time", "t", "time shown: iso|short")            // Choice
+	sshCertsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")          // Choice
 	sshCertsCmd.Flags().BoolVarP(&config.showKeyId, "kid", "k", false, "Key ID shown")
 	sshCertsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid shown")
 	sshCertsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", true, "revoked shown")
@@ -84,6 +82,8 @@ func exportSshMain(args []string) {
 		emitSshCertsJson(sshCerts)
 	case "t":
 		emitSshCertsTable(sshCerts)
+	case "m":
+		emitSshCertsMarkdown(sshCerts)
 	}
 }
 
@@ -210,92 +210,4 @@ func getSshRevocationData(thisDb *badger.DB, thisCert *ssh.Certificate) tRevoked
 		}
 	}
 	return data
-}
-
-/*
-emitSshCertsTable prints result in the form of a table.
-
-	'thisSshCerts' slice of structures describing the ssh certificates
-*/
-func emitSshCertsTable(thisSshCerts []tSshCertificateAndRevocation) {
-	table := new(tabby.Table)
-
-	thisColumns := getSshColumns()
-
-	var thisHeader []string
-	/* Building slice of titles */
-	for _, thisColumn := range thisColumns {
-		if thisColumn.isShown(config) {
-			thisHeader = append(thisHeader,
-				color.New(thisColumn.titleColor).SprintFunc()(
-					thisColumn.title(),
-				),
-			)
-		}
-	}
-
-	/* Set the header */
-
-	if err := table.SetHeader(thisHeader); err != nil {
-		logError.Panic("Setting header failed. %w", err)
-	}
-
-	if loggingLevel >= 1 {
-		logInfo.Println("header set.")
-	}
-
-	/* Populate the table */
-
-	for _, sshCert := range thisSshCerts {
-
-		var thisRow []string
-		/* Building slice of columns within a single row*/
-
-		for _, thisColumn := range thisColumns {
-
-			if thisColumn.isShown(config) {
-				thisRow = append(thisRow,
-					color.New(thisColumn.contentColor(sshCert)).SprintFunc()(
-						thisColumn.contentSource(sshCert, config),
-					),
-				)
-			}
-		}
-
-		if err := table.AppendRow(thisRow); err != nil {
-			logError.Panic(err)
-		}
-		if loggingLevel >= 3 {
-			logInfo.Printf("row [%s] appended.", strconv.FormatUint(sshCert.SshCertificate.Serial, 10))
-		}
-
-	}
-
-	if loggingLevel >= 2 {
-		logInfo.Printf("%d rows appended.\n", len(thisSshCerts))
-	}
-
-	/* Emit the table */
-
-	if loggingLevel >= 3 {
-		table.Print(&tabby.Config{Spacing: "|", Padding: "."})
-	} else {
-		table.Print(nil)
-	}
-}
-
-/*
-emitSshCertsJson prints result in the form of a json
-
-	'thisSshCerts' slice of structures describing the ssh certificates
-*/
-func emitSshCertsJson(thisSshCerts []tSshCertificateAndRevocation) {
-	jsonInfo, err := json.MarshalIndent(thisSshCerts, "", "  ")
-	if err != nil {
-		logError.Panic(err)
-	}
-	fmt.Println(string(jsonInfo))
-	if loggingLevel >= 2 {
-		logInfo.Printf("%d records marshalled.\n", len(thisSshCerts))
-	}
 }
