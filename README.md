@@ -17,13 +17,13 @@ step-badger x509Certs PATH [flags]
 ```text
 Flags:
   -e, --emit {t|j|m|o}   emit format: table|json|markdown|openssl (default t)
-  -t, --time {i|s}     time shown: iso|short (default i)
-  -s, --sort {s|f}     sort order: start|finish (default f)
-  -c, --crl            crl shown
-  -p, --provisioner    provisioner shown
-  -v, --valid          valid shown (default true)
-  -r, --revoked        revoked shown (default true)
-  -x, --expired        expired shown
+  -t, --time {i|s}       time shown: iso|short (default i)
+  -s, --sort {s|f}       sort order: start|finish (default f)
+  -c, --crl              crl shown
+  -p, --provisioner      provisioner shown
+  -v, --valid            valid shown (default true)
+  -r, --revoked          revoked shown (default true)
+  -x, --expired          expired shown
 ```
 
 ### Example
