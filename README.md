@@ -69,7 +69,7 @@ step-badger dbTable PATH TABLE
 
 ## Info
 
-See [this](https://smallstep.com/docs/step-ca/certificate-authority-server-production/#enable-active-revocation-on-your-intermediate-ca)
+See [this](https://smallstep.com/docs/step-ca/certificate-authority-server-production/#enable-active-revocation-on-your-intermediate-ca).
 
 ## Build
 
