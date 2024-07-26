@@ -15,7 +15,7 @@ emitSshCertsTable prints result in the form of a table.
 
 	'thisSshCerts' slice of structures describing the ssh certificates
 */
-func emitSshCertsTable(thisSshCerts []tSshCertificateAndRevocation) {
+func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 	table := new(tabby.Table)
 
 	thisColumns := getSshColumns()
@@ -87,7 +87,7 @@ emitSshCertsJson prints result in the form of a json
 
 	'thisSshCerts' slice of structures describing the ssh certificates
 */
-func emitSshCertsJson(thisSshCerts []tSshCertificateAndRevocation) {
+func emitSshCertsJson(thisSshCerts []tSshCertificateWithRevocation) {
 	jsonInfo, err := json.MarshalIndent(thisSshCerts, "", "  ")
 	if err != nil {
 		logError.Panic(err)
@@ -103,7 +103,7 @@ emitX509Markdown prints result in the form of markdown table
 
 	'thisSshCerts' slice of structures describing the certs.
 */
-func emitSshCertsMarkdown(thisSshCertificatesAndRevocations []tSshCertificateAndRevocation) {
+func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWithRevocation) {
 	thisColumns := getSshColumns()
 
 	var thisHeader []string
@@ -141,7 +141,7 @@ func emitSshCertsMarkdown(thisSshCertificatesAndRevocations []tSshCertificateAnd
 
 	/* Iterating through repos */
 
-	for _, thisSshCertificatesAndRevocation := range thisSshCertificatesAndRevocations {
+	for _, thisSshCertificateWithRevocation := range thisSshCertificatesWithRevocations {
 
 		var thisRow []string
 
@@ -150,9 +150,9 @@ func emitSshCertsMarkdown(thisSshCertificatesAndRevocations []tSshCertificateAnd
 		for _, thisColumn := range thisColumns {
 			if thisColumn.isShown(config) {
 				if thisColumn.contentEscapeMD {
-					thisRow = append(thisRow, escapeMarkdown(thisColumn.contentSource(thisSshCertificatesAndRevocation, config)))
+					thisRow = append(thisRow, escapeMarkdown(thisColumn.contentSource(thisSshCertificateWithRevocation, config)))
 				} else {
-					thisRow = append(thisRow, thisColumn.contentSource(thisSshCertificatesAndRevocation, config))
+					thisRow = append(thisRow, thisColumn.contentSource(thisSshCertificateWithRevocation, config))
 				}
 			}
 		}
@@ -163,6 +163,6 @@ func emitSshCertsMarkdown(thisSshCertificatesAndRevocations []tSshCertificateAnd
 	}
 
 	if loggingLevel >= 2 {
-		logInfo.Printf("%d rows printed.\n", len(thisSshCertificatesAndRevocations))
+		logInfo.Printf("%d rows printed.\n", len(thisSshCertificatesWithRevocations))
 	}
 }

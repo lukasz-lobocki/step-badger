@@ -37,9 +37,9 @@ func init() {
 	//Do not sort flags
 	sshCertsCmd.Flags().SortFlags = false
 
-	sshCertsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
-	sshCertsCmd.Flags().VarP(config.timeFormat, "time", "t", "time shown: iso|short")            // Choice
-	sshCertsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")          // Choice
+	sshCertsCmd.Flags().VarP(config.emitSshFormat, "emit", "e", "emit format: table|json|markdown") // Choice
+	sshCertsCmd.Flags().VarP(config.timeFormat, "time", "t", "time shown: iso|short")               // Choice
+	sshCertsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")             // Choice
 	sshCertsCmd.Flags().BoolVarP(&config.showKeyId, "kid", "k", false, "Key ID shown")
 	sshCertsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid shown")
 	sshCertsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", true, "revoked shown")
@@ -77,7 +77,7 @@ func exportSshMain(args []string) {
 	}
 
 	// Output.
-	switch thisFormat := config.emitFormat.Value; thisFormat {
+	switch thisFormat := config.emitSshFormat.Value; thisFormat {
 	case "j":
 		emitSshCertsJson(sshCerts)
 	case "t":
@@ -92,9 +92,9 @@ getSshCerts returns struct with ssh certificates.
 
 	'thisDb' badger database
 */
-func getSshCerts(thisDb *badger.DB) []tSshCertificateAndRevocation {
+func getSshCerts(thisDb *badger.DB) []tSshCertificateWithRevocation {
 	var (
-		sshCertsWithRevocations []tSshCertificateAndRevocation = []tSshCertificateAndRevocation{}
+		sshCertsWithRevocations []tSshCertificateWithRevocation = []tSshCertificateWithRevocation{}
 	)
 
 	prefix, err := badgerEncode([]byte("ssh_certs"))
@@ -110,7 +110,7 @@ func getSshCerts(thisDb *badger.DB) []tSshCertificateAndRevocation {
 
 	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
 		var (
-			sshCertsWithRevocation tSshCertificateAndRevocation = tSshCertificateAndRevocation{}
+			sshCertsWithRevocation tSshCertificateWithRevocation = tSshCertificateWithRevocation{}
 		)
 
 		sshCert, err := getSshCertificate(iter)

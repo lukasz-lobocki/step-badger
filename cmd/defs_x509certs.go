@@ -7,7 +7,7 @@ import (
 /*
 Combined information of certificate, revocation and provisioner.
 */
-type tX509CertificateAndRevocation struct {
+type tX509CertificateWithRevocation struct {
 	X509Certificate x509.Certificate            `json:"Certificate"`
 	Validity        string                      `json:"Validity"`
 	X509Revocation  tRevokedCertificate         `json:"Revocation,omitempty"`

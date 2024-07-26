@@ -37,9 +37,9 @@ func init() {
 	//Do not sort flags
 	x509certsCmd.Flags().SortFlags = false
 
-	x509certsCmd.Flags().VarP(config.emitFormat, "emit", "e", "emit format: table|json|markdown") // Choice
-	x509certsCmd.Flags().VarP(config.timeFormat, "time", "t", "time shown: iso|short")            // Choice
-	x509certsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")          // Choice
+	x509certsCmd.Flags().VarP(config.emitX509Format, "emit", "e", "emit format: table|json|markdown|openssl") // Choice
+	x509certsCmd.Flags().VarP(config.timeFormat, "time", "t", "time shown: iso|short")                        // Choice
+	x509certsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")                      // Choice
 	x509certsCmd.Flags().BoolVarP(&config.showCrl, "crl", "c", false, "crl shown")
 	x509certsCmd.Flags().BoolVarP(&config.showProvisioner, "provisioner", "p", false, "provisioner shown")
 	x509certsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid shown")
@@ -78,13 +78,15 @@ func exportX509Main(args []string) {
 	}
 
 	// Output.
-	switch thisFormat := config.emitFormat.Value; thisFormat {
+	switch thisFormat := config.emitX509Format.Value; thisFormat {
 	case "j":
 		emitX509CertsWithRevocationsJson(x509CertsWithRevocations)
 	case "t":
 		emitX509Table(x509CertsWithRevocations)
 	case "m":
 		emitX509Markdown(x509CertsWithRevocations)
+	case "o":
+		emitOpenSsl(x509CertsWithRevocations)
 	}
 
 }
@@ -94,9 +96,9 @@ getX509Certs returns struct with x509 certificates.
 
 	'thisDb' badger database
 */
-func getX509Certs(thisDb *badger.DB) []tX509CertificateAndRevocation {
+func getX509Certs(thisDb *badger.DB) []tX509CertificateWithRevocation {
 	var (
-		x509CertsWithRevocations []tX509CertificateAndRevocation = []tX509CertificateAndRevocation{}
+		x509CertsWithRevocations []tX509CertificateWithRevocation = []tX509CertificateWithRevocation{}
 	)
 
 	prefix, err := badgerEncode([]byte("x509_certs"))
@@ -112,7 +114,7 @@ func getX509Certs(thisDb *badger.DB) []tX509CertificateAndRevocation {
 
 	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
 		var (
-			x509CertAndRevocation tX509CertificateAndRevocation = tX509CertificateAndRevocation{}
+			x509CertWithRevocation tX509CertificateWithRevocation = tX509CertificateWithRevocation{}
 		)
 
 		x509Cert, err := getX509Certificate(iter)
@@ -121,29 +123,29 @@ func getX509Certs(thisDb *badger.DB) []tX509CertificateAndRevocation {
 		}
 
 		// Populate main info of the certificate.
-		x509CertAndRevocation.X509Certificate = x509Cert
+		x509CertWithRevocation.X509Certificate = x509Cert
 
 		// Populate revocation info of the certificate.
-		x509CertAndRevocation.X509Revocation = getX509RevocationData(thisDb, &x509Cert)
+		x509CertWithRevocation.X509Revocation = getX509RevocationData(thisDb, &x509Cert)
 
 		// Populate provisioner sub-info of the certificate.
-		x509CertAndRevocation.X509Provisioner = getX509CertificateProvisionerData(thisDb, &x509Cert).Provisioner
+		x509CertWithRevocation.X509Provisioner = getX509CertificateProvisionerData(thisDb, &x509Cert).Provisioner
 
 		// Populate validity info of the certificate.
-		if len(x509CertAndRevocation.X509Revocation.ProvisionerID) > 0 && time.Now().After(x509CertAndRevocation.X509Revocation.RevokedAt) {
-			x509CertAndRevocation.Validity = REVOKED_STR
+		if len(x509CertWithRevocation.X509Revocation.ProvisionerID) > 0 && time.Now().After(x509CertWithRevocation.X509Revocation.RevokedAt) {
+			x509CertWithRevocation.Validity = REVOKED_STR
 		} else {
-			if time.Now().After(x509CertAndRevocation.X509Certificate.NotAfter) {
-				x509CertAndRevocation.Validity = EXPIRED_STR
+			if time.Now().After(x509CertWithRevocation.X509Certificate.NotAfter) {
+				x509CertWithRevocation.Validity = EXPIRED_STR
 			} else {
-				x509CertAndRevocation.Validity = VALID_STR
+				x509CertWithRevocation.Validity = VALID_STR
 			}
 		}
 
-		if (config.showExpired && x509CertAndRevocation.Validity == EXPIRED_STR) ||
-			(config.showRevoked && x509CertAndRevocation.Validity == REVOKED_STR) ||
-			(config.showValid && x509CertAndRevocation.Validity == VALID_STR) {
-			x509CertsWithRevocations = append(x509CertsWithRevocations, x509CertAndRevocation)
+		if (config.showExpired && x509CertWithRevocation.Validity == EXPIRED_STR) ||
+			(config.showRevoked && x509CertWithRevocation.Validity == REVOKED_STR) ||
+			(config.showValid && x509CertWithRevocation.Validity == VALID_STR) {
+			x509CertsWithRevocations = append(x509CertsWithRevocations, x509CertWithRevocation)
 		}
 	}
 	return x509CertsWithRevocations

@@ -11,8 +11,8 @@ type tX509Column struct {
 	isShown         func(tConfig) bool
 	title           func() string
 	titleColor      color.Attribute
-	contentSource   func(tX509CertificateAndRevocation, tConfig) string
-	contentColor    func(tX509CertificateAndRevocation) color.Attribute
+	contentSource   func(tX509CertificateWithRevocation, tConfig) string
+	contentColor    func(tX509CertificateWithRevocation) color.Attribute
 	contentAlignMD  int
 	contentEscapeMD bool
 }
@@ -31,10 +31,10 @@ func getX509Columns() []tX509Column {
 			title:      func() string { return "Serial number" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x tX509CertificateAndRevocation, _ tConfig) string {
+			contentSource: func(x tX509CertificateWithRevocation, _ tConfig) string {
 				return x.X509Certificate.SerialNumber.String()
 			},
-			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgWhite }, // Static color
+			contentColor:    func(_ tX509CertificateWithRevocation) color.Attribute { return color.FgWhite }, // Static color
 			contentAlignMD:  ALIGN_RIGHT,
 			contentEscapeMD: false,
 		},
@@ -44,8 +44,8 @@ func getX509Columns() []tX509Column {
 			title:      func() string { return "Subject" },   // Static title
 			titleColor: color.Bold,
 
-			contentSource:   func(x tX509CertificateAndRevocation, _ tConfig) string { return x.X509Certificate.Subject.String() },
-			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgHiWhite }, // Static color
+			contentSource:   func(x tX509CertificateWithRevocation, _ tConfig) string { return x.X509Certificate.Subject.String() },
+			contentColor:    func(_ tX509CertificateWithRevocation) color.Attribute { return color.FgHiWhite }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
@@ -55,10 +55,10 @@ func getX509Columns() []tX509Column {
 			title:      func() string { return "CRLDistributionPoints" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x tX509CertificateAndRevocation, _ tConfig) string {
+			contentSource: func(x tX509CertificateWithRevocation, _ tConfig) string {
 				return strings.Join(x.X509Certificate.CRLDistributionPoints, ", ")
 			},
-			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgWhite }, // Static color
+			contentColor:    func(_ tX509CertificateWithRevocation) color.Attribute { return color.FgWhite }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
@@ -68,10 +68,10 @@ func getX509Columns() []tX509Column {
 			title:      func() string { return "Provisioner" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x tX509CertificateAndRevocation, _ tConfig) string {
+			contentSource: func(x tX509CertificateWithRevocation, _ tConfig) string {
 				return (x.X509Provisioner.Type + " " + x.X509Provisioner.Name[:min(len(x.X509Provisioner.Name), 6)])
 			},
-			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgWhite }, // Static color
+			contentColor:    func(_ tX509CertificateWithRevocation) color.Attribute { return color.FgWhite }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
@@ -81,14 +81,14 @@ func getX509Columns() []tX509Column {
 			title:      func() string { return "Start" },     // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x tX509CertificateAndRevocation, tc tConfig) string {
+			contentSource: func(x tX509CertificateWithRevocation, tc tConfig) string {
 				if tc.timeFormat.Value == "s" {
 					return x.X509Certificate.NotBefore.UTC().Format(time.DateOnly)
 				} else {
 					return x.X509Certificate.NotBefore.UTC().Format(time.RFC3339)
 				}
 			},
-			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgHiBlack }, // Static color
+			contentColor:    func(_ tX509CertificateWithRevocation) color.Attribute { return color.FgHiBlack }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
@@ -98,14 +98,14 @@ func getX509Columns() []tX509Column {
 			title:      func() string { return "Finish" },    // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x tX509CertificateAndRevocation, tc tConfig) string {
+			contentSource: func(x tX509CertificateWithRevocation, tc tConfig) string {
 				if tc.timeFormat.Value == "s" {
 					return x.X509Certificate.NotAfter.UTC().Format(time.DateOnly)
 				} else {
 					return x.X509Certificate.NotAfter.UTC().Format(time.RFC3339)
 				}
 			},
-			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgHiBlack }, // Static color
+			contentColor:    func(_ tX509CertificateWithRevocation) color.Attribute { return color.FgHiBlack }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
@@ -115,7 +115,7 @@ func getX509Columns() []tX509Column {
 			title:      func() string { return "Revoked at" }, // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x tX509CertificateAndRevocation, tc tConfig) string {
+			contentSource: func(x tX509CertificateWithRevocation, tc tConfig) string {
 				if len(x.X509Revocation.ProvisionerID) > 0 {
 					if tc.timeFormat.Value == "s" {
 						return x.X509Revocation.RevokedAt.UTC().Format(time.DateOnly)
@@ -126,7 +126,7 @@ func getX509Columns() []tX509Column {
 					return ""
 				}
 			},
-			contentColor:    func(_ tX509CertificateAndRevocation) color.Attribute { return color.FgHiBlack }, // Static color
+			contentColor:    func(_ tX509CertificateWithRevocation) color.Attribute { return color.FgHiBlack }, // Static color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
@@ -136,10 +136,10 @@ func getX509Columns() []tX509Column {
 			title:      func() string { return "Validity" },  // Static title
 			titleColor: color.Bold,
 
-			contentSource: func(x tX509CertificateAndRevocation, _ tConfig) string {
+			contentSource: func(x tX509CertificateWithRevocation, _ tConfig) string {
 				return x.Validity
 			},
-			contentColor: func(x tX509CertificateAndRevocation) color.Attribute {
+			contentColor: func(x tX509CertificateWithRevocation) color.Attribute {
 				return getThisValidityColor()[x.Validity]
 			}, // Dynamic color
 			contentAlignMD:  ALIGN_LEFT,
