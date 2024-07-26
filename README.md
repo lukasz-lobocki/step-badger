@@ -67,6 +67,10 @@ step-badger dbTable PATH TABLE
 
 ![alt text](samples/out-dbtable.png)
 
+## Info
+
+See [this](https://smallstep.com/docs/step-ca/certificate-authority-server-production/#enable-active-revocation-on-your-intermediate-ca).
+
 ## Build
 
 See [BUILD.md](BUILD.md) file.

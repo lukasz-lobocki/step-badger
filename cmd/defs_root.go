@@ -31,7 +31,8 @@ func initLoggers() {
 initChoices sets up Config struct for 'limited choice' flag
 */
 func initChoices() {
-	config.emitFormat = newChoice([]string{"t", "j", "m"}, "t")
+	config.emitSshFormat = newChoice([]string{"t", "j", "m"}, "t")
+	config.emitX509Format = newChoice([]string{"t", "j", "m", "o"}, "t")
 	config.sortOrder = newChoice([]string{"s", "f"}, "f")
 	config.timeFormat = newChoice([]string{"i", "s"}, "i")
 }
@@ -40,7 +41,8 @@ func initChoices() {
 Configuration structure
 */
 type tConfig struct {
-	emitFormat      *tChoice
+	emitSshFormat   *tChoice
+	emitX509Format  *tChoice
 	showCrl         bool
 	showKeyId       bool
 	sortOrder       *tChoice

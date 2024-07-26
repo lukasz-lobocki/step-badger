@@ -3,7 +3,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/lukasz-lobocki/tabby"
@@ -14,7 +16,7 @@ emitX509Table prints result in the form of a table
 
 	'thisX509CertsWithRevocations' slice of structures describing the x509 certificates
 */
-func emitX509Table(thisX509CertsWithRevocations []tX509CertificateAndRevocation) {
+func emitX509Table(thisX509CertsWithRevocations []tX509CertificateWithRevocation) {
 	table := new(tabby.Table)
 
 	thisColumns := getX509Columns()
@@ -47,7 +49,7 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateAndRevocation)
 
 	/* Populate the table */
 
-	for _, x509CertAndRevocation := range thisX509CertsWithRevocations {
+	for _, x509CertWithRevocation := range thisX509CertsWithRevocations {
 
 		var thisRow []string
 		/* Building slice of columns within a single row*/
@@ -55,8 +57,8 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateAndRevocation)
 
 			if thisColumn.isShown(config) {
 				thisRow = append(thisRow,
-					color.New(thisColumn.contentColor(x509CertAndRevocation)).SprintFunc()(
-						thisColumn.contentSource(x509CertAndRevocation, config),
+					color.New(thisColumn.contentColor(x509CertWithRevocation)).SprintFunc()(
+						thisColumn.contentSource(x509CertWithRevocation, config),
 					),
 				)
 			}
@@ -66,7 +68,7 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateAndRevocation)
 			logError.Panic(err)
 		}
 		if loggingLevel >= 3 {
-			logInfo.Printf("row [%s] appended.", x509CertAndRevocation.X509Certificate.SerialNumber.String())
+			logInfo.Printf("row [%s] appended.", x509CertWithRevocation.X509Certificate.SerialNumber.String())
 		}
 
 	}
@@ -89,7 +91,7 @@ emitX509CertsWithRevocationsJson prints result in the form of a json
 
 	'thisX509CertsWithRevocations' slice of structures describing the x509 certificates
 */
-func emitX509CertsWithRevocationsJson(thisX509CertsWithRevocations []tX509CertificateAndRevocation) {
+func emitX509CertsWithRevocationsJson(thisX509CertsWithRevocations []tX509CertificateWithRevocation) {
 	jsonInfo, err := json.MarshalIndent(thisX509CertsWithRevocations, "", "  ")
 	if err != nil {
 		logError.Panic(err)
@@ -103,9 +105,9 @@ func emitX509CertsWithRevocationsJson(thisX509CertsWithRevocations []tX509Certif
 /*
 emitX509Markdown prints result in the form of markdown table
 
-	'thisX509CertsWithRevocations' slice of structures certs
+	'thisX509CertsWithRevocations' slice of certs
 */
-func emitX509Markdown(thisX509CertsAndRevocations []tX509CertificateAndRevocation) {
+func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateWithRevocation) {
 	thisColumns := getX509Columns()
 
 	var thisHeader []string
@@ -143,7 +145,7 @@ func emitX509Markdown(thisX509CertsAndRevocations []tX509CertificateAndRevocatio
 
 	/* Iterating through repos */
 
-	for _, thisX509CertsAndRevocation := range thisX509CertsAndRevocations {
+	for _, thisX509CertWithRevocation := range thisX509CertsWithRevocations {
 
 		var thisRow []string
 
@@ -152,9 +154,9 @@ func emitX509Markdown(thisX509CertsAndRevocations []tX509CertificateAndRevocatio
 		for _, thisColumn := range thisColumns {
 			if thisColumn.isShown(config) {
 				if thisColumn.contentEscapeMD {
-					thisRow = append(thisRow, escapeMarkdown(thisColumn.contentSource(thisX509CertsAndRevocation, config)))
+					thisRow = append(thisRow, escapeMarkdown(thisColumn.contentSource(thisX509CertWithRevocation, config)))
 				} else {
-					thisRow = append(thisRow, thisColumn.contentSource(thisX509CertsAndRevocation, config))
+					thisRow = append(thisRow, thisColumn.contentSource(thisX509CertWithRevocation, config))
 				}
 			}
 		}
@@ -165,6 +167,35 @@ func emitX509Markdown(thisX509CertsAndRevocations []tX509CertificateAndRevocatio
 	}
 
 	if loggingLevel >= 2 {
-		logInfo.Printf("%d rows printed.\n", len(thisX509CertsAndRevocations))
+		logInfo.Printf("%d rows printed.\n", len(thisX509CertsWithRevocations))
+	}
+}
+
+/*
+emitOpenSsl prints result in the form of markdown table.
+
+	'thisX509CertsWithRevocations' slice of certs
+*/
+func emitOpenSsl(thisX509CertsWithRevocations []tX509CertificateWithRevocation) {
+	for _, thisX509CertWithRevocation := range thisX509CertsWithRevocations {
+
+		var thisRevokedAt string
+		if len(thisX509CertWithRevocation.X509Revocation.ProvisionerID) > 0 {
+			thisRevokedAt = regexp.MustCompile(`[-T:]+`).
+				ReplaceAllString(thisX509CertWithRevocation.X509Revocation.RevokedAt.UTC().
+					Format(time.RFC3339), "")[2:]
+		} else {
+			thisRevokedAt = ""
+		}
+
+		fmt.Printf("%s\t%s\t%s\t%X\t%s\t%s\n",
+			thisX509CertWithRevocation.Validity[0:1],
+			regexp.MustCompile(`[-T:]+`).
+				ReplaceAllString(thisX509CertWithRevocation.X509Certificate.NotAfter.UTC().
+					Format(time.RFC3339), "")[2:],
+			thisRevokedAt,
+			thisX509CertWithRevocation.X509Certificate.SerialNumber,
+			"unknown",
+			thisX509CertWithRevocation.X509Certificate.Subject)
 	}
 }
