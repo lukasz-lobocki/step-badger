@@ -16,7 +16,7 @@ step-badger x509Certs PATH [flags]
 
 ```text
 Flags:
-  -e, --emit {t|j|m}   emit format: table|json|markdown|openssl (default t)
+  -e, --emit {t|j|m|o}   emit format: table|json|markdown|openssl (default t)
   -t, --time {i|s}     time shown: iso|short (default i)
   -s, --sort {s|f}     sort order: start|finish (default f)
   -c, --crl            crl shown
