@@ -83,6 +83,6 @@ All components used retain their original licenses.
 
 ## Credits
 
-Inspired by [maraino](https://gist.github.com/maraino/4dcb64cb051b17ef6d421892cb4e55a8#file-listcerts-go).
+Inspired by [github.com/maraino](https://gist.github.com/maraino/4dcb64cb051b17ef6d421892cb4e55a8#file-listcerts-go).
 
 `step-badger` was created with [cookiecutter](https://cookiecutter.readthedocs.io/en/latest/) and [template](https://github.com/lukasz-lobocki/go-cookiecutter).
