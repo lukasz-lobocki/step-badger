@@ -40,8 +40,14 @@ func init() {
 	x509certsCmd.Flags().VarP(config.emitX509Format, "emit", "e", "emit format: table|json|markdown|openssl") // Choice
 	x509certsCmd.Flags().VarP(config.timeFormat, "time", "t", "time format: iso|short")                       // Choice
 	x509certsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")                      // Choice
+
+	x509certsCmd.Flags().BoolVarP(&config.showDNSNames, "dnsnames", "d", false, "DNSNames column shown")
+	x509certsCmd.Flags().BoolVarP(&config.showEmailAddresses, "emailaddresses", "m", false, "EmailAddresses column shown")
+	x509certsCmd.Flags().BoolVarP(&config.showIPAddresses, "ipaddresses", "i", false, "IPAddresses column shown")
+	x509certsCmd.Flags().BoolVarP(&config.showURIs, "uris", "u", false, "URIs column shown")
 	x509certsCmd.Flags().BoolVarP(&config.showCrl, "crl", "c", false, "crl column shown")
 	x509certsCmd.Flags().BoolVarP(&config.showProvisioner, "provisioner", "p", false, "provisioner column shown")
+
 	x509certsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid certificates shown")
 	x509certsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", true, "revoked certificates shown")
 	x509certsCmd.Flags().BoolVarP(&config.showExpired, "expired", "x", false, "expired certificates shown")

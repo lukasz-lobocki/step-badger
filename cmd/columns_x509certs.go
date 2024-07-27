@@ -51,6 +51,66 @@ func getX509Columns() []tX509Column {
 		},
 
 		tX509Column{
+			isShown:    func(tc tConfig) bool { return tc.showDNSNames },
+			title:      func() string { return "DNSNames" }, // Static title
+			titleColor: color.Bold,
+
+			contentSource: func(x tX509CertificateWithRevocation, _ tConfig) string {
+				return strings.Join(x.X509Certificate.DNSNames, ", ")
+			},
+			contentColor:    func(_ tX509CertificateWithRevocation) color.Attribute { return color.FgWhite }, // Static color
+			contentAlignMD:  ALIGN_LEFT,
+			contentEscapeMD: true,
+		},
+
+		tX509Column{
+			isShown:    func(tc tConfig) bool { return tc.showEmailAddresses },
+			title:      func() string { return "EmailAddresses" }, // Static title
+			titleColor: color.Bold,
+
+			contentSource: func(x tX509CertificateWithRevocation, _ tConfig) string {
+				return strings.Join(x.X509Certificate.EmailAddresses, ", ")
+			},
+			contentColor:    func(_ tX509CertificateWithRevocation) color.Attribute { return color.FgWhite }, // Static color
+			contentAlignMD:  ALIGN_LEFT,
+			contentEscapeMD: true,
+		},
+
+		tX509Column{
+			isShown:    func(tc tConfig) bool { return tc.showIPAddresses },
+			title:      func() string { return "IPAddresses" }, // Static title
+			titleColor: color.Bold,
+
+			contentSource: func(x tX509CertificateWithRevocation, _ tConfig) string {
+				var thisIPAddresses []string
+				for _, thisIPAddress := range x.X509Certificate.IPAddresses {
+					thisIPAddresses = append(thisIPAddresses, thisIPAddress.String())
+				}
+				return strings.Join(thisIPAddresses, ", ")
+			},
+			contentColor:    func(_ tX509CertificateWithRevocation) color.Attribute { return color.FgWhite }, // Static color
+			contentAlignMD:  ALIGN_LEFT,
+			contentEscapeMD: true,
+		},
+
+		tX509Column{
+			isShown:    func(tc tConfig) bool { return tc.showURIs },
+			title:      func() string { return "URIs" }, // Static title
+			titleColor: color.Bold,
+
+			contentSource: func(x tX509CertificateWithRevocation, _ tConfig) string {
+				var thisUris []string
+				for _, thisUri := range x.X509Certificate.URIs {
+					thisUris = append(thisUris, thisUri.String())
+				}
+				return strings.Join(thisUris, ", ")
+			},
+			contentColor:    func(_ tX509CertificateWithRevocation) color.Attribute { return color.FgWhite }, // Static color
+			contentAlignMD:  ALIGN_LEFT,
+			contentEscapeMD: true,
+		},
+
+		tX509Column{
 			isShown:    func(tc tConfig) bool { return tc.showCrl },
 			title:      func() string { return "CRLDistributionPoints" }, // Static title
 			titleColor: color.Bold,
