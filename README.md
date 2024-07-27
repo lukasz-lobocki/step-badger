@@ -17,13 +17,17 @@ step-badger x509Certs PATH [flags]
 ```text
 Flags:
   -e, --emit {t|j|m|o}   emit format: table|json|markdown|openssl (default t)
-  -t, --time {i|s}       time shown: iso|short (default i)
+  -t, --time {i|s}       time format: iso|short (default i)
   -s, --sort {s|f}       sort order: start|finish (default f)
-  -c, --crl              crl shown
-  -p, --provisioner      provisioner shown
-  -v, --valid            valid shown (default true)
-  -r, --revoked          revoked shown (default true)
-  -x, --expired          expired shown
+  -d, --dnsnames         DNSNames column shown
+  -m, --emailaddresses   EmailAddresses column shown
+  -i, --ipaddresses      IPAddresses column shown
+  -u, --uris             URIs column shown
+  -c, --crl              crl column shown
+  -p, --provisioner      provisioner column shown
+  -v, --valid            valid certificates shown (default true)
+  -r, --revoked          revoked certificates shown (default true)
+  -x, --expired          expired certificates shown
 ```
 
 ### Example
@@ -41,12 +45,12 @@ step-badger sshCerts PATH [flags]
 ```text
 Flags:
   -e, --emit {t|j|m}   emit format: table|json|markdown (default t)
-  -t, --time {i|s}     time shown: iso|short (default i)
+  -t, --time {i|s}     time format: iso|short (default i)
   -s, --sort {s|f}     sort order: start|finish (default f)
-  -k, --kid            Key ID shown
-  -v, --valid          valid shown (default true)
-  -r, --revoked        revoked shown (default true)
-  -x, --expired        expired shown
+  -k, --kid            Key ID column shown
+  -v, --valid          valid certificates shown (default true)
+  -r, --revoked        revoked certificates shown (default true)
+  -x, --expired        expired certificates shown
 ```
 
 ### Example

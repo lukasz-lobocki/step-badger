@@ -41,16 +41,20 @@ func initChoices() {
 Configuration structure
 */
 type tConfig struct {
-	emitSshFormat   *tChoice
-	emitX509Format  *tChoice
-	showCrl         bool
-	showKeyId       bool
-	sortOrder       *tChoice
-	showValid       bool
-	showExpired     bool
-	showRevoked     bool
-	showProvisioner bool
-	timeFormat      *tChoice
+	emitSshFormat      *tChoice
+	emitX509Format     *tChoice
+	showCrl            bool
+	showKeyId          bool
+	sortOrder          *tChoice
+	showValid          bool
+	showExpired        bool
+	showRevoked        bool
+	showProvisioner    bool
+	timeFormat         *tChoice
+	showDNSNames       bool
+	showEmailAddresses bool
+	showIPAddresses    bool
+	showURIs           bool
 }
 
 /*
@@ -106,7 +110,7 @@ func getThisAlignChar() map[int]string {
 }
 
 /*
-escapeMarkdown returns same string but safeguarderd against markdown interpretation
+escapeMarkdown returns same string but safeguarded against markdown interpretation
 
 	'text' text to be safeguarded
 */
