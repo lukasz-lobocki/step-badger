@@ -4,7 +4,7 @@ This tool has 3 features:
 
 - display issued [x509 certificates](#step-badger-x509certs) from step-ca badger database.
 - display issued [ssh certificates](#step-badger-sshcerts) from step-ca badger database.
-- display [content of a given data prefix](#step-badger-dbtable) from step-ca badger database.
+- display [content of a given data bucket](#step-badger-dbtable) from step-ca badger database.
 
 ## step-badger x509Certs
 
@@ -59,13 +59,13 @@ Flags:
 
 ## step-badger dbTable
 
-Export data of a given table.
+Export data of a given bucket.
 
 ```bash
-step-badger dbTable PATH TABLE
+step-badger dbTable PATH BUCKET
 ```
 
-> See [this](https://github.com/smallstep/certificates/blob/077f688e2d781fa12fd3d702cfab5b6f989a4391/db/db.go#L18) for table names.
+> See [this](https://github.com/smallstep/certificates/blob/077f688e2d781fa12fd3d702cfab5b6f989a4391/db/db.go#L18) for bucket names.
 
 ### Example
 

@@ -87,14 +87,14 @@ func init() {
 }
 
 /*
-getItem function returns data item (if exists for the prefix) for the given key.
+getItem function returns data item (if exists for the bucket) for the given key.
 
 	'thisDb' Badger database.
-	'thisPrefix' Badger prefix.
+	'thisBucket' Badger bucket.
 	'thisKey' Badger key.
 */
-func getItem(thisDb *badger.DB, thisPrefix []byte, thisKey []byte) (*badger.Item, error) {
-	badgerKey, _ := toBadgerKey(thisPrefix, thisKey)
+func getItem(thisDb *badger.DB, thisBucket []byte, thisKey []byte) (*badger.Item, error) {
+	badgerKey, _ := toBadgerKey(thisBucket, thisKey)
 
 	txn := thisDb.NewTransaction(false)
 	defer txn.Discard()
