@@ -73,8 +73,7 @@ func retrieveDbTableData(thisDb *badger.DB, thisBucket []byte) []tDbRecord {
 		logInfo.Printf("Encoded table prefix: %s", string(thisPrefix))
 	}
 
-	opts := badger.DefaultIteratorOptions
-	iter := txn.NewIterator(opts)
+	iter := txn.NewIterator(badger.DefaultIteratorOptions)
 	defer iter.Close()
 
 	for iter.Seek(thisPrefix); iter.ValidForPrefix(thisPrefix); iter.Next() {
