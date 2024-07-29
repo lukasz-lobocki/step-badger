@@ -27,6 +27,9 @@ var dbTableCmd = &cobra.Command{
 // Cobra initiation
 func init() {
 	rootCmd.AddCommand(dbTableCmd)
+
+	// Hide help command
+	dbTableCmd.SetHelpCommand(&cobra.Command{Hidden: true})
 }
 
 /*

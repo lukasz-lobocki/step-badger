@@ -34,6 +34,9 @@ Cobra initiation.
 func init() {
 	rootCmd.AddCommand(sshCertsCmd)
 
+	// Hide help command
+	sshCertsCmd.SetHelpCommand(&cobra.Command{Hidden: true})
+
 	//Do not sort flags
 	sshCertsCmd.Flags().SortFlags = false
 

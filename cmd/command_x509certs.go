@@ -34,6 +34,9 @@ Cobra initiation.
 func init() {
 	rootCmd.AddCommand(x509certsCmd)
 
+	// Hide help command
+	x509certsCmd.SetHelpCommand(&cobra.Command{Hidden: true})
+
 	//Do not sort flags
 	x509certsCmd.Flags().SortFlags = false
 

@@ -75,7 +75,7 @@ func init() {
 	initLoggers()
 	initChoices()
 
-	// Hiding help command
+	// Hide help command
 	rootCmd.SetHelpCommand(&cobra.Command{Hidden: true})
 
 	//Do not sort flags
