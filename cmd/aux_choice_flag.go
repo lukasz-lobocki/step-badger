@@ -6,15 +6,15 @@ import (
 )
 
 type tChoice struct {
-	Allowed []string // Slice of allowed values
-	Value   string   // Defaulted value
+	Allowed []string // Slice of allowed values.
+	Value   string   // Defaulted value.
 }
 
 /*
-newChoice give a list of allowed flag parameters, where the second argument is the default
+newChoice give a list of allowed flag parameters, where the second argument is the default.
 
-	'allowed' slice of allowed strings
-	'defaulted' default string
+	'allowed' Slice of allowed strings.
+	'defaulted' Default string.
 */
 func newChoice(allowed []string, defaulted string) *tChoice {
 	return &tChoice{
@@ -24,9 +24,9 @@ func newChoice(allowed []string, defaulted string) *tChoice {
 }
 
 /*
-Set is called upon flag provisioning, validates its value
+Set is called upon flag provisioning, validates its value.
 
-	'p' string to be put into the flag
+	'p' String to be put into the flag
 */
 func (a *tChoice) Set(p string) error {
 
@@ -51,14 +51,14 @@ func (a *tChoice) Set(p string) error {
 }
 
 /*
-String returns flag value
+String returns flag value.
 */
 func (a tChoice) String() string {
 	return a.Value
 }
 
 /*
-Type returns text for help purposes
+Type returns text for help purposes.
 */
 func (a *tChoice) Type() string {
 	return fmt.Sprintf("{%s}", strings.Join(a.Allowed, "|"))
