@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	MAX_LOGGING_LEVEL int = 3 // Maximum allowed logging level
+	MAX_LOGGING_LEVEL int = 3 // Maximum allowed logging level.
 )
 
 /*
@@ -28,7 +28,7 @@ func initLoggers() {
 }
 
 /*
-initChoices sets up Config struct for 'limited choice' flag
+initChoices sets up Config struct for 'limited choice' flag.
 */
 func initChoices() {
 	config.emitSshFormat = newChoice([]string{"t", "j", "m"}, "t")
@@ -38,7 +38,7 @@ func initChoices() {
 }
 
 /*
-Configuration structure
+Configuration structure.
 */
 type tConfig struct {
 	emitSshFormat      *tChoice
@@ -58,7 +58,7 @@ type tConfig struct {
 }
 
 /*
-Alignment of markdown table
+Alignment of markdown table.
 */
 const (
 	ALIGN_LEFT = iota
@@ -67,7 +67,7 @@ const (
 )
 
 /*
-Certificate revocation information. Bots ssh & x509.
+Certificate revocation information. Both ssh & x509.
 */
 type tRevokedCertificate struct {
 	Serial        string    `json:"-"`
@@ -88,7 +88,7 @@ const (
 )
 
 /*
-getThisABColor maps given ahead / behind status string to appropriate color
+getThisValidityColor maps given status string to appropriate color.
 */
 func getThisValidityColor() map[string]color.Attribute {
 	return map[string]color.Attribute{
@@ -99,7 +99,7 @@ func getThisValidityColor() map[string]color.Attribute {
 }
 
 /*
-getThisAlignChar amps given alignment to appropriate markdown string to be used in header separator
+getThisAlignChar amps given alignment to appropriate markdown string to be used in header separator.
 */
 func getThisAlignChar() map[int]string {
 	return map[int]string{
@@ -110,9 +110,9 @@ func getThisAlignChar() map[int]string {
 }
 
 /*
-escapeMarkdown returns same string but safeguarded against markdown interpretation
+escapeMarkdown returns same string but safeguarded against markdown interpretation.
 
-	'text' text to be safeguarded
+	'text' Text to be safeguarded.
 */
 func escapeMarkdown(text string) string {
 

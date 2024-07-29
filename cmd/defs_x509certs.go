@@ -14,6 +14,9 @@ type tX509CertificateWithRevocation struct {
 	X509Provisioner tX509CertificateProvisioner `json:"Provisioner,omitempty"`
 }
 
+/*
+Intermediate structure to store certificate provisioner information.
+*/
 type tX509Certificate struct {
 	Provisioner tX509CertificateProvisioner `json:"Provisioner,omitempty"`
 	RaInfo      *string                     `json:"-"`
