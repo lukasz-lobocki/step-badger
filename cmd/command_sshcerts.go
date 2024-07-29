@@ -100,7 +100,7 @@ func getSshCerts(thisDb *badger.DB) []tSshCertificateWithRevocation {
 		sshCertsWithRevocations []tSshCertificateWithRevocation = []tSshCertificateWithRevocation{}
 	)
 
-	prefix, err := badgerEncode([]byte("ssh_certs"))
+	thisPrefix, err := badgerEncode([]byte("ssh_certs"))
 	if err != nil {
 		logError.Panic(err)
 	}
@@ -111,7 +111,7 @@ func getSshCerts(thisDb *badger.DB) []tSshCertificateWithRevocation {
 	iter := txn.NewIterator(badger.DefaultIteratorOptions)
 	defer iter.Close()
 
-	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
+	for iter.Seek(thisPrefix); iter.ValidForPrefix(thisPrefix); iter.Next() {
 		var (
 			sshCertsWithRevocation tSshCertificateWithRevocation = tSshCertificateWithRevocation{}
 		)

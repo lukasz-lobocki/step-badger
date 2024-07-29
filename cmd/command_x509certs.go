@@ -112,7 +112,7 @@ func getX509Certs(thisDb *badger.DB) []tX509CertificateWithRevocation {
 		x509CertsWithRevocations []tX509CertificateWithRevocation = []tX509CertificateWithRevocation{}
 	)
 
-	prefix, err := badgerEncode([]byte("x509_certs"))
+	thisPrefix, err := badgerEncode([]byte("x509_certs"))
 	if err != nil {
 		logError.Panic(err)
 	}
@@ -123,7 +123,7 @@ func getX509Certs(thisDb *badger.DB) []tX509CertificateWithRevocation {
 	iter := txn.NewIterator(badger.DefaultIteratorOptions)
 	defer iter.Close()
 
-	for iter.Seek(prefix); iter.ValidForPrefix(prefix); iter.Next() {
+	for iter.Seek(thisPrefix); iter.ValidForPrefix(thisPrefix); iter.Next() {
 		var (
 			x509CertWithRevocation tX509CertificateWithRevocation = tX509CertificateWithRevocation{}
 		)
