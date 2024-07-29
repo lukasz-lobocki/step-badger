@@ -55,16 +55,16 @@ func dbTableMain(args []string) {
 retrieveDbTableData returns the structure containing data table from Badger database.
 
 	'thisDb' Source database.
-	'thisPrefix' Prefix/name of the table.
+	'thisBucket' Name of the bucket.
 */
-func retrieveDbTableData(thisDb *badger.DB, thisPrefix []byte) []tDbRecord {
+func retrieveDbTableData(thisDb *badger.DB, thisBucket []byte) []tDbRecord {
 	var (
 		dbRecords []tDbRecord = []tDbRecord{}
 	)
 	txn := thisDb.NewTransaction(false)
 	defer txn.Discard()
 
-	thisPrefix, err := badgerEncode(thisPrefix)
+	thisPrefix, err := badgerEncode(thisBucket)
 	if err != nil {
 		logError.Panic(err)
 	}
