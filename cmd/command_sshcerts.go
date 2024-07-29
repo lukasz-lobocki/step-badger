@@ -13,7 +13,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// sshCertsCmd represents the shell command
+// sshCertsCmd represents the shell command.
 var sshCertsCmd = &cobra.Command{
 	Use:   "sshCerts PATH",
 	Short: "Export ssh certificates.",
@@ -34,10 +34,10 @@ Cobra initiation.
 func init() {
 	rootCmd.AddCommand(sshCertsCmd)
 
-	// Hide help command
+	// Hide help command.
 	sshCertsCmd.SetHelpCommand(&cobra.Command{Hidden: true})
 
-	//Do not sort flags
+	//Do not sort flags.
 	sshCertsCmd.Flags().SortFlags = false
 
 	sshCertsCmd.Flags().VarP(config.emitSshFormat, "emit", "e", "emit format: table|json|markdown") // Choice
@@ -52,7 +52,7 @@ func init() {
 /*
 ExportSsh main function.
 
-	'args' given command line arguments, that contain the command to be run by shell
+	'args' Given command line arguments, that contain the command to be run by shell.
 */
 func exportSshMain(args []string) {
 
@@ -93,7 +93,7 @@ func exportSshMain(args []string) {
 /*
 getSshCerts returns struct with ssh certificates.
 
-	'thisDb' badger database
+	'thisDb' Badger database.
 */
 func getSshCerts(thisDb *badger.DB) []tSshCertificateWithRevocation {
 	var (
@@ -121,13 +121,13 @@ func getSshCerts(thisDb *badger.DB) []tSshCertificateWithRevocation {
 			continue
 		}
 
-		// Populate main info of the certificate.
+		// Populate child main info of the certificate.
 		sshCertsWithRevocation.SshCertificate = sshCert
 
-		// Populate revocation info of the certificate.
+		// Populate child revocation info of the certificate.
 		sshCertsWithRevocation.SshRevocation = getSshRevocationData(thisDb, &sshCert)
 
-		// Populate validity info of the certificate.
+		// Populate child validity info of the certificate.
 		if len(sshCertsWithRevocation.SshRevocation.ProvisionerID) > 0 && time.Now().After(sshCertsWithRevocation.SshRevocation.RevokedAt) {
 			sshCertsWithRevocation.Validity = REVOKED_STR
 		} else {
@@ -137,6 +137,8 @@ func getSshCerts(thisDb *badger.DB) []tSshCertificateWithRevocation {
 				sshCertsWithRevocation.Validity = VALID_STR
 			}
 		}
+
+		// Append child into collection, if record selection criteria are met.
 		if (config.showExpired && sshCertsWithRevocation.Validity == EXPIRED_STR) ||
 			(config.showRevoked && sshCertsWithRevocation.Validity == REVOKED_STR) ||
 			(config.showValid && sshCertsWithRevocation.Validity == VALID_STR) {
@@ -165,11 +167,11 @@ func getSshCertificate(iter *badger.Iterator) (ssh.Certificate, error) {
 	}
 
 	if len(strings.TrimSpace(string(valCopy))) == 0 {
-		// Item is empty
+		// Item is empty.
 		return ssh.Certificate{}, fmt.Errorf("empty")
 	} else {
 
-		// Parse the SSH certificate
+		// Parse the SSH certificate.
 		pubKey, err := ssh.ParsePublicKey(valCopy)
 		if err != nil {
 			logError.Panicf("Error parsing SSH certificate: %v", err)
@@ -188,8 +190,8 @@ func getSshCertificate(iter *badger.Iterator) (ssh.Certificate, error) {
 /*
 getSshRevocationData returns revocation information for a given certificate, if exists.
 
-	'thisDb' Badger database
-	'thisCert' certificate to get revocation information
+	'thisDb' Badger database.
+	'thisCert' Certificate to get the revocation information for.
 */
 func getSshRevocationData(thisDb *badger.DB, thisCert *ssh.Certificate) tRevokedCertificate {
 	var item *badger.Item
@@ -197,9 +199,9 @@ func getSshRevocationData(thisDb *badger.DB, thisCert *ssh.Certificate) tRevoked
 
 	item, err := getItem(thisDb, []byte("revoked_ssh_certs"), []byte(strconv.FormatUint(thisCert.Serial, 10)))
 	if err != nil {
-		// we skip errors (like not found)
+		// Skip errors (like not found).
 	} else {
-		// we have found a revoked cert
+		// Found a revoked cert.
 		var valCopy []byte
 		valCopy, err = item.ValueCopy(nil)
 		if err != nil {

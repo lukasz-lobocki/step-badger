@@ -39,9 +39,9 @@ var (
 		}(".", commitHash)
 )
 
-var config tConfig // Holds configuration
+var config tConfig // Holds configuration.
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:     "step-badger",
 	Short:   "Export step-ca data from badger.",
@@ -56,10 +56,10 @@ var rootCmd = &cobra.Command{
 }
 
 var (
-	loggingLevel int         // Global logging level, see MAX_LOGGING_LEVEL
-	logInfo      *log.Logger // Blue logger, for info
-	logWarning   *log.Logger // Yellow logger, for warning
-	logError     *log.Logger // Red logger, for error
+	loggingLevel int         // Global logging level, see MAX_LOGGING_LEVEL.
+	logInfo      *log.Logger // Blue logger, for info.
+	logWarning   *log.Logger // Yellow logger, for warning.
+	logError     *log.Logger // Red logger, for error.
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -75,24 +75,23 @@ func init() {
 	initLoggers()
 	initChoices()
 
-	// Hide help command
+	// Hide help command.
 	rootCmd.SetHelpCommand(&cobra.Command{Hidden: true})
 
-	//Do not sort flags
+	//Do not sort flags.
 	rootCmd.Flags().SortFlags = false
 
-	// Adding global ie. persistent logging level flag
+	// Adding global ie. persistent logging level flag.
 	rootCmd.PersistentFlags().IntVar(&loggingLevel, "logging", 0,
 		fmt.Sprintf("logging level [0...%d] (default 0)", MAX_LOGGING_LEVEL))
-
 }
 
 /*
 getItem function returns data item (if exists for the prefix) for the given key.
 
-	'thisDb' badger database.
-	'thisPrefix' badger prefix.
-	'thisKey' badger key.
+	'thisDb' Badger database.
+	'thisPrefix' Badger prefix.
+	'thisKey' Badger key.
 */
 func getItem(thisDb *badger.DB, thisPrefix []byte, thisKey []byte) (*badger.Item, error) {
 	badgerKey, _ := toBadgerKey(thisPrefix, thisKey)
@@ -110,7 +109,7 @@ func getItem(thisDb *badger.DB, thisPrefix []byte, thisKey []byte) (*badger.Item
 /*
 badgerEncode function encodes a byte slice into a section of a BadgerKey.
 
-	'val' byte slice, that contains the key data.
+	'val' Byte slice, that contains the key data.
 */
 func badgerEncode(val []byte) ([]byte, error) {
 	l := len(val)
@@ -131,8 +130,8 @@ func badgerEncode(val []byte) ([]byte, error) {
 /*
 toBadgerKey function encodes bucket and key into the BadgerKey.
 
-	'thisBucket' byte slice, that bucket name.
-	'thisKey' byte slice, that key value.
+	'thisBucket' Byte slice, that bucket name.
+	'thisKey' Byte slice, that key value.
 */
 func toBadgerKey(thisBucket, thisKey []byte) ([]byte, error) {
 	first, err := badgerEncode(thisBucket)
@@ -155,7 +154,7 @@ checkLogginglevel confirms if logging level does not exceed maximum level.
 
 For convenience it also emits some log if loggingLevel >= 1.
 
-	'thisArgs' values emitted to log
+	'thisArgs' Values emitted to log.
 */
 func checkLogginglevel(thisArgs []string) {
 	if loggingLevel > MAX_LOGGING_LEVEL {

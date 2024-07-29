@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// dbTableCmd represents the shell command
+// dbTableCmd represents the shell command.
 var dbTableCmd = &cobra.Command{
 	Use:   "dbTable PATH TABLE",
 	Short: "Export badger table.",
@@ -24,18 +24,18 @@ var dbTableCmd = &cobra.Command{
 	},
 }
 
-// Cobra initiation
+// Cobra initiation.
 func init() {
 	rootCmd.AddCommand(dbTableCmd)
 
-	// Hide help command
+	// Hide help command.
 	dbTableCmd.SetHelpCommand(&cobra.Command{Hidden: true})
 }
 
 /*
-table main function
+dbTable main function.
 
-	'args' given command line arguments, that contain the command to be run by shell
+	'args' Given command line arguments, that contain the command to be run by shell.
 */
 func dbTableMain(args []string) {
 
@@ -54,8 +54,8 @@ func dbTableMain(args []string) {
 /*
 retrieveDbTableData returns the structure containing data table from Badger database.
 
-	'thisDb' source database
-	'thisPrefix' prefix/name of the table
+	'thisDb' Source database.
+	'thisPrefix' Prefix/name of the table.
 */
 func retrieveDbTableData(thisDb *badger.DB, thisPrefix []byte) []tDbRecord {
 	var (
@@ -94,8 +94,11 @@ func retrieveDbTableData(thisDb *badger.DB, thisPrefix []byte) []tDbRecord {
 			continue
 		}
 
+		// Construct child key and value.
 		dbRecord.Key = string(item.Key())
 		dbRecord.Value = valCopy
+
+		// Append child to the collection.
 		dbRecords = append(dbRecords, dbRecord)
 
 		if loggingLevel >= 3 {
@@ -106,9 +109,9 @@ func retrieveDbTableData(thisDb *badger.DB, thisPrefix []byte) []tDbRecord {
 }
 
 /*
-emitDbRecordsJson prints result in the form of a json
+emitDbRecordsJson prints result in the form of a json.
 
-	'thisDbRecords' slice of structures describing the records
+	'thisDbRecords' Slice of structures describing the records.
 */
 func emitDbRecordsJson(thisDbRecords []tDbRecord) {
 	jsonInfo, err := json.MarshalIndent(thisDbRecords, "", "  ")

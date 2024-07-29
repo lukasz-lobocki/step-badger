@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// x509certsCmd represents the shell command
+// x509certsCmd represents the shell command.
 var x509certsCmd = &cobra.Command{
 	Use:   "x509Certs PATH",
 	Short: "Export x509 certificates.",
@@ -34,16 +34,17 @@ Cobra initiation.
 func init() {
 	rootCmd.AddCommand(x509certsCmd)
 
-	// Hide help command
+	// Hide help command.
 	x509certsCmd.SetHelpCommand(&cobra.Command{Hidden: true})
 
-	//Do not sort flags
+	//Do not sort flags.
 	x509certsCmd.Flags().SortFlags = false
 
 	x509certsCmd.Flags().VarP(config.emitX509Format, "emit", "e", "emit format: table|json|markdown|openssl") // Choice
 	x509certsCmd.Flags().VarP(config.timeFormat, "time", "t", "time format: iso|short")                       // Choice
 	x509certsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")                      // Choice
 
+	// Columns selection criteria.
 	x509certsCmd.Flags().BoolVarP(&config.showDNSNames, "dnsnames", "d", false, "DNSNames column shown")
 	x509certsCmd.Flags().BoolVarP(&config.showEmailAddresses, "emailaddresses", "m", false, "EmailAddresses column shown")
 	x509certsCmd.Flags().BoolVarP(&config.showIPAddresses, "ipaddresses", "i", false, "IPAddresses column shown")
@@ -51,15 +52,16 @@ func init() {
 	x509certsCmd.Flags().BoolVarP(&config.showCrl, "crl", "c", false, "crl column shown")
 	x509certsCmd.Flags().BoolVarP(&config.showProvisioner, "provisioner", "p", false, "provisioner column shown")
 
+	// Records selection criteria.
 	x509certsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid certificates shown")
 	x509certsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", true, "revoked certificates shown")
 	x509certsCmd.Flags().BoolVarP(&config.showExpired, "expired", "x", false, "expired certificates shown")
 }
 
 /*
-Export x509 main function
+Export x509 main function.
 
-	'args' given command line arguments, that contain the command to be run by shell
+	'args' Given command line arguments, that contain the command to be run by shell.
 */
 func exportX509Main(args []string) {
 
@@ -103,7 +105,7 @@ func exportX509Main(args []string) {
 /*
 getX509Certs returns struct with x509 certificates.
 
-	'thisDb' badger database
+	'thisDb' Badger database.
 */
 func getX509Certs(thisDb *badger.DB) []tX509CertificateWithRevocation {
 	var (
@@ -131,16 +133,16 @@ func getX509Certs(thisDb *badger.DB) []tX509CertificateWithRevocation {
 			continue
 		}
 
-		// Populate main info of the certificate.
+		// Populate child main info of the certificate.
 		x509CertWithRevocation.X509Certificate = x509Cert
 
-		// Populate revocation info of the certificate.
+		// Populate child revocation info of the certificate.
 		x509CertWithRevocation.X509Revocation = getX509RevocationData(thisDb, &x509Cert)
 
-		// Populate provisioner sub-info of the certificate.
+		// Populate child provisioner sub-info of the certificate.
 		x509CertWithRevocation.X509Provisioner = getX509CertificateProvisionerData(thisDb, &x509Cert).Provisioner
 
-		// Populate validity info of the certificate.
+		// Populate child validity info of the certificate.
 		if len(x509CertWithRevocation.X509Revocation.ProvisionerID) > 0 && time.Now().After(x509CertWithRevocation.X509Revocation.RevokedAt) {
 			x509CertWithRevocation.Validity = REVOKED_STR
 		} else {
@@ -151,6 +153,7 @@ func getX509Certs(thisDb *badger.DB) []tX509CertificateWithRevocation {
 			}
 		}
 
+		// Append child to collection, if record selection criteria are met.
 		if (config.showExpired && x509CertWithRevocation.Validity == EXPIRED_STR) ||
 			(config.showRevoked && x509CertWithRevocation.Validity == REVOKED_STR) ||
 			(config.showValid && x509CertWithRevocation.Validity == VALID_STR) {
@@ -177,17 +180,16 @@ func getX509Certificate(thisIter *badger.Iterator) (x509.Certificate, error) {
 	}
 
 	if len(strings.TrimSpace(string(valCopy))) == 0 {
-		// Item is empty
+		// Item is empty.
 		return x509.Certificate{}, fmt.Errorf("empty")
 	} else {
-		// read data to object
+		// Read data to object.
 		marshaledValue, err := json.Marshal(valCopy)
 		if err != nil {
 			logError.Panic(err)
 		}
 
-		// make x509Cert-data from db decodable pem
-		// json contains ""
+		// Make x509Cert-data from db decodable pem.
 		base64cert := fmt.Sprintf("-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----",
 			strings.ReplaceAll(string(marshaledValue), "\"", ""))
 		decodedPEMBlock, _ := pem.Decode([]byte(base64cert))
@@ -210,7 +212,7 @@ func getX509Certificate(thisIter *badger.Iterator) (x509.Certificate, error) {
 getX509RevocationData returns revocation information for a given certificate, if exists.
 
 	'thisDb' Badger database
-	'thisCert' certificate to get revocation information
+	'thisCert' Certificate to get revocation information for.
 */
 func getX509RevocationData(thisDb *badger.DB, thisCert *x509.Certificate) tRevokedCertificate {
 	var item *badger.Item
@@ -218,9 +220,9 @@ func getX509RevocationData(thisDb *badger.DB, thisCert *x509.Certificate) tRevok
 
 	item, err := getItem(thisDb, []byte("revoked_x509_certs"), []byte(thisCert.SerialNumber.String()))
 	if err != nil {
-		// we skip errors (like not found)
+		// Skip errors (like not found).
 	} else {
-		// we have found a revoked cert
+		// Found a revoked cert.
 		var valCopy []byte
 		valCopy, err = item.ValueCopy(nil)
 		if err != nil {
@@ -239,8 +241,8 @@ func getX509RevocationData(thisDb *badger.DB, thisCert *x509.Certificate) tRevok
 /*
 getX509CertificateProvisionerData returns provisioner information for a given certificate, if exists.
 
-	'thisDb' Badger database
-	'thisCert' certificate to get provisioner information
+	'thisDb' Badger database.
+	'thisCert' Certificate to get provisioner information for.
 */
 func getX509CertificateProvisionerData(thisDb *badger.DB, thisCert *x509.Certificate) tX509Certificate {
 	var item *badger.Item
@@ -248,9 +250,9 @@ func getX509CertificateProvisionerData(thisDb *badger.DB, thisCert *x509.Certifi
 
 	item, err := getItem(thisDb, []byte("x509_certs_data"), []byte(thisCert.SerialNumber.String()))
 	if err != nil {
-		// we skip errors (like not found)
+		// Skip errors (like not found).
 	} else {
-		// we have found a revoked cert
+		// Found a provisioner info.
 		var valCopy []byte
 		valCopy, err = item.ValueCopy(nil)
 		if err != nil {
