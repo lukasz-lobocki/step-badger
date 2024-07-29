@@ -12,9 +12,9 @@ import (
 )
 
 /*
-emitX509Table prints result in the form of a table
+emitX509Table prints result in the form of a table.
 
-	'thisX509CertsWithRevocations' slice of structures describing the x509 certificates
+	'thisX509CertsWithRevocations' Slice of structures describing the x509 certificates.
 */
 func emitX509Table(thisX509CertsWithRevocations []tX509CertificateWithRevocation) {
 	table := new(tabby.Table)
@@ -23,8 +23,7 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateWithRevocation
 
 	var thisHeader []string
 
-	/* Building slice of titles */
-
+	// Building slice of titles.
 	for _, thisColumn := range thisColumns {
 		if thisColumn.isShown(config) {
 
@@ -37,8 +36,7 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateWithRevocation
 		}
 	}
 
-	/* Set the header */
-
+	// Set the header.
 	if err := table.SetHeader(thisHeader); err != nil {
 		logError.Panic("Setting header failed. %w", err)
 	}
@@ -47,12 +45,12 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateWithRevocation
 		logInfo.Println("header set.")
 	}
 
-	/* Populate the table */
-
+	// Populate the table.
 	for _, x509CertWithRevocation := range thisX509CertsWithRevocations {
 
 		var thisRow []string
-		/* Building slice of columns within a single row*/
+
+		// Building slice of columns within a single row.
 		for _, thisColumn := range thisColumns {
 
 			if thisColumn.isShown(config) {
@@ -77,8 +75,7 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateWithRevocation
 		logInfo.Printf("%d rows appended.\n", len(thisX509CertsWithRevocations))
 	}
 
-	/* Emit the table */
-
+	// Emit the table.
 	if loggingLevel >= 3 {
 		table.Print(&tabby.Config{Spacing: "|", Padding: "."})
 	} else {
@@ -87,9 +84,9 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateWithRevocation
 }
 
 /*
-emitX509CertsWithRevocationsJson prints result in the form of a json
+emitX509CertsWithRevocationsJson prints result in the form of a json.
 
-	'thisX509CertsWithRevocations' slice of structures describing the x509 certificates
+	'thisX509CertsWithRevocations' Slice of structures describing the x509 certificates.
 */
 func emitX509CertsWithRevocationsJson(thisX509CertsWithRevocations []tX509CertificateWithRevocation) {
 	jsonInfo, err := json.MarshalIndent(thisX509CertsWithRevocations, "", "  ")
@@ -103,33 +100,30 @@ func emitX509CertsWithRevocationsJson(thisX509CertsWithRevocations []tX509Certif
 }
 
 /*
-emitX509Markdown prints result in the form of markdown table
+emitX509Markdown prints result in the form of markdown table.
 
-	'thisX509CertsWithRevocations' slice of certs
+	'thisX509CertsWithRevocations' Slice of certs.
 */
 func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateWithRevocation) {
 	thisColumns := getX509Columns()
 
 	var thisHeader []string
 
-	/* Building slice of titles */
-
+	// Building slice of titles.
 	for _, thisColumn := range thisColumns {
 		if thisColumn.isShown(config) {
 			thisHeader = append(thisHeader, thisColumn.title())
 		}
 	}
 
-	/* Emitting titles */
-
+	// Emitting titles.
 	fmt.Println("| " + strings.Join(thisHeader, " | ") + " |")
 
 	if loggingLevel >= 1 {
 		logInfo.Println("header printed.")
 	}
 
-	/* Emit markdown line that separates header from body table */
-
+	// Emit markdown line that separates header from body table.
 	var thisSeparator []string
 
 	for _, thisColumn := range thisColumns {
@@ -143,14 +137,12 @@ func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateWithRevocat
 		logInfo.Println("separator printed.")
 	}
 
-	/* Iterating through repos */
-
+	// Iterating through certs.
 	for _, thisX509CertWithRevocation := range thisX509CertsWithRevocations {
 
 		var thisRow []string
 
-		/* Building slice of columns within a single row*/
-
+		// Building slice of columns within a single row.
 		for _, thisColumn := range thisColumns {
 			if thisColumn.isShown(config) {
 				if thisColumn.contentEscapeMD {
@@ -161,8 +153,7 @@ func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateWithRevocat
 			}
 		}
 
-		/* Emitting row */
-
+		// Emitting row.
 		fmt.Println("| " + strings.Join(thisRow, " | ") + " |")
 	}
 
@@ -174,12 +165,14 @@ func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateWithRevocat
 /*
 emitOpenSsl prints result in the form of markdown table.
 
-	'thisX509CertsWithRevocations' slice of certs
+	'thisX509CertsWithRevocations' Slice of certs.
 */
 func emitOpenSsl(thisX509CertsWithRevocations []tX509CertificateWithRevocation) {
 	for _, thisX509CertWithRevocation := range thisX509CertsWithRevocations {
 
 		var thisRevokedAt string
+
+		// Construct RevokedAt string in compliance with specification.
 		if len(thisX509CertWithRevocation.X509Revocation.ProvisionerID) > 0 {
 			thisRevokedAt = regexp.MustCompile(`[-T:]+`).
 				ReplaceAllString(thisX509CertWithRevocation.X509Revocation.RevokedAt.UTC().

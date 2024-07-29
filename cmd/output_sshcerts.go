@@ -13,7 +13,7 @@ import (
 /*
 emitSshCertsTable prints result in the form of a table.
 
-	'thisSshCerts' slice of structures describing the ssh certificates
+	'thisSshCerts' Slice of structures describing the ssh certificates.
 */
 func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 	table := new(tabby.Table)
@@ -21,7 +21,8 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 	thisColumns := getSshColumns()
 
 	var thisHeader []string
-	/* Building slice of titles */
+
+	// Building slice of titles.
 	for _, thisColumn := range thisColumns {
 		if thisColumn.isShown(config) {
 			thisHeader = append(thisHeader,
@@ -32,8 +33,7 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 		}
 	}
 
-	/* Set the header */
-
+	// Set the header.
 	if err := table.SetHeader(thisHeader); err != nil {
 		logError.Panic("Setting header failed. %w", err)
 	}
@@ -42,13 +42,12 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 		logInfo.Println("header set.")
 	}
 
-	/* Populate the table */
-
+	// Populate the table.
 	for _, sshCert := range thisSshCerts {
 
 		var thisRow []string
-		/* Building slice of columns within a single row*/
 
+		// Building slice of columns within a single row.
 		for _, thisColumn := range thisColumns {
 
 			if thisColumn.isShown(config) {
@@ -83,9 +82,9 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 }
 
 /*
-emitSshCertsJson prints result in the form of a json
+emitSshCertsJson prints result in the form of a json.
 
-	'thisSshCerts' slice of structures describing the ssh certificates
+	'thisSshCerts' Slice of structures describing the ssh certificates.
 */
 func emitSshCertsJson(thisSshCerts []tSshCertificateWithRevocation) {
 	jsonInfo, err := json.MarshalIndent(thisSshCerts, "", "  ")
@@ -99,33 +98,30 @@ func emitSshCertsJson(thisSshCerts []tSshCertificateWithRevocation) {
 }
 
 /*
-emitX509Markdown prints result in the form of markdown table
+emitX509Markdown prints result in the form of markdown table.
 
-	'thisSshCerts' slice of structures describing the certs.
+	'thisSshCerts' Slice of structures describing the certs.
 */
 func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWithRevocation) {
 	thisColumns := getSshColumns()
 
 	var thisHeader []string
 
-	/* Building slice of titles */
-
+	// Building slice of titles.
 	for _, thisColumn := range thisColumns {
 		if thisColumn.isShown(config) {
 			thisHeader = append(thisHeader, thisColumn.title())
 		}
 	}
 
-	/* Emitting titles */
-
+	// Emitting titles.
 	fmt.Println("| " + strings.Join(thisHeader, " | ") + " |")
 
 	if loggingLevel >= 1 {
 		logInfo.Println("header printed.")
 	}
 
-	/* Emit markdown line that separates header from body table */
-
+	// Emit markdown line that separates header from body table.
 	var thisSeparator []string
 
 	for _, thisColumn := range thisColumns {
@@ -139,14 +135,12 @@ func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWi
 		logInfo.Println("separator printed.")
 	}
 
-	/* Iterating through repos */
-
+	// Iterating through certs.
 	for _, thisSshCertificateWithRevocation := range thisSshCertificatesWithRevocations {
 
 		var thisRow []string
 
-		/* Building slice of columns within a single row*/
-
+		// Building slice of columns within a single row.
 		for _, thisColumn := range thisColumns {
 			if thisColumn.isShown(config) {
 				if thisColumn.contentEscapeMD {
@@ -157,8 +151,7 @@ func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWi
 			}
 		}
 
-		/* Emitting row */
-
+		// Emitting row.
 		fmt.Println("| " + strings.Join(thisRow, " | ") + " |")
 	}
 
