@@ -1,6 +1,8 @@
 //go:build !nobadger && !nobadgerv2
 // +build !nobadger,!nobadgerv2
 
+// https://github.com/smallstep/nosql/blob/master/badger/v2/badger.go
+
 package cmd
 
 import (
@@ -29,6 +31,7 @@ func (db *DB) Open(dir string, opt ...database.Option) (err error) {
 	}
 
 	bo := badger.DefaultOptions(dir)
+	bo.Logger = nil // No badger logging.
 	if opts.ValueDir != "" {
 		bo.ValueDir = opts.ValueDir
 	}

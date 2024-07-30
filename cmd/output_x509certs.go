@@ -63,7 +63,6 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateProvisionerRev
 		if err := table.AppendRow(row); err != nil {
 			logError.Panic(err)
 		}
-
 		if loggingLevel >= 3 {
 			logInfo.Printf("row [%s] appended.", x509CertWithRevocation.X509Certificate.SerialNumber.String())
 		}
@@ -141,9 +140,8 @@ func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateProvisioner
 	// Iterating through certs.
 	for _, x509CertWithRevocation := range thisX509CertsWithRevocations {
 
-		var row []string
-
 		// Building slice of columns within a single row.
+		var row []string
 		for _, column := range columns {
 			if column.isShown(config) {
 				if column.contentEscapeMD {

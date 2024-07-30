@@ -99,7 +99,7 @@ func checkLogginglevel(thisArgs []string) {
 	}
 
 	if loggingLevel >= 1 {
-		logInfo.Printf("len(args): %d. args: %+v\n", len(thisArgs), thisArgs)
-		logInfo.Printf("loggingLevel: %d. config: %+v\n", loggingLevel, config)
+		logInfo.Printf("len(args): %d. args: %#v\n", len(thisArgs), thisArgs)
+		logInfo.Printf("loggingLevel: %d. config: %#v\n", loggingLevel, config)
 	}
 }

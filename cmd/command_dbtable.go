@@ -47,19 +47,22 @@ func dbTableMain(args []string) {
 	// Open the database.
 	err = db.Open(args[0])
 	if err != nil {
-		logError.Panic(err)
+		logError.Fatalln(err)
 	}
 
 	// Get records from the bucket.
 	records, err := db.List([]byte(args[1]))
 	if err != nil {
-		logError.Panic(err)
+		logError.Fatalln(err)
+	}
+	if records == nil {
+		logError.Fatalln("no records found")
 	}
 
 	// Close the database.
 	err = db.Close()
 	if err != nil {
-		logError.Panic(err)
+		logError.Fatalln(err)
 	}
 
 	// Show info.
@@ -67,7 +70,7 @@ func dbTableMain(args []string) {
 		for _, record := range records {
 			logInfo.Printf("Bucket: %s", record.Bucket)
 			logInfo.Printf("Key: %s", record.Key)
-			logInfo.Printf("Value: %s", record.Value)
+			logInfo.Printf("Value: %q", record.Value)
 		}
 	}
 

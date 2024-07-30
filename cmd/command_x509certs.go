@@ -79,13 +79,16 @@ func exportX509Main(args []string) {
 	// Open the database.
 	err = db.Open(args[0])
 	if err != nil {
-		logError.Panic(err)
+		logError.Fatalln(err)
 	}
 
 	// Get records from the x509_certs bucket.
 	records, err := db.List([]byte("x509_certs"))
 	if err != nil {
-		logError.Panic(err)
+		logError.Fatalln(err)
+	}
+	if records == nil {
+		logError.Fatalln("no records found")
 	}
 
 	for _, record := range records {
@@ -146,7 +149,7 @@ func exportX509Main(args []string) {
 	// Close the database.
 	err = db.Close()
 	if err != nil {
-		logError.Panic(err)
+		logError.Fatalln(err)
 	}
 
 	// Sort.
