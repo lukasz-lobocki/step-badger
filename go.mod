@@ -36,7 +36,7 @@ require (
 )
 
 require (
-	github.com/dgraph-io/badger/v2 v2.2007.4
+	github.com/dgraph-io/badger/v2 v2.2007.4 // indirect
 	github.com/fatih/color v1.17.0
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/lukasz-lobocki/tabby v1.0.6
