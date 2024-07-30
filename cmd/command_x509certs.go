@@ -213,7 +213,7 @@ func getX509CertificateData(thisDB DB, thisX509Certificate x509.Certificate) tX5
 	}
 
 	if loggingLevel >= 2 {
-		logInfo.Printf("revocationValue: %s", certsDataValue)
+		logInfo.Printf("certsDataValue: %s", certsDataValue)
 	}
 
 	return parseValueToX509CertificateData(certsDataValue)
