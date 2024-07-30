@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/smallstep/nosql"
+	"github.com/smallstep/nosql/database"
 	"github.com/spf13/cobra"
 )
 
@@ -39,13 +41,13 @@ func dbTableMain(args []string) {
 
 	var (
 		err error
-		db  DB
+		db  database.DB
 	)
 
 	checkLogginglevel(args)
 
 	// Open the database.
-	err = db.Open(args[0])
+	db, err = nosql.New("badgerv2", args[0], database.WithValueDir(args[0]))
 	if err != nil {
 		logError.Fatalln(err)
 	}

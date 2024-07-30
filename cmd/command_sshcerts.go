@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/smallstep/nosql"
 	"github.com/smallstep/nosql/database"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
@@ -59,14 +60,14 @@ func exportSshMain(args []string) {
 
 	var (
 		err error
-		db  DB
+		db  database.DB
 
 		sshCertificateWithRevocation   tSshCertificateWithRevocation
 		sshCertificatesWithRevocations []tSshCertificateWithRevocation
 	)
 
 	// Open the database.
-	err = db.Open(args[0])
+	db, err = nosql.New("badgerv2", args[0], database.WithValueDir(args[0]))
 	if err != nil {
 		logError.Fatalln(err)
 	}
@@ -85,7 +86,7 @@ func exportSshMain(args []string) {
 		if loggingLevel >= 2 {
 			logInfo.Printf("Bucket: %s", record.Bucket)
 			logInfo.Printf("Key: %s", record.Key)
-			logInfo.Printf("Value: %s", record.Value)
+			logInfo.Printf("Value: %q", record.Value)
 		}
 
 		// Get certificate.
@@ -155,7 +156,7 @@ func exportSshMain(args []string) {
 	}
 }
 
-func getSshRevocation(thisDB DB, thisSshCertificate ssh.Certificate) tCertificateRevocation {
+func getSshRevocation(thisDB database.DB, thisSshCertificate ssh.Certificate) tCertificateRevocation {
 
 	revocationValue, err := thisDB.Get([]byte("revoked_ssh_certs"), []byte(strconv.FormatUint(thisSshCertificate.Serial, 10)))
 
