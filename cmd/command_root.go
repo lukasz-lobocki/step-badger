@@ -111,7 +111,7 @@ badgerEncode function encodes a byte slice into a section of a BadgerKey.
 
 	'val' Byte slice, that contains the key data.
 */
-func badgerEncode(val []byte) ([]byte, error) {
+func LLbadgerEncode(val []byte) ([]byte, error) {
 	l := len(val)
 	switch {
 	case l == 0:
@@ -133,7 +133,7 @@ toBadgerKey function encodes bucket and key into the BadgerKey.
 	'thisBucket' Byte slice, that bucket name.
 	'thisKey' Byte slice, that key value.
 */
-func toBadgerKey(thisBucket, thisKey []byte) ([]byte, error) {
+func LLtoBadgerKey(thisBucket, thisKey []byte) ([]byte, error) {
 	first, err := badgerEncode(thisBucket)
 	if err != nil {
 		return nil, err

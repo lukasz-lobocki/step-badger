@@ -29,6 +29,7 @@ require (
 	github.com/fatih/color v1.17.0
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/lukasz-lobocki/tabby v1.0.6
+	github.com/smallstep/nosql v0.7.0
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.25.0
 )
