@@ -19,17 +19,17 @@ emitX509Table prints result in the form of a table.
 func emitX509Table(thisX509CertsWithRevocations []tX509CertificateProvisionerRevocation) {
 	table := new(tabby.Table)
 
-	thisColumns := getX509Columns()
+	columns := getX509Columns()
 
-	var thisHeader []string
+	var header []string
 
 	// Building slice of titles.
-	for _, thisColumn := range thisColumns {
-		if thisColumn.isShown(config) {
+	for _, column := range columns {
+		if column.isShown(config) {
 
-			thisHeader = append(thisHeader,
-				color.New(thisColumn.titleColor).SprintFunc()(
-					thisColumn.title(),
+			header = append(header,
+				color.New(column.titleColor).SprintFunc()(
+					column.title(),
 				),
 			)
 
@@ -37,7 +37,7 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateProvisionerRev
 	}
 
 	// Set the header.
-	if err := table.SetHeader(thisHeader); err != nil {
+	if err := table.SetHeader(header); err != nil {
 		logError.Panic("Setting header failed. %w", err)
 	}
 
@@ -48,21 +48,21 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateProvisionerRev
 	// Populate the table.
 	for _, x509CertWithRevocation := range thisX509CertsWithRevocations {
 
-		var thisRow []string
+		var row []string
 
 		// Building slice of columns within a single row.
-		for _, thisColumn := range thisColumns {
+		for _, column := range columns {
 
-			if thisColumn.isShown(config) {
-				thisRow = append(thisRow,
-					color.New(thisColumn.contentColor(x509CertWithRevocation)).SprintFunc()(
-						thisColumn.contentSource(x509CertWithRevocation, config),
+			if column.isShown(config) {
+				row = append(row,
+					color.New(column.contentColor(x509CertWithRevocation)).SprintFunc()(
+						column.contentSource(x509CertWithRevocation, config),
 					),
 				)
 			}
 		}
 
-		if err := table.AppendRow(thisRow); err != nil {
+		if err := table.AppendRow(row); err != nil {
 			logError.Panic(err)
 		}
 		if loggingLevel >= 3 {
@@ -105,56 +105,57 @@ emitX509Markdown prints result in the form of markdown table.
 	'thisX509CertsWithRevocations' Slice of certs.
 */
 func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateProvisionerRevocation) {
-	thisColumns := getX509Columns()
 
-	var thisHeader []string
+	columns := getX509Columns()
+
+	var header []string
 
 	// Building slice of titles.
-	for _, thisColumn := range thisColumns {
-		if thisColumn.isShown(config) {
-			thisHeader = append(thisHeader, thisColumn.title())
+	for _, column := range columns {
+		if column.isShown(config) {
+			header = append(header, column.title())
 		}
 	}
 
 	// Emitting titles.
-	fmt.Println("| " + strings.Join(thisHeader, " | ") + " |")
+	fmt.Println("| " + strings.Join(header, " | ") + " |")
 
 	if loggingLevel >= 1 {
 		logInfo.Println("header printed.")
 	}
 
 	// Emit markdown line that separates header from body table.
-	var thisSeparator []string
+	var separator []string
 
-	for _, thisColumn := range thisColumns {
-		if thisColumn.isShown(config) {
-			thisSeparator = append(thisSeparator, getAlignChar()[thisColumn.contentAlignMD])
+	for _, column := range columns {
+		if column.isShown(config) {
+			separator = append(separator, getAlignChar()[column.contentAlignMD])
 		}
 	}
-	fmt.Println("| " + strings.Join(thisSeparator, " | ") + " |")
+	fmt.Println("| " + strings.Join(separator, " | ") + " |")
 
 	if loggingLevel >= 1 {
 		logInfo.Println("separator printed.")
 	}
 
 	// Iterating through certs.
-	for _, thisX509CertWithRevocation := range thisX509CertsWithRevocations {
+	for _, x509CertWithRevocation := range thisX509CertsWithRevocations {
 
-		var thisRow []string
+		var row []string
 
 		// Building slice of columns within a single row.
-		for _, thisColumn := range thisColumns {
-			if thisColumn.isShown(config) {
-				if thisColumn.contentEscapeMD {
-					thisRow = append(thisRow, escapeMarkdown(thisColumn.contentSource(thisX509CertWithRevocation, config)))
+		for _, column := range columns {
+			if column.isShown(config) {
+				if column.contentEscapeMD {
+					row = append(row, escapeMarkdown(column.contentSource(x509CertWithRevocation, config)))
 				} else {
-					thisRow = append(thisRow, thisColumn.contentSource(thisX509CertWithRevocation, config))
+					row = append(row, column.contentSource(x509CertWithRevocation, config))
 				}
 			}
 		}
 
 		// Emitting row.
-		fmt.Println("| " + strings.Join(thisRow, " | ") + " |")
+		fmt.Println("| " + strings.Join(row, " | ") + " |")
 	}
 
 	if loggingLevel >= 2 {
@@ -168,27 +169,27 @@ emitOpenSsl prints result in the form of markdown table.
 	'thisX509CertsWithRevocations' Slice of certs.
 */
 func emitOpenSsl(thisX509CertsWithRevocations []tX509CertificateProvisionerRevocation) {
-	for _, thisX509CertWithRevocation := range thisX509CertsWithRevocations {
+	for _, x509CertWithRevocation := range thisX509CertsWithRevocations {
 
-		var thisRevokedAt string
+		var revokedAt string
 
 		// Construct RevokedAt string in compliance with specification.
-		if len(thisX509CertWithRevocation.X509Revocation.ProvisionerID) > 0 {
-			thisRevokedAt = regexp.MustCompile(`[-T:]+`).
-				ReplaceAllString(thisX509CertWithRevocation.X509Revocation.RevokedAt.UTC().
+		if len(x509CertWithRevocation.X509Revocation.ProvisionerID) > 0 {
+			revokedAt = regexp.MustCompile(`[-T:]+`).
+				ReplaceAllString(x509CertWithRevocation.X509Revocation.RevokedAt.UTC().
 					Format(time.RFC3339), "")[2:]
 		} else {
-			thisRevokedAt = ""
+			revokedAt = ""
 		}
 
 		fmt.Printf("%s\t%s\t%s\t%X\t%s\t%s\n",
-			thisX509CertWithRevocation.Validity[0:1],
+			x509CertWithRevocation.Validity[0:1],
 			regexp.MustCompile(`[-T:]+`).
-				ReplaceAllString(thisX509CertWithRevocation.X509Certificate.NotAfter.UTC().
+				ReplaceAllString(x509CertWithRevocation.X509Certificate.NotAfter.UTC().
 					Format(time.RFC3339), "")[2:],
-			thisRevokedAt,
-			thisX509CertWithRevocation.X509Certificate.SerialNumber,
+			revokedAt,
+			x509CertWithRevocation.X509Certificate.SerialNumber,
 			"unknown",
-			thisX509CertWithRevocation.X509Certificate.Subject)
+			x509CertWithRevocation.X509Certificate.Subject)
 	}
 }

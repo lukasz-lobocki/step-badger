@@ -72,12 +72,12 @@ func exportSshMain(args []string) {
 	}
 
 	// Get records from the ssh_certs bucket.
-	thisRecords, err := db.List([]byte("ssh_certs"))
+	records, err := db.List([]byte("ssh_certs"))
 	if err != nil {
 		logError.Panic(err)
 	}
 
-	for _, record := range thisRecords {
+	for _, record := range records {
 		// Show info.
 		if loggingLevel >= 2 {
 			logInfo.Printf("Bucket: %s", record.Bucket)
@@ -142,7 +142,7 @@ func exportSshMain(args []string) {
 	}
 
 	// Output.
-	switch thisFormat := config.emitSshFormat.Value; thisFormat {
+	switch format := config.emitSshFormat.Value; format {
 	case "j":
 		emitSshCertsJson(sshCertificatesWithRevocations)
 	case "t":
@@ -152,8 +152,10 @@ func exportSshMain(args []string) {
 	}
 }
 
-func getSshRevocation(thisDB DB, sshCertificate ssh.Certificate) tCertificateRevocation {
-	revocationValue, err := thisDB.Get([]byte("revoked_ssh_certs"), []byte(strconv.FormatUint(sshCertificate.Serial, 10)))
+func getSshRevocation(thisDB DB, thisSshCertificate ssh.Certificate) tCertificateRevocation {
+
+	revocationValue, err := thisDB.Get([]byte("revoked_ssh_certs"), []byte(strconv.FormatUint(thisSshCertificate.Serial, 10)))
+
 	switch {
 	case errors.Is(err, database.ErrNotFound):
 		if loggingLevel >= 2 {

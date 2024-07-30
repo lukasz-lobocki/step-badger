@@ -22,9 +22,9 @@ getX509Columns defines look and content of table's emitted columns.
 */
 func getX509Columns() []tX509Column {
 
-	var thisColumns []tX509Column
+	var columns []tX509Column
 
-	thisColumns = append(thisColumns,
+	columns = append(columns,
 
 		tX509Column{
 			isShown:    func(_ tConfig) bool { return true },     // Always shown.
@@ -84,11 +84,11 @@ func getX509Columns() []tX509Column {
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
-				var thisIPAddresses []string
-				for _, thisIPAddress := range x.X509Certificate.IPAddresses {
-					thisIPAddresses = append(thisIPAddresses, thisIPAddress.String())
+				var ipAddresses []string
+				for _, ipAddress := range x.X509Certificate.IPAddresses {
+					ipAddresses = append(ipAddresses, ipAddress.String())
 				}
-				return strings.Join(thisIPAddresses, ", ")
+				return strings.Join(ipAddresses, ", ")
 			},
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgWhite }, // Static color.
 			contentAlignMD:  ALIGN_LEFT,
@@ -101,11 +101,11 @@ func getX509Columns() []tX509Column {
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
-				var thisUris []string
-				for _, thisUri := range x.X509Certificate.URIs {
-					thisUris = append(thisUris, thisUri.String())
+				var uris []string
+				for _, uri := range x.X509Certificate.URIs {
+					uris = append(uris, uri.String())
 				}
-				return strings.Join(thisUris, ", ")
+				return strings.Join(uris, ", ")
 			},
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgWhite }, // Static color.
 			contentAlignMD:  ALIGN_LEFT,
@@ -209,5 +209,5 @@ func getX509Columns() []tX509Column {
 		},
 	)
 
-	return thisColumns
+	return columns
 }

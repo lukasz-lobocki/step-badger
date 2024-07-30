@@ -17,13 +17,13 @@ const (
 initLoggers creates colorful loggers.
 */
 func initLoggers() {
-	thisHiCyan := color.New(color.FgHiCyan).SprintFunc()
-	thisHiYellow := color.New(color.FgHiYellow).SprintFunc()
-	thisHiRed := color.New(color.FgHiRed).SprintFunc()
+	hiCyan := color.New(color.FgHiCyan).SprintFunc()
+	hiYellow := color.New(color.FgHiYellow).SprintFunc()
+	hiRed := color.New(color.FgHiRed).SprintFunc()
 
-	logInfo = log.New(os.Stderr, thisHiCyan("╭info\n╰"), 0)
-	logWarning = log.New(os.Stderr, thisHiYellow("╭warning\n╰"), log.Lshortfile)
-	logError = log.New(os.Stderr, thisHiRed("╭error\n╰"), log.Lshortfile)
+	logInfo = log.New(os.Stderr, hiCyan("╭info\n╰"), 0)
+	logWarning = log.New(os.Stderr, hiYellow("╭warning\n╰"), log.Lshortfile)
+	logError = log.New(os.Stderr, hiRed("╭error\n╰"), log.Lshortfile)
 
 }
 
@@ -114,7 +114,7 @@ escapeMarkdown returns same string but safeguarded against markdown interpretati
 
 	'text' Text to be safeguarded.
 */
-func escapeMarkdown(text string) string {
+func escapeMarkdown(thisText string) string {
 
 	// These characters need to be escaped in Markdown in order to appear as literal characters instead of performing some markdown functions
 	needEscape := []string{
@@ -126,9 +126,9 @@ func escapeMarkdown(text string) string {
 		"+", "-",
 	}
 
-	for _, thisNeed := range needEscape {
-		text = strings.Replace(text, thisNeed, `\`+thisNeed, -1)
+	for _, need := range needEscape {
+		thisText = strings.Replace(thisText, need, `\`+need, -1)
 	}
 
-	return text
+	return thisText
 }

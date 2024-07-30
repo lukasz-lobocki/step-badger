@@ -38,51 +38,51 @@ dbTable main function.
 func dbTableMain(args []string) {
 
 	var (
-		err    error
-		thisDB DB
+		err error
+		db  DB
 	)
 
 	checkLogginglevel(args)
 
 	// Open the database.
-	err = thisDB.Open(args[0])
+	err = db.Open(args[0])
 	if err != nil {
 		logError.Panic(err)
 	}
 
 	// Get records from the bucket.
-	thisRecords, err := thisDB.List([]byte(args[1]))
+	records, err := db.List([]byte(args[1]))
 	if err != nil {
 		logError.Panic(err)
 	}
 
 	// Close the database.
-	err = thisDB.Close()
+	err = db.Close()
 	if err != nil {
 		logError.Panic(err)
 	}
 
 	// Show info.
 	if loggingLevel >= 2 {
-		for _, thisRecord := range thisRecords {
-			logInfo.Printf("Bucket: %s", thisRecord.Bucket)
-			logInfo.Printf("Key: %s", thisRecord.Key)
-			logInfo.Printf("Value: %s", thisRecord.Value)
+		for _, record := range records {
+			logInfo.Printf("Bucket: %s", record.Bucket)
+			logInfo.Printf("Key: %s", record.Key)
+			logInfo.Printf("Value: %s", record.Value)
 		}
 	}
 
 	// Marshal into json.
-	thisJson, err := json.MarshalIndent(thisRecords, "", "  ")
+	json, err := json.MarshalIndent(records, "", "  ")
 	if err != nil {
 		logError.Panic(err)
 	}
 
 	// Emit.
-	fmt.Println(string(thisJson))
+	fmt.Println(string(json))
 
 	// Show info.
 	if loggingLevel >= 2 {
-		logInfo.Printf("%d records marshalled.\n", len(thisRecords))
+		logInfo.Printf("%d records marshalled.\n", len(records))
 	}
 
 }

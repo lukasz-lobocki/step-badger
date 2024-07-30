@@ -83,12 +83,12 @@ func exportX509Main(args []string) {
 	}
 
 	// Get records from the x509_certs bucket.
-	thisRecords, err := db.List([]byte("x509_certs"))
+	records, err := db.List([]byte("x509_certs"))
 	if err != nil {
 		logError.Panic(err)
 	}
 
-	for _, record := range thisRecords {
+	for _, record := range records {
 		// Show info.
 		if loggingLevel >= 2 {
 			logInfo.Printf("Bucket: %s", record.Bucket)
@@ -164,7 +164,7 @@ func exportX509Main(args []string) {
 	}
 
 	// Output.
-	switch thisFormat := config.emitX509Format.Value; thisFormat {
+	switch format := config.emitX509Format.Value; format {
 	case "j":
 		emitX509CertsWithRevocationsJson(x509CertificatesProvisionersRevocations)
 	case "t":
@@ -176,8 +176,10 @@ func exportX509Main(args []string) {
 	}
 }
 
-func getX509Revocation(thisDB DB, x509Certificate x509.Certificate) tCertificateRevocation {
-	revocationValue, err := thisDB.Get([]byte("revoked_x509_certs"), []byte(x509Certificate.SerialNumber.String()))
+func getX509Revocation(thisDB DB, thisX509Certificate x509.Certificate) tCertificateRevocation {
+
+	revocationValue, err := thisDB.Get([]byte("revoked_x509_certs"), []byte(thisX509Certificate.SerialNumber.String()))
+
 	switch {
 	case errors.Is(err, database.ErrNotFound):
 		if loggingLevel >= 2 {
@@ -194,8 +196,10 @@ func getX509Revocation(thisDB DB, x509Certificate x509.Certificate) tCertificate
 	return parseValueToCertificateRevocation(revocationValue)
 }
 
-func getX509CertificateData(thisDB DB, x509Certificate x509.Certificate) tX509CertificateData {
-	certsDataValue, err := thisDB.Get([]byte("x509_certs_data"), []byte(x509Certificate.SerialNumber.String()))
+func getX509CertificateData(thisDB DB, thisX509Certificate x509.Certificate) tX509CertificateData {
+
+	certsDataValue, err := thisDB.Get([]byte("x509_certs_data"), []byte(thisX509Certificate.SerialNumber.String()))
+
 	switch {
 	case errors.Is(err, database.ErrNotFound):
 		if loggingLevel >= 2 {
