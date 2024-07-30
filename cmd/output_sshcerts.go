@@ -16,13 +16,12 @@ emitSshCertsTable prints result in the form of a table.
 	'thisSshCerts' Slice of structures describing the ssh certificates.
 */
 func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
-	table := new(tabby.Table)
 
+	table := new(tabby.Table)
 	columns := getSshColumns()
 
-	var header []string
-
 	// Building slice of titles.
+	var header []string
 	for _, column := range columns {
 		if column.isShown(config) {
 			header = append(header,
@@ -45,9 +44,8 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 	// Populate the table.
 	for _, sshCert := range thisSshCerts {
 
-		var row []string
-
 		// Building slice of columns within a single row.
+		var row []string
 		for _, column := range columns {
 
 			if column.isShown(config) {
@@ -72,8 +70,7 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 		logInfo.Printf("%d rows appended.\n", len(thisSshCerts))
 	}
 
-	/* Emit the table */
-
+	// Emit the table.
 	if loggingLevel >= 3 {
 		table.Print(&tabby.Config{Spacing: "|", Padding: "."})
 	} else {
@@ -87,11 +84,14 @@ emitSshCertsJson prints result in the form of a json.
 	'thisSshCerts' Slice of structures describing the ssh certificates.
 */
 func emitSshCertsJson(thisSshCerts []tSshCertificateWithRevocation) {
+
 	jsonInfo, err := json.MarshalIndent(thisSshCerts, "", "  ")
 	if err != nil {
 		logError.Panic(err)
 	}
+
 	fmt.Println(string(jsonInfo))
+
 	if loggingLevel >= 2 {
 		logInfo.Printf("%d records marshalled.\n", len(thisSshCerts))
 	}
@@ -103,11 +103,11 @@ emitX509Markdown prints result in the form of markdown table.
 	'thisSshCerts' Slice of structures describing the certs.
 */
 func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWithRevocation) {
+
 	columns := getSshColumns()
 
-	var header []string
-
 	// Building slice of titles.
+	var header []string
 	for _, column := range columns {
 		if column.isShown(config) {
 			header = append(header, column.title())
@@ -123,7 +123,6 @@ func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWi
 
 	// Emit markdown line that separates header from body table.
 	var separator []string
-
 	for _, column := range columns {
 		if column.isShown(config) {
 			separator = append(separator, getAlignChar()[column.contentAlignMD])
@@ -138,9 +137,8 @@ func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWi
 	// Iterating through certs.
 	for _, sshCertificateWithRevocation := range thisSshCertificatesWithRevocations {
 
-		var row []string
-
 		// Building slice of columns within a single row.
+		var row []string
 		for _, column := range columns {
 			if column.isShown(config) {
 				if column.contentEscapeMD {
