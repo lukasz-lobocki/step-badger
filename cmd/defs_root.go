@@ -69,7 +69,7 @@ const (
 /*
 Certificate revocation information. Both ssh & x509.
 */
-type tRevokedCertificate struct {
+type tCertificateRevocation struct {
 	Serial        string    `json:"-"`
 	ProvisionerID string    `json:"ProvisionerID"`
 	ReasonCode    int       `json:"ReasonCode"`
@@ -88,9 +88,9 @@ const (
 )
 
 /*
-getThisValidityColor maps given status string to appropriate color.
+getValidityColor maps given status string to appropriate color.
 */
-func getThisValidityColor() map[string]color.Attribute {
+func getValidityColor() map[string]color.Attribute {
 	return map[string]color.Attribute{
 		VALID_STR:   color.FgGreen,
 		EXPIRED_STR: color.FgHiBlack,
@@ -99,9 +99,9 @@ func getThisValidityColor() map[string]color.Attribute {
 }
 
 /*
-getThisAlignChar amps given alignment to appropriate markdown string to be used in header separator.
+getAlignChar amps given alignment to appropriate markdown string to be used in header separator.
 */
-func getThisAlignChar() map[int]string {
+func getAlignChar() map[int]string {
 	return map[int]string{
 		ALIGN_LEFT:   `:-`,
 		ALIGN_CENTER: `:-:`,

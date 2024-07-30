@@ -143,7 +143,7 @@ func getSshColumns() []tSshColumn {
 				return x.Validity
 			},
 			contentColor: func(x tSshCertificateWithRevocation) color.Attribute {
-				return getThisValidityColor()[x.Validity]
+				return getValidityColor()[x.Validity]
 			}, // Dynamic color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,

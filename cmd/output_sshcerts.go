@@ -126,7 +126,7 @@ func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWi
 
 	for _, thisColumn := range thisColumns {
 		if thisColumn.isShown(config) {
-			thisSeparator = append(thisSeparator, getThisAlignChar()[thisColumn.contentAlignMD])
+			thisSeparator = append(thisSeparator, getAlignChar()[thisColumn.contentAlignMD])
 		}
 	}
 	fmt.Println("| " + strings.Join(thisSeparator, " | ") + " |")

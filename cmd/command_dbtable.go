@@ -37,18 +37,27 @@ dbTable main function.
 */
 func dbTableMain(args []string) {
 
+	var (
+		err    error
+		thisDB DB
+	)
+
 	checkLogginglevel(args)
 
-	var thisDB DB
-
 	// Open the database.
-	err := thisDB.Open(args[0])
+	err = thisDB.Open(args[0])
 	if err != nil {
 		logError.Panic(err)
 	}
 
 	// Get records from the bucket.
 	thisRecords, err := thisDB.List([]byte(args[1]))
+	if err != nil {
+		logError.Panic(err)
+	}
+
+	// Close the database.
+	err = thisDB.Close()
 	if err != nil {
 		logError.Panic(err)
 	}

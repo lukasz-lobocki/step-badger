@@ -16,7 +16,7 @@ emitX509Table prints result in the form of a table.
 
 	'thisX509CertsWithRevocations' Slice of structures describing the x509 certificates.
 */
-func emitX509Table(thisX509CertsWithRevocations []tX509CertificateWithRevocation) {
+func emitX509Table(thisX509CertsWithRevocations []tX509CertificateProvisionerRevocation) {
 	table := new(tabby.Table)
 
 	thisColumns := getX509Columns()
@@ -88,7 +88,7 @@ emitX509CertsWithRevocationsJson prints result in the form of a json.
 
 	'thisX509CertsWithRevocations' Slice of structures describing the x509 certificates.
 */
-func emitX509CertsWithRevocationsJson(thisX509CertsWithRevocations []tX509CertificateWithRevocation) {
+func emitX509CertsWithRevocationsJson(thisX509CertsWithRevocations []tX509CertificateProvisionerRevocation) {
 	jsonInfo, err := json.MarshalIndent(thisX509CertsWithRevocations, "", "  ")
 	if err != nil {
 		logError.Panic(err)
@@ -104,7 +104,7 @@ emitX509Markdown prints result in the form of markdown table.
 
 	'thisX509CertsWithRevocations' Slice of certs.
 */
-func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateWithRevocation) {
+func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateProvisionerRevocation) {
 	thisColumns := getX509Columns()
 
 	var thisHeader []string
@@ -128,7 +128,7 @@ func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateWithRevocat
 
 	for _, thisColumn := range thisColumns {
 		if thisColumn.isShown(config) {
-			thisSeparator = append(thisSeparator, getThisAlignChar()[thisColumn.contentAlignMD])
+			thisSeparator = append(thisSeparator, getAlignChar()[thisColumn.contentAlignMD])
 		}
 	}
 	fmt.Println("| " + strings.Join(thisSeparator, " | ") + " |")
@@ -167,7 +167,7 @@ emitOpenSsl prints result in the form of markdown table.
 
 	'thisX509CertsWithRevocations' Slice of certs.
 */
-func emitOpenSsl(thisX509CertsWithRevocations []tX509CertificateWithRevocation) {
+func emitOpenSsl(thisX509CertsWithRevocations []tX509CertificateProvisionerRevocation) {
 	for _, thisX509CertWithRevocation := range thisX509CertsWithRevocations {
 
 		var thisRevokedAt string

@@ -193,9 +193,9 @@ getSshRevocationData returns revocation information for a given certificate, if 
 	'thisDb' Badger database.
 	'thisCert' Certificate to get the revocation information for.
 */
-func getSshRevocationData(thisDb *badger.DB, thisCert *ssh.Certificate) tRevokedCertificate {
+func getSshRevocationData(thisDb *badger.DB, thisCert *ssh.Certificate) tCertificateRevocation {
 	var item *badger.Item
-	var data tRevokedCertificate = tRevokedCertificate{}
+	var data tCertificateRevocation = tCertificateRevocation{}
 
 	item, err := getItem(thisDb, []byte("revoked_ssh_certs"), []byte(strconv.FormatUint(thisCert.Serial, 10)))
 	if err != nil {
