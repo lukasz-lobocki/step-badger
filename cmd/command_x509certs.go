@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/smallstep/nosql/database"
@@ -68,8 +69,10 @@ func exportX509Main(args []string) {
 	checkLogginglevel(args)
 
 	var (
-		err                                     error
-		db                                      DB
+		err error
+		db  DB
+
+		x509CertificateProvisionerRevocation    tX509CertificateProvisionerRevocation
 		x509CertificatesProvisionersRevocations []tX509CertificateProvisionerRevocation
 	)
 
@@ -95,34 +98,49 @@ func exportX509Main(args []string) {
 
 		// Get certificate.
 		x509Certificate := parseValueToX509Certificate(record.Value)
-
-		// Show info.
-		if loggingLevel >= 2 {
+		if loggingLevel >= 2 { // Show info.
 			logInfo.Printf("Serial: %s", x509Certificate.SerialNumber.String())
 			logInfo.Printf("Subject: %s", x509Certificate.Subject)
 		}
 
 		// Get revocation.
 		x509CertificateRevocation := getRevocation(db, x509Certificate)
-
-		// Show info.
-		if loggingLevel >= 2 {
+		if loggingLevel >= 2 { // Show info.
 			logInfo.Printf("RevocationProvisionerID: %s", x509CertificateRevocation.ProvisionerID)
 		}
 
 		// Get provisioner.
 		x509CertificateData := getCertificateData(db, x509Certificate)
-
-		// Show info.
-		if loggingLevel >= 2 {
+		if loggingLevel >= 2 { // Show info.
 			logInfo.Printf("Provisioner: %s", x509CertificateData.Provisioner.Type)
 		}
-		x509CertificatesProvisionersRevocations = append(x509CertificatesProvisionersRevocations,
-			tX509CertificateProvisionerRevocation{
-				X509Certificate: x509Certificate,
-				X509Revocation:  x509CertificateRevocation,
-				X509Provisioner: x509CertificateData.Provisioner,
-			})
+
+		// Populate the child.
+		x509CertificateProvisionerRevocation = tX509CertificateProvisionerRevocation{
+			X509Certificate: x509Certificate,
+			X509Revocation:  x509CertificateRevocation,
+			X509Provisioner: x509CertificateData.Provisioner,
+		}
+
+		// Populate child validity info of the certificate.
+		if len(x509CertificateRevocation.ProvisionerID) > 0 && time.Now().After(x509CertificateRevocation.RevokedAt) {
+			x509CertificateProvisionerRevocation.Validity = REVOKED_STR
+		} else {
+			if time.Now().After(x509Certificate.NotAfter) {
+				x509CertificateProvisionerRevocation.Validity = EXPIRED_STR
+			} else {
+				x509CertificateProvisionerRevocation.Validity = VALID_STR
+			}
+		}
+
+		// Append child into collection, if record selection criteria are met.
+		if (config.showExpired && x509CertificateProvisionerRevocation.Validity == EXPIRED_STR) ||
+			(config.showRevoked && x509CertificateProvisionerRevocation.Validity == REVOKED_STR) ||
+			(config.showValid && x509CertificateProvisionerRevocation.Validity == VALID_STR) {
+			x509CertificatesProvisionersRevocations = append(x509CertificatesProvisionersRevocations,
+				x509CertificateProvisionerRevocation)
+		}
+
 	}
 
 	// Close the database.
@@ -191,10 +209,10 @@ func getCertificateData(thisDB DB, x509Certificate x509.Certificate) tX509Certif
 		logInfo.Printf("revocationValue: %s", certsDataValue)
 	}
 
-	return parseValueToCertificateData(certsDataValue)
+	return parseValueToX509CertificateData(certsDataValue)
 }
 
-func parseValueToCertificateData(thisValue []byte) tX509CertificateData {
+func parseValueToX509CertificateData(thisValue []byte) tX509CertificateData {
 
 	var (
 		certificateData tX509CertificateData
