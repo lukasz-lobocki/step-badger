@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/smallstep/nosql"
 	"github.com/smallstep/nosql/database"
 	"github.com/spf13/cobra"
 )
@@ -70,14 +71,14 @@ func exportX509Main(args []string) {
 
 	var (
 		err error
-		db  DB
+		db  database.DB
 
 		x509CertificateProvisionerRevocation    tX509CertificateProvisionerRevocation
 		x509CertificatesProvisionersRevocations []tX509CertificateProvisionerRevocation
 	)
 
 	// Open the database.
-	err = db.Open(args[0])
+	db, err = nosql.New("badgerv2", args[0], database.WithValueDir(args[0]))
 	if err != nil {
 		logError.Fatalln(err)
 	}
@@ -96,7 +97,7 @@ func exportX509Main(args []string) {
 		if loggingLevel >= 2 {
 			logInfo.Printf("Bucket: %s", record.Bucket)
 			logInfo.Printf("Key: %s", record.Key)
-			logInfo.Printf("Value: %s", record.Value)
+			logInfo.Printf("Value: %q", record.Value)
 		}
 
 		// Get certificate.
@@ -179,7 +180,7 @@ func exportX509Main(args []string) {
 	}
 }
 
-func getX509Revocation(thisDB DB, thisX509Certificate x509.Certificate) tCertificateRevocation {
+func getX509Revocation(thisDB database.DB, thisX509Certificate x509.Certificate) tCertificateRevocation {
 
 	revocationValue, err := thisDB.Get([]byte("revoked_x509_certs"), []byte(thisX509Certificate.SerialNumber.String()))
 
@@ -199,7 +200,7 @@ func getX509Revocation(thisDB DB, thisX509Certificate x509.Certificate) tCertifi
 	return parseValueToCertificateRevocation(revocationValue)
 }
 
-func getX509CertificateData(thisDB DB, thisX509Certificate x509.Certificate) tX509CertificateData {
+func getX509CertificateData(thisDB database.DB, thisX509Certificate x509.Certificate) tX509CertificateData {
 
 	certsDataValue, err := thisDB.Get([]byte("x509_certs_data"), []byte(thisX509Certificate.SerialNumber.String()))
 
