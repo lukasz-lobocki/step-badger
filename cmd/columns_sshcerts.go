@@ -119,11 +119,11 @@ func getSshColumns() []tSshColumn {
 			titleColor: color.Bold,
 
 			contentSource: func(x tSshCertificateWithRevocation, tc tConfig) string {
-				if len(x.SshRevocation.ProvisionerID) > 0 {
+				if len(x.SshCertificateRevocation.ProvisionerID) > 0 {
 					if tc.timeFormat.Value == "s" {
-						return x.SshRevocation.RevokedAt.UTC().Format(time.DateOnly)
+						return x.SshCertificateRevocation.RevokedAt.UTC().Format(time.DateOnly)
 					} else {
-						return x.SshRevocation.RevokedAt.UTC().Format(time.RFC3339)
+						return x.SshCertificateRevocation.RevokedAt.UTC().Format(time.RFC3339)
 					}
 				} else {
 					return ""

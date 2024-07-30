@@ -104,13 +104,13 @@ func exportX509Main(args []string) {
 		}
 
 		// Get revocation.
-		x509CertificateRevocation := getRevocation(db, x509Certificate)
+		x509CertificateRevocation := getX509Revocation(db, x509Certificate)
 		if loggingLevel >= 2 { // Show info.
 			logInfo.Printf("RevocationProvisionerID: %s", x509CertificateRevocation.ProvisionerID)
 		}
 
 		// Get provisioner.
-		x509CertificateData := getCertificateData(db, x509Certificate)
+		x509CertificateData := getX509CertificateData(db, x509Certificate)
 		if loggingLevel >= 2 { // Show info.
 			logInfo.Printf("Provisioner: %s", x509CertificateData.Provisioner.Type)
 		}
@@ -176,7 +176,7 @@ func exportX509Main(args []string) {
 	}
 }
 
-func getRevocation(thisDB DB, x509Certificate x509.Certificate) tCertificateRevocation {
+func getX509Revocation(thisDB DB, x509Certificate x509.Certificate) tCertificateRevocation {
 	revocationValue, err := thisDB.Get([]byte("revoked_x509_certs"), []byte(x509Certificate.SerialNumber.String()))
 	switch {
 	case errors.Is(err, database.ErrNotFound):
@@ -194,7 +194,7 @@ func getRevocation(thisDB DB, x509Certificate x509.Certificate) tCertificateRevo
 	return parseValueToCertificateRevocation(revocationValue)
 }
 
-func getCertificateData(thisDB DB, x509Certificate x509.Certificate) tX509CertificateData {
+func getX509CertificateData(thisDB DB, x509Certificate x509.Certificate) tX509CertificateData {
 	certsDataValue, err := thisDB.Get([]byte("x509_certs_data"), []byte(x509Certificate.SerialNumber.String()))
 	switch {
 	case errors.Is(err, database.ErrNotFound):
