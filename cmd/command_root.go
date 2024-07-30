@@ -1,14 +1,10 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/dgraph-io/badger/v2"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -84,65 +80,6 @@ func init() {
 	// Adding global ie. persistent logging level flag.
 	rootCmd.PersistentFlags().IntVar(&loggingLevel, "logging", 0,
 		fmt.Sprintf("logging level [0...%d] (default 0)", MAX_LOGGING_LEVEL))
-}
-
-/*
-getItem function returns data item (if exists for the bucket) for the given key.
-
-	'thisDb' Badger database.
-	'thisBucket' Badger bucket.
-	'thisKey' Badger key.
-*/
-func getItem(thisDb *badger.DB, thisBucket []byte, thisKey []byte) (*badger.Item, error) {
-	badgerKey, _ := toBadgerKey(thisBucket, thisKey)
-
-	txn := thisDb.NewTransaction(false)
-	defer txn.Discard()
-
-	item, err := txn.Get(badgerKey)
-	if err != nil {
-		return nil, err
-	}
-	return item, nil
-}
-
-/*
-badgerEncode function encodes a byte slice into a section of a BadgerKey.
-
-	'val' Byte slice, that contains the key data.
-*/
-func badgerEncode(val []byte) ([]byte, error) {
-	l := len(val)
-	switch {
-	case l == 0:
-		return nil, errors.Errorf("input cannot be empty")
-	case l > 65535:
-		return nil, errors.Errorf("length of input cannot be greater than 65535")
-	default:
-		lb := new(bytes.Buffer)
-		if err := binary.Write(lb, binary.LittleEndian, uint16(l)); err != nil {
-			return nil, errors.Wrap(err, "error doing binary Write")
-		}
-		return append(lb.Bytes(), val...), nil
-	}
-}
-
-/*
-toBadgerKey function encodes bucket and key into the BadgerKey.
-
-	'thisBucket' Byte slice, that bucket name.
-	'thisKey' Byte slice, that key value.
-*/
-func toBadgerKey(thisBucket, thisKey []byte) ([]byte, error) {
-	first, err := badgerEncode(thisBucket)
-	if err != nil {
-		return nil, err
-	}
-	second, err := badgerEncode(thisKey)
-	if err != nil {
-		return nil, err
-	}
-	return append(first, second...), nil
 }
 
 /*

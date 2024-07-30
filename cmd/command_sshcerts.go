@@ -1,14 +1,13 @@
 package cmd
 
 import (
-	"encoding/json"
-	"fmt"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/dgraph-io/badger/v2"
+	"github.com/pkg/errors"
+	"github.com/smallstep/nosql/database"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 )
@@ -58,161 +57,137 @@ func exportSshMain(args []string) {
 
 	checkLogginglevel(args)
 
-	db, err := badger.Open(badger.DefaultOptions(args[0]).WithLogger(nil))
-	if err != nil {
-		logError.Panic(err)
-	}
-	defer db.Close()
-
-	// Get.
-	sshCerts := getSshCerts(db)
-
-	// Sort.
-	switch thisSort := config.sortOrder.Value; thisSort {
-	case "f":
-		sort.SliceStable(sshCerts, func(i, j int) bool {
-			return sshCerts[i].SshCertificate.ValidBefore < sshCerts[j].SshCertificate.ValidBefore
-		})
-	case "s":
-		sort.SliceStable(sshCerts, func(i, j int) bool {
-			return sshCerts[i].SshCertificate.ValidAfter < sshCerts[j].SshCertificate.ValidAfter
-		})
-	}
-
-	// Output.
-	switch thisFormat := config.emitSshFormat.Value; thisFormat {
-	case "j":
-		emitSshCertsJson(sshCerts)
-	case "t":
-		emitSshCertsTable(sshCerts)
-	case "m":
-		emitSshCertsMarkdown(sshCerts)
-	}
-}
-
-/*
-getSshCerts returns struct with ssh certificates.
-
-	'thisDb' Badger database.
-*/
-func getSshCerts(thisDb *badger.DB) []tSshCertificateWithRevocation {
 	var (
-		sshCertsWithRevocations []tSshCertificateWithRevocation = []tSshCertificateWithRevocation{}
+		err error
+		db  DB
+
+		sshCertificateWithRevocation   tSshCertificateWithRevocation
+		sshCertificatesWithRevocations []tSshCertificateWithRevocation
 	)
 
-	thisPrefix, err := badgerEncode([]byte("ssh_certs"))
+	// Open the database.
+	err = db.Open(args[0])
 	if err != nil {
 		logError.Panic(err)
 	}
 
-	txn := thisDb.NewTransaction(false)
-	defer txn.Discard()
+	// Get records from the ssh_certs bucket.
+	records, err := db.List([]byte("ssh_certs"))
+	if err != nil {
+		logError.Panic(err)
+	}
 
-	iter := txn.NewIterator(badger.DefaultIteratorOptions)
-	defer iter.Close()
-
-	for iter.Seek(thisPrefix); iter.ValidForPrefix(thisPrefix); iter.Next() {
-		var (
-			sshCertsWithRevocation tSshCertificateWithRevocation = tSshCertificateWithRevocation{}
-		)
-
-		sshCert, err := getSshCertificate(iter)
-		if err != nil {
-			continue
+	for _, record := range records {
+		// Show info.
+		if loggingLevel >= 2 {
+			logInfo.Printf("Bucket: %s", record.Bucket)
+			logInfo.Printf("Key: %s", record.Key)
+			logInfo.Printf("Value: %s", record.Value)
 		}
 
-		// Populate child main info of the certificate.
-		sshCertsWithRevocation.SshCertificate = sshCert
+		// Get certificate.
+		sshCertificate := parseValueToSshCertificate(record.Value)
+		if loggingLevel >= 2 { // Show info.
+			logInfo.Printf("Serial: %s", strconv.FormatUint(sshCertificate.Serial, 10))
+			logInfo.Printf("Subject: %s", strings.Join(sshCertificate.ValidPrincipals, ","))
+		}
 
-		// Populate child revocation info of the certificate.
-		sshCertsWithRevocation.SshRevocation = getSshRevocationData(thisDb, &sshCert)
+		// Get revocation.
+		sshCertificateRevocation := getSshRevocation(db, sshCertificate)
+		if loggingLevel >= 2 { // Show info.
+			logInfo.Printf("RevocationProvisionerID: %s", sshCertificateRevocation.ProvisionerID)
+		}
+
+		// Populate the child.
+		sshCertificateWithRevocation = tSshCertificateWithRevocation{
+			SshCertificate:           sshCertificate,
+			SshCertificateRevocation: sshCertificateRevocation,
+		}
 
 		// Populate child validity info of the certificate.
-		if len(sshCertsWithRevocation.SshRevocation.ProvisionerID) > 0 && time.Now().After(sshCertsWithRevocation.SshRevocation.RevokedAt) {
-			sshCertsWithRevocation.Validity = REVOKED_STR
+		if len(sshCertificateRevocation.ProvisionerID) > 0 && time.Now().After(sshCertificateRevocation.RevokedAt) {
+			sshCertificateWithRevocation.Validity = REVOKED_STR
 		} else {
-			if time.Now().After(time.Unix(int64(sshCertsWithRevocation.SshCertificate.ValidBefore), 0)) {
-				sshCertsWithRevocation.Validity = EXPIRED_STR
+			if time.Now().After(time.Unix(int64(sshCertificate.ValidBefore), 0)) {
+				sshCertificateWithRevocation.Validity = EXPIRED_STR
 			} else {
-				sshCertsWithRevocation.Validity = VALID_STR
+				sshCertificateWithRevocation.Validity = VALID_STR
 			}
 		}
 
 		// Append child into collection, if record selection criteria are met.
-		if (config.showExpired && sshCertsWithRevocation.Validity == EXPIRED_STR) ||
-			(config.showRevoked && sshCertsWithRevocation.Validity == REVOKED_STR) ||
-			(config.showValid && sshCertsWithRevocation.Validity == VALID_STR) {
-			sshCertsWithRevocations = append(sshCertsWithRevocations, sshCertsWithRevocation)
+		if (config.showExpired && sshCertificateWithRevocation.Validity == EXPIRED_STR) ||
+			(config.showRevoked && sshCertificateWithRevocation.Validity == REVOKED_STR) ||
+			(config.showValid && sshCertificateWithRevocation.Validity == VALID_STR) {
+			sshCertificatesWithRevocations = append(sshCertificatesWithRevocations, sshCertificateWithRevocation)
 		}
-
 	}
 
-	return sshCertsWithRevocations
+	// Close the database.
+	err = db.Close()
+	if err != nil {
+		logError.Panic(err)
+	}
 
+	// Sort.
+	switch thisSort := config.sortOrder.Value; thisSort {
+	case "f":
+		sort.SliceStable(sshCertificatesWithRevocations, func(i, j int) bool {
+			return sshCertificatesWithRevocations[i].SshCertificate.ValidBefore < sshCertificatesWithRevocations[j].SshCertificate.ValidBefore
+		})
+	case "s":
+		sort.SliceStable(sshCertificatesWithRevocations, func(i, j int) bool {
+			return sshCertificatesWithRevocations[i].SshCertificate.ValidAfter < sshCertificatesWithRevocations[j].SshCertificate.ValidAfter
+		})
+	}
+
+	// Output.
+	switch format := config.emitSshFormat.Value; format {
+	case "j":
+		emitSshCertsJson(sshCertificatesWithRevocations)
+	case "t":
+		emitSshCertsTable(sshCertificatesWithRevocations)
+	case "m":
+		emitSshCertsMarkdown(sshCertificatesWithRevocations)
+	}
 }
 
-/*
-getSshCertificate returns ssh certificate.
-*/
-func getSshCertificate(iter *badger.Iterator) (ssh.Certificate, error) {
-	item := iter.Item()
+func getSshRevocation(thisDB DB, thisSshCertificate ssh.Certificate) tCertificateRevocation {
+
+	revocationValue, err := thisDB.Get([]byte("revoked_ssh_certs"), []byte(strconv.FormatUint(thisSshCertificate.Serial, 10)))
+
+	switch {
+	case errors.Is(err, database.ErrNotFound):
+		if loggingLevel >= 2 {
+			logInfo.Printf("key for revocation not found")
+		}
+	case err != nil:
+		logInfo.Panic(err)
+	}
+
+	if loggingLevel >= 2 {
+		logInfo.Printf("revocationValue: %s", revocationValue)
+	}
+
+	return parseValueToCertificateRevocation(revocationValue)
+}
+
+func parseValueToSshCertificate(thisValue []byte) ssh.Certificate {
 
 	var (
-		valCopy []byte
+		sshCertificate *ssh.Certificate
 	)
 
-	valCopy, err := item.ValueCopy(nil)
+	// Parse the SSH certificate.
+	pubKey, err := ssh.ParsePublicKey(thisValue)
 	if err != nil {
-		logError.Panicf("Error parsing item value: %v", err)
+		logError.Panicf("Error parsing SSH certificate: %v", err)
 	}
 
-	if len(strings.TrimSpace(string(valCopy))) == 0 {
-		// Item is empty.
-		return ssh.Certificate{}, fmt.Errorf("empty")
-	} else {
-
-		// Parse the SSH certificate.
-		pubKey, err := ssh.ParsePublicKey(valCopy)
-		if err != nil {
-			logError.Panicf("Error parsing SSH certificate: %v", err)
-		}
-
-		cert, ok := pubKey.(*ssh.Certificate)
-		if !ok {
-			logError.Panicf("Key is not an SSH certificate")
-		}
-
-		return *cert, nil
+	sshCertificate, ok := pubKey.(*ssh.Certificate)
+	if !ok {
+		logError.Panicf("Key is not an SSH certificate")
 	}
 
-}
-
-/*
-getSshRevocationData returns revocation information for a given certificate, if exists.
-
-	'thisDb' Badger database.
-	'thisCert' Certificate to get the revocation information for.
-*/
-func getSshRevocationData(thisDb *badger.DB, thisCert *ssh.Certificate) tRevokedCertificate {
-	var item *badger.Item
-	var data tRevokedCertificate = tRevokedCertificate{}
-
-	item, err := getItem(thisDb, []byte("revoked_ssh_certs"), []byte(strconv.FormatUint(thisCert.Serial, 10)))
-	if err != nil {
-		// Skip errors (like not found).
-	} else {
-		// Found a revoked cert.
-		var valCopy []byte
-		valCopy, err = item.ValueCopy(nil)
-		if err != nil {
-			logError.Panic(err)
-		}
-
-		if len(strings.TrimSpace(string(valCopy))) > 0 {
-			if err := json.Unmarshal(valCopy, &data); err != nil {
-				logError.Panic(err)
-			}
-		}
-	}
-	return data
+	return *sshCertificate
 }

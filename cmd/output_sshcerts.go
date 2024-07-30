@@ -16,25 +16,24 @@ emitSshCertsTable prints result in the form of a table.
 	'thisSshCerts' Slice of structures describing the ssh certificates.
 */
 func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
+
 	table := new(tabby.Table)
-
-	thisColumns := getSshColumns()
-
-	var thisHeader []string
+	columns := getSshColumns()
 
 	// Building slice of titles.
-	for _, thisColumn := range thisColumns {
-		if thisColumn.isShown(config) {
-			thisHeader = append(thisHeader,
-				color.New(thisColumn.titleColor).SprintFunc()(
-					thisColumn.title(),
+	var header []string
+	for _, column := range columns {
+		if column.isShown(config) {
+			header = append(header,
+				color.New(column.titleColor).SprintFunc()(
+					column.title(),
 				),
 			)
 		}
 	}
 
 	// Set the header.
-	if err := table.SetHeader(thisHeader); err != nil {
+	if err := table.SetHeader(header); err != nil {
 		logError.Panic("Setting header failed. %w", err)
 	}
 
@@ -45,21 +44,20 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 	// Populate the table.
 	for _, sshCert := range thisSshCerts {
 
-		var thisRow []string
-
 		// Building slice of columns within a single row.
-		for _, thisColumn := range thisColumns {
+		var row []string
+		for _, column := range columns {
 
-			if thisColumn.isShown(config) {
-				thisRow = append(thisRow,
-					color.New(thisColumn.contentColor(sshCert)).SprintFunc()(
-						thisColumn.contentSource(sshCert, config),
+			if column.isShown(config) {
+				row = append(row,
+					color.New(column.contentColor(sshCert)).SprintFunc()(
+						column.contentSource(sshCert, config),
 					),
 				)
 			}
 		}
 
-		if err := table.AppendRow(thisRow); err != nil {
+		if err := table.AppendRow(row); err != nil {
 			logError.Panic(err)
 		}
 		if loggingLevel >= 3 {
@@ -72,8 +70,7 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 		logInfo.Printf("%d rows appended.\n", len(thisSshCerts))
 	}
 
-	/* Emit the table */
-
+	// Emit the table.
 	if loggingLevel >= 3 {
 		table.Print(&tabby.Config{Spacing: "|", Padding: "."})
 	} else {
@@ -87,11 +84,14 @@ emitSshCertsJson prints result in the form of a json.
 	'thisSshCerts' Slice of structures describing the ssh certificates.
 */
 func emitSshCertsJson(thisSshCerts []tSshCertificateWithRevocation) {
+
 	jsonInfo, err := json.MarshalIndent(thisSshCerts, "", "  ")
 	if err != nil {
 		logError.Panic(err)
 	}
+
 	fmt.Println(string(jsonInfo))
+
 	if loggingLevel >= 2 {
 		logInfo.Printf("%d records marshalled.\n", len(thisSshCerts))
 	}
@@ -103,56 +103,54 @@ emitX509Markdown prints result in the form of markdown table.
 	'thisSshCerts' Slice of structures describing the certs.
 */
 func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWithRevocation) {
-	thisColumns := getSshColumns()
 
-	var thisHeader []string
+	columns := getSshColumns()
 
 	// Building slice of titles.
-	for _, thisColumn := range thisColumns {
-		if thisColumn.isShown(config) {
-			thisHeader = append(thisHeader, thisColumn.title())
+	var header []string
+	for _, column := range columns {
+		if column.isShown(config) {
+			header = append(header, column.title())
 		}
 	}
 
 	// Emitting titles.
-	fmt.Println("| " + strings.Join(thisHeader, " | ") + " |")
+	fmt.Println("| " + strings.Join(header, " | ") + " |")
 
 	if loggingLevel >= 1 {
 		logInfo.Println("header printed.")
 	}
 
 	// Emit markdown line that separates header from body table.
-	var thisSeparator []string
-
-	for _, thisColumn := range thisColumns {
-		if thisColumn.isShown(config) {
-			thisSeparator = append(thisSeparator, getThisAlignChar()[thisColumn.contentAlignMD])
+	var separator []string
+	for _, column := range columns {
+		if column.isShown(config) {
+			separator = append(separator, getAlignChar()[column.contentAlignMD])
 		}
 	}
-	fmt.Println("| " + strings.Join(thisSeparator, " | ") + " |")
+	fmt.Println("| " + strings.Join(separator, " | ") + " |")
 
 	if loggingLevel >= 1 {
 		logInfo.Println("separator printed.")
 	}
 
 	// Iterating through certs.
-	for _, thisSshCertificateWithRevocation := range thisSshCertificatesWithRevocations {
-
-		var thisRow []string
+	for _, sshCertificateWithRevocation := range thisSshCertificatesWithRevocations {
 
 		// Building slice of columns within a single row.
-		for _, thisColumn := range thisColumns {
-			if thisColumn.isShown(config) {
-				if thisColumn.contentEscapeMD {
-					thisRow = append(thisRow, escapeMarkdown(thisColumn.contentSource(thisSshCertificateWithRevocation, config)))
+		var row []string
+		for _, column := range columns {
+			if column.isShown(config) {
+				if column.contentEscapeMD {
+					row = append(row, escapeMarkdown(column.contentSource(sshCertificateWithRevocation, config)))
 				} else {
-					thisRow = append(thisRow, thisColumn.contentSource(thisSshCertificateWithRevocation, config))
+					row = append(row, column.contentSource(sshCertificateWithRevocation, config))
 				}
 			}
 		}
 
 		// Emitting row.
-		fmt.Println("| " + strings.Join(thisRow, " | ") + " |")
+		fmt.Println("| " + strings.Join(row, " | ") + " |")
 	}
 
 	if loggingLevel >= 2 {

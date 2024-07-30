@@ -9,7 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgraph-io/badger/v2"
+	"github.com/pkg/errors"
+	"github.com/smallstep/nosql/database"
 	"github.com/spf13/cobra"
 )
 
@@ -67,203 +68,224 @@ func exportX509Main(args []string) {
 
 	checkLogginglevel(args)
 
-	db, err := badger.Open(badger.DefaultOptions(args[0]).WithLogger(nil))
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	// Get.
-	x509CertsWithRevocations := getX509Certs(db)
-
-	// Sort.
-	switch thisSort := config.sortOrder.Value; thisSort {
-	case "f":
-		sort.SliceStable(x509CertsWithRevocations, func(i, j int) bool {
-			return x509CertsWithRevocations[i].X509Certificate.NotAfter.Before(x509CertsWithRevocations[j].X509Certificate.NotAfter)
-		})
-	case "s":
-		sort.SliceStable(x509CertsWithRevocations, func(i, j int) bool {
-			return x509CertsWithRevocations[i].X509Certificate.NotBefore.Before(x509CertsWithRevocations[j].X509Certificate.NotBefore)
-		})
-	}
-
-	// Output.
-	switch thisFormat := config.emitX509Format.Value; thisFormat {
-	case "j":
-		emitX509CertsWithRevocationsJson(x509CertsWithRevocations)
-	case "t":
-		emitX509Table(x509CertsWithRevocations)
-	case "m":
-		emitX509Markdown(x509CertsWithRevocations)
-	case "o":
-		emitOpenSsl(x509CertsWithRevocations)
-	}
-
-}
-
-/*
-getX509Certs returns struct with x509 certificates.
-
-	'thisDb' Badger database.
-*/
-func getX509Certs(thisDb *badger.DB) []tX509CertificateWithRevocation {
 	var (
-		x509CertsWithRevocations []tX509CertificateWithRevocation = []tX509CertificateWithRevocation{}
+		err error
+		db  DB
+
+		x509CertificateProvisionerRevocation    tX509CertificateProvisionerRevocation
+		x509CertificatesProvisionersRevocations []tX509CertificateProvisionerRevocation
 	)
 
-	thisPrefix, err := badgerEncode([]byte("x509_certs"))
+	// Open the database.
+	err = db.Open(args[0])
 	if err != nil {
 		logError.Panic(err)
 	}
 
-	txn := thisDb.NewTransaction(false)
-	defer txn.Discard()
+	// Get records from the x509_certs bucket.
+	records, err := db.List([]byte("x509_certs"))
+	if err != nil {
+		logError.Panic(err)
+	}
 
-	iter := txn.NewIterator(badger.DefaultIteratorOptions)
-	defer iter.Close()
-
-	for iter.Seek(thisPrefix); iter.ValidForPrefix(thisPrefix); iter.Next() {
-		var (
-			x509CertWithRevocation tX509CertificateWithRevocation = tX509CertificateWithRevocation{}
-		)
-
-		x509Cert, err := getX509Certificate(iter)
-		if err != nil {
-			continue
+	for _, record := range records {
+		// Show info.
+		if loggingLevel >= 2 {
+			logInfo.Printf("Bucket: %s", record.Bucket)
+			logInfo.Printf("Key: %s", record.Key)
+			logInfo.Printf("Value: %s", record.Value)
 		}
 
-		// Populate child main info of the certificate.
-		x509CertWithRevocation.X509Certificate = x509Cert
+		// Get certificate.
+		x509Certificate := parseValueToX509Certificate(record.Value)
+		if loggingLevel >= 2 { // Show info.
+			logInfo.Printf("Serial: %s", x509Certificate.SerialNumber.String())
+			logInfo.Printf("Subject: %s", x509Certificate.Subject)
+		}
 
-		// Populate child revocation info of the certificate.
-		x509CertWithRevocation.X509Revocation = getX509RevocationData(thisDb, &x509Cert)
+		// Get revocation.
+		x509CertificateRevocation := getX509Revocation(db, x509Certificate)
+		if loggingLevel >= 2 { // Show info.
+			logInfo.Printf("RevocationProvisionerID: %s", x509CertificateRevocation.ProvisionerID)
+		}
 
-		// Populate child provisioner sub-info of the certificate.
-		x509CertWithRevocation.X509Provisioner = getX509CertificateProvisionerData(thisDb, &x509Cert).Provisioner
+		// Get provisioner.
+		x509CertificateData := getX509CertificateData(db, x509Certificate)
+		if loggingLevel >= 2 { // Show info.
+			logInfo.Printf("Provisioner: %s", x509CertificateData.Provisioner.Type)
+		}
+
+		// Populate the child.
+		x509CertificateProvisionerRevocation = tX509CertificateProvisionerRevocation{
+			X509Certificate: x509Certificate,
+			X509Revocation:  x509CertificateRevocation,
+			X509Provisioner: x509CertificateData.Provisioner,
+		}
 
 		// Populate child validity info of the certificate.
-		if len(x509CertWithRevocation.X509Revocation.ProvisionerID) > 0 && time.Now().After(x509CertWithRevocation.X509Revocation.RevokedAt) {
-			x509CertWithRevocation.Validity = REVOKED_STR
+		if len(x509CertificateRevocation.ProvisionerID) > 0 && time.Now().After(x509CertificateRevocation.RevokedAt) {
+			x509CertificateProvisionerRevocation.Validity = REVOKED_STR
 		} else {
-			if time.Now().After(x509CertWithRevocation.X509Certificate.NotAfter) {
-				x509CertWithRevocation.Validity = EXPIRED_STR
+			if time.Now().After(x509Certificate.NotAfter) {
+				x509CertificateProvisionerRevocation.Validity = EXPIRED_STR
 			} else {
-				x509CertWithRevocation.Validity = VALID_STR
+				x509CertificateProvisionerRevocation.Validity = VALID_STR
 			}
 		}
 
-		// Append child to collection, if record selection criteria are met.
-		if (config.showExpired && x509CertWithRevocation.Validity == EXPIRED_STR) ||
-			(config.showRevoked && x509CertWithRevocation.Validity == REVOKED_STR) ||
-			(config.showValid && x509CertWithRevocation.Validity == VALID_STR) {
-			x509CertsWithRevocations = append(x509CertsWithRevocations, x509CertWithRevocation)
+		// Append child into collection, if record selection criteria are met.
+		if (config.showExpired && x509CertificateProvisionerRevocation.Validity == EXPIRED_STR) ||
+			(config.showRevoked && x509CertificateProvisionerRevocation.Validity == REVOKED_STR) ||
+			(config.showValid && x509CertificateProvisionerRevocation.Validity == VALID_STR) {
+			x509CertificatesProvisionersRevocations = append(x509CertificatesProvisionersRevocations,
+				x509CertificateProvisionerRevocation)
 		}
+
 	}
-	return x509CertsWithRevocations
+
+	// Close the database.
+	err = db.Close()
+	if err != nil {
+		logError.Panic(err)
+	}
+
+	// Sort.
+	switch thisSort := config.sortOrder.Value; thisSort {
+	case "f":
+		sort.SliceStable(x509CertificatesProvisionersRevocations, func(i, j int) bool {
+			return x509CertificatesProvisionersRevocations[i].X509Certificate.NotAfter.
+				Before(x509CertificatesProvisionersRevocations[j].X509Certificate.NotAfter)
+		})
+	case "s":
+		sort.SliceStable(x509CertificatesProvisionersRevocations, func(i, j int) bool {
+			return x509CertificatesProvisionersRevocations[i].X509Certificate.NotBefore.
+				Before(x509CertificatesProvisionersRevocations[j].X509Certificate.NotBefore)
+		})
+	}
+
+	// Output.
+	switch format := config.emitX509Format.Value; format {
+	case "j":
+		emitX509CertsWithRevocationsJson(x509CertificatesProvisionersRevocations)
+	case "t":
+		emitX509Table(x509CertificatesProvisionersRevocations)
+	case "m":
+		emitX509Markdown(x509CertificatesProvisionersRevocations)
+	case "o":
+		emitOpenSsl(x509CertificatesProvisionersRevocations)
+	}
 }
 
-/*
-getX509Certificate returns x509 certificate.
-*/
-func getX509Certificate(thisIter *badger.Iterator) (x509.Certificate, error) {
-	item := thisIter.Item()
+func getX509Revocation(thisDB DB, thisX509Certificate x509.Certificate) tCertificateRevocation {
+
+	revocationValue, err := thisDB.Get([]byte("revoked_x509_certs"), []byte(thisX509Certificate.SerialNumber.String()))
+
+	switch {
+	case errors.Is(err, database.ErrNotFound):
+		if loggingLevel >= 2 {
+			logInfo.Printf("key for revocation not found")
+		}
+	case err != nil:
+		logInfo.Panic(err)
+	}
+
+	if loggingLevel >= 2 {
+		logInfo.Printf("revocationValue: %s", revocationValue)
+	}
+
+	return parseValueToCertificateRevocation(revocationValue)
+}
+
+func getX509CertificateData(thisDB DB, thisX509Certificate x509.Certificate) tX509CertificateData {
+
+	certsDataValue, err := thisDB.Get([]byte("x509_certs_data"), []byte(thisX509Certificate.SerialNumber.String()))
+
+	switch {
+	case errors.Is(err, database.ErrNotFound):
+		if loggingLevel >= 2 {
+			logInfo.Printf("key for certificate data not found")
+		}
+	case err != nil:
+		logInfo.Panic(err)
+	}
+
+	if loggingLevel >= 2 {
+		logInfo.Printf("revocationValue: %s", certsDataValue)
+	}
+
+	return parseValueToX509CertificateData(certsDataValue)
+}
+
+func parseValueToX509CertificateData(thisValue []byte) tX509CertificateData {
 
 	var (
-		valCopy  []byte
-		x509cert *x509.Certificate
+		certificateData tX509CertificateData
 	)
 
-	valCopy, err := item.ValueCopy(nil)
-	if err != nil {
-		logError.Panicf("Error parsing item value: %v", err)
-	}
-
-	if len(strings.TrimSpace(string(valCopy))) == 0 {
-		// Item is empty.
-		return x509.Certificate{}, fmt.Errorf("empty")
-	} else {
-		// Read data to object.
-		marshaledValue, err := json.Marshal(valCopy)
-		if err != nil {
+	if len(strings.TrimSpace(string(thisValue))) > 0 {
+		if err := json.Unmarshal(thisValue, &certificateData); err != nil {
 			logError.Panic(err)
 		}
-
-		// Make x509Cert-data from db decodable pem.
-		base64cert := fmt.Sprintf("-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----",
-			strings.ReplaceAll(string(marshaledValue), "\"", ""))
-		decodedPEMBlock, _ := pem.Decode([]byte(base64cert))
-
-		if decodedPEMBlock == nil {
-			logError.Panicf("failed to parse certificate PEM")
-		}
-
-		x509cert, err = x509.ParseCertificate(decodedPEMBlock.Bytes)
-		if err != nil {
-			logError.Panicf("failed to parse certificate: " + err.Error())
-		}
-
-		return *x509cert, nil
 	}
 
+	return certificateData
 }
 
-/*
-getX509RevocationData returns revocation information for a given certificate, if exists.
+func parseValueToCertificateRevocation(thisValue []byte) tCertificateRevocation {
 
-	'thisDb' Badger database
-	'thisCert' Certificate to get revocation information for.
-*/
-func getX509RevocationData(thisDb *badger.DB, thisCert *x509.Certificate) tRevokedCertificate {
-	var item *badger.Item
-	var data tRevokedCertificate = tRevokedCertificate{}
+	var (
+		certificateRevocation tCertificateRevocation
+	)
 
-	item, err := getItem(thisDb, []byte("revoked_x509_certs"), []byte(thisCert.SerialNumber.String()))
-	if err != nil {
-		// Skip errors (like not found).
-	} else {
-		// Found a revoked cert.
-		var valCopy []byte
-		valCopy, err = item.ValueCopy(nil)
-		if err != nil {
+	if len(strings.TrimSpace(string(thisValue))) > 0 {
+		if err := json.Unmarshal(thisValue, &certificateRevocation); err != nil {
 			logError.Panic(err)
 		}
-
-		if len(strings.TrimSpace(string(valCopy))) > 0 {
-			if err := json.Unmarshal(valCopy, &data); err != nil {
-				logError.Panic(err)
-			}
-		}
 	}
-	return data
+
+	return certificateRevocation
 }
 
-/*
-getX509CertificateProvisionerData returns provisioner information for a given certificate, if exists.
+func parseValueToX509Certificate(thisValue []byte) x509.Certificate {
 
-	'thisDb' Badger database.
-	'thisCert' Certificate to get provisioner information for.
-*/
-func getX509CertificateProvisionerData(thisDb *badger.DB, thisCert *x509.Certificate) tX509Certificate {
-	var item *badger.Item
-	var info tX509Certificate = tX509Certificate{}
+	var (
+		x509Certificate *x509.Certificate
+	)
 
-	item, err := getItem(thisDb, []byte("x509_certs_data"), []byte(thisCert.SerialNumber.String()))
+	marshaledValue, err := json.Marshal(thisValue)
 	if err != nil {
-		// Skip errors (like not found).
-	} else {
-		// Found a provisioner info.
-		var valCopy []byte
-		valCopy, err = item.ValueCopy(nil)
-		if err != nil {
-			logError.Panic(err)
-		}
-
-		if len(strings.TrimSpace(string(valCopy))) > 0 {
-			if err := json.Unmarshal(valCopy, &info); err != nil {
-				logError.Panic(err)
-			}
-		}
+		logError.Panic(err)
 	}
-	return info
+
+	// Show info.
+	if loggingLevel >= 2 {
+		logInfo.Printf("marshaledValue: %s", marshaledValue)
+	}
+
+	// Adding header and footer.
+	pemBlockValue := makePEM(marshaledValue)
+
+	// Show info.
+	if loggingLevel >= 2 {
+		logInfo.Printf("pemBlockValue: %s", pemBlockValue)
+	}
+
+	// Decode the PEM block.
+	decodedPEMBlock, _ := pem.Decode([]byte(pemBlockValue))
+	if decodedPEMBlock == nil {
+		logError.Panicf("failed to parse certificate PEM")
+	}
+
+	// Parse PEM block into certificate.
+	x509Certificate, err = x509.ParseCertificate(decodedPEMBlock.Bytes)
+	if err != nil {
+		logError.Panicf("failed to parse certificate: " + err.Error())
+	}
+
+	return *x509Certificate
+}
+
+func makePEM(thisValue []byte) string {
+	return fmt.Sprintf("-----BEGIN CERTIFICATE-----\n%s\n-----END CERTIFICATE-----",
+		strings.ReplaceAll(string(thisValue), "\"", ""))
 }

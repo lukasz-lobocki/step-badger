@@ -23,9 +23,9 @@ getX509Columns defines look and content of table's emitted columns.
 */
 func getSshColumns() []tSshColumn {
 
-	var thisColumns []tSshColumn
+	var columns []tSshColumn
 
-	thisColumns = append(thisColumns,
+	columns = append(columns,
 
 		tSshColumn{
 			isShown:    func(_ tConfig) bool { return true },     // Always shown.
@@ -46,10 +46,10 @@ func getSshColumns() []tSshColumn {
 			titleColor: color.Bold,
 
 			contentSource: func(x tSshCertificateWithRevocation, _ tConfig) string {
-				return getThisCertType()[int(x.SshCertificate.CertType)]
+				return getCertType()[int(x.SshCertificate.CertType)]
 			},
 			contentColor: func(x tSshCertificateWithRevocation) color.Attribute {
-				return getThisCertTypeColor()[int(x.SshCertificate.CertType)]
+				return getCertTypeColor()[int(x.SshCertificate.CertType)]
 			}, // Dynamic color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
@@ -119,11 +119,11 @@ func getSshColumns() []tSshColumn {
 			titleColor: color.Bold,
 
 			contentSource: func(x tSshCertificateWithRevocation, tc tConfig) string {
-				if len(x.SshRevocation.ProvisionerID) > 0 {
+				if len(x.SshCertificateRevocation.ProvisionerID) > 0 {
 					if tc.timeFormat.Value == "s" {
-						return x.SshRevocation.RevokedAt.UTC().Format(time.DateOnly)
+						return x.SshCertificateRevocation.RevokedAt.UTC().Format(time.DateOnly)
 					} else {
-						return x.SshRevocation.RevokedAt.UTC().Format(time.RFC3339)
+						return x.SshCertificateRevocation.RevokedAt.UTC().Format(time.RFC3339)
 					}
 				} else {
 					return ""
@@ -143,20 +143,20 @@ func getSshColumns() []tSshColumn {
 				return x.Validity
 			},
 			contentColor: func(x tSshCertificateWithRevocation) color.Attribute {
-				return getThisValidityColor()[x.Validity]
+				return getValidityColor()[x.Validity]
 			}, // Dynamic color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
 	)
 
-	return thisColumns
+	return columns
 }
 
 /*
-getThisCertType maps given CertType to string to be displayed.
+getCertType maps given CertType to string to be displayed.
 */
-func getThisCertType() map[int]string {
+func getCertType() map[int]string {
 	return map[int]string{
 		1: `User`,
 		2: `Host`,
@@ -164,9 +164,9 @@ func getThisCertType() map[int]string {
 }
 
 /*
-getThisCertTypeColor maps given CertType to color to be used.
+getCertTypeColor maps given CertType to color to be used.
 */
-func getThisCertTypeColor() map[int]color.Attribute {
+func getCertTypeColor() map[int]color.Attribute {
 	return map[int]color.Attribute{
 		1: color.FgCyan,
 		2: color.FgMagenta,

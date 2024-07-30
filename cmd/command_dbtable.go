@@ -3,9 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
-	"github.com/dgraph-io/badger/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -39,86 +37,52 @@ dbTable main function.
 */
 func dbTableMain(args []string) {
 
+	var (
+		err error
+		db  DB
+	)
+
 	checkLogginglevel(args)
 
-	db, err := badger.Open(badger.DefaultOptions(args[0]).WithLogger(nil))
-	if err != nil {
-		logError.Panic(err)
-	}
-	defer db.Close()
-
-	dbRecords := retrieveDbTableData(db, []byte(args[1]))
-	emitDbRecordsJson(dbRecords)
-}
-
-/*
-retrieveDbTableData returns the structure containing data table from Badger database.
-
-	'thisDb' Source database.
-	'thisBucket' Name of the bucket.
-*/
-func retrieveDbTableData(thisDb *badger.DB, thisBucket []byte) []tDbRecord {
-	var (
-		dbRecords []tDbRecord = []tDbRecord{}
-	)
-	txn := thisDb.NewTransaction(false)
-	defer txn.Discard()
-
-	thisPrefix, err := badgerEncode(thisBucket)
+	// Open the database.
+	err = db.Open(args[0])
 	if err != nil {
 		logError.Panic(err)
 	}
 
+	// Get records from the bucket.
+	records, err := db.List([]byte(args[1]))
+	if err != nil {
+		logError.Panic(err)
+	}
+
+	// Close the database.
+	err = db.Close()
+	if err != nil {
+		logError.Panic(err)
+	}
+
+	// Show info.
 	if loggingLevel >= 2 {
-		logInfo.Printf("Encoded table prefix: %s", string(thisPrefix))
-	}
-
-	iter := txn.NewIterator(badger.DefaultIteratorOptions)
-	defer iter.Close()
-
-	for iter.Seek(thisPrefix); iter.ValidForPrefix(thisPrefix); iter.Next() {
-		var (
-			dbRecord tDbRecord = tDbRecord{}
-		)
-		item := iter.Item()
-
-		var valCopy []byte
-		valCopy, err = item.ValueCopy(nil)
-		if err != nil {
-			logError.Panic(err)
-		}
-
-		if len(strings.TrimSpace(string(valCopy))) == 0 {
-			// Item is empty
-			continue
-		}
-
-		// Construct child key and value.
-		dbRecord.Key = string(item.Key())
-		dbRecord.Value = valCopy
-
-		// Append child to the collection.
-		dbRecords = append(dbRecords, dbRecord)
-
-		if loggingLevel >= 3 {
-			logInfo.Printf("[key=%s] [value=%s]", strings.TrimSpace(string(item.Key())), strings.TrimSpace(string(valCopy)))
+		for _, record := range records {
+			logInfo.Printf("Bucket: %s", record.Bucket)
+			logInfo.Printf("Key: %s", record.Key)
+			logInfo.Printf("Value: %s", record.Value)
 		}
 	}
-	return dbRecords
-}
 
-/*
-emitDbRecordsJson prints result in the form of a json.
-
-	'thisDbRecords' Slice of structures describing the records.
-*/
-func emitDbRecordsJson(thisDbRecords []tDbRecord) {
-	jsonInfo, err := json.MarshalIndent(thisDbRecords, "", "  ")
+	// Marshal into json.
+	json, err := json.MarshalIndent(records, "", "  ")
 	if err != nil {
 		logError.Panic(err)
 	}
-	fmt.Println(string(jsonInfo))
+
+	// Emit.
+	fmt.Println(string(json))
+
+	// Show info.
 	if loggingLevel >= 2 {
-		logInfo.Printf("%d records marshalled.\n", len(thisDbRecords))
+		logInfo.Printf("%d records marshalled.\n", len(records))
 	}
+
 }
