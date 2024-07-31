@@ -67,8 +67,7 @@ func dbTableMain(args []string) {
 		logError.Fatalln(err)
 	}
 
-	// Show info.
-	if loggingLevel >= 2 {
+	if loggingLevel >= 2 { // Show info.
 		for _, record := range records {
 			logInfo.Printf("Bucket: %s", record.Bucket)
 			logInfo.Printf("Key: %s", record.Key)
@@ -85,8 +84,7 @@ func dbTableMain(args []string) {
 	// Emit.
 	fmt.Println(string(json))
 
-	// Show info.
-	if loggingLevel >= 2 {
+	if loggingLevel >= 2 { // Show info.
 		logInfo.Printf("%d records marshalled.\n", len(records))
 	}
 

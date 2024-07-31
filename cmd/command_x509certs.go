@@ -93,8 +93,7 @@ func exportX509Main(args []string) {
 	}
 
 	for _, record := range records {
-		// Show info.
-		if loggingLevel >= 2 {
+		if loggingLevel >= 2 { // Show info.
 			logInfo.Printf("Bucket: %s", record.Bucket)
 			logInfo.Printf("Key: %s", record.Key)
 			logInfo.Printf("Value: %q", record.Value)
@@ -186,14 +185,14 @@ func getX509Revocation(thisDB database.DB, thisX509Certificate x509.Certificate)
 
 	switch {
 	case errors.Is(err, database.ErrNotFound):
-		if loggingLevel >= 2 {
+		if loggingLevel >= 2 { // Show info.
 			logInfo.Printf("key for revocation not found")
 		}
 	case err != nil:
 		logInfo.Panic(err)
 	}
 
-	if loggingLevel >= 2 {
+	if loggingLevel >= 2 { // Show info.
 		logInfo.Printf("revocationValue: %s", revocationValue)
 	}
 
@@ -206,14 +205,14 @@ func getX509CertificateData(thisDB database.DB, thisX509Certificate x509.Certifi
 
 	switch {
 	case errors.Is(err, database.ErrNotFound):
-		if loggingLevel >= 2 {
+		if loggingLevel >= 2 { // Show info.
 			logInfo.Printf("key for certificate data not found")
 		}
 	case err != nil:
 		logInfo.Panic(err)
 	}
 
-	if loggingLevel >= 2 {
+	if loggingLevel >= 2 { // Show info.
 		logInfo.Printf("certsDataValue: %s", certsDataValue)
 	}
 
@@ -231,7 +230,6 @@ func parseValueToX509CertificateData(thisValue []byte) tX509CertificateData {
 			logError.Panic(err)
 		}
 	}
-
 	return certificateData
 }
 
@@ -246,7 +244,6 @@ func parseValueToCertificateRevocation(thisValue []byte) tCertificateRevocation 
 			logError.Panic(err)
 		}
 	}
-
 	return certificateRevocation
 }
 
@@ -261,16 +258,14 @@ func parseValueToX509Certificate(thisValue []byte) x509.Certificate {
 		logError.Panic(err)
 	}
 
-	// Show info.
-	if loggingLevel >= 2 {
+	if loggingLevel >= 2 { // Show info.
 		logInfo.Printf("marshaledValue: %s", marshaledValue)
 	}
 
 	// Adding header and footer.
 	pemBlockValue := makePEM(marshaledValue)
 
-	// Show info.
-	if loggingLevel >= 2 {
+	if loggingLevel >= 2 { // Show info.
 		logInfo.Printf("pemBlockValue: %s", pemBlockValue)
 	}
 

@@ -82,8 +82,7 @@ func exportSshMain(args []string) {
 	}
 
 	for _, record := range records {
-		// Show info.
-		if loggingLevel >= 2 {
+		if loggingLevel >= 2 { // Show info.
 			logInfo.Printf("Bucket: %s", record.Bucket)
 			logInfo.Printf("Key: %s", record.Key)
 			logInfo.Printf("Value: %q", record.Value)
@@ -162,14 +161,14 @@ func getSshRevocation(thisDB database.DB, thisSshCertificate ssh.Certificate) tC
 
 	switch {
 	case errors.Is(err, database.ErrNotFound):
-		if loggingLevel >= 2 {
+		if loggingLevel >= 2 { // Show info.
 			logInfo.Printf("key for revocation not found")
 		}
 	case err != nil:
 		logInfo.Panic(err)
 	}
 
-	if loggingLevel >= 2 {
+	if loggingLevel >= 2 { // Show info.
 		logInfo.Printf("revocationValue: %s", revocationValue)
 	}
 

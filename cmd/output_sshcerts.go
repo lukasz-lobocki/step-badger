@@ -37,7 +37,7 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 		logError.Panic("Setting header failed. %w", err)
 	}
 
-	if loggingLevel >= 1 {
+	if loggingLevel >= 1 { // Show info.
 		logInfo.Println("header set.")
 	}
 
@@ -60,18 +60,18 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 		if err := table.AppendRow(row); err != nil {
 			logError.Panic(err)
 		}
-		if loggingLevel >= 3 {
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("row [%s] appended.", strconv.FormatUint(sshCert.SshCertificate.Serial, 10))
 		}
 
 	}
 
-	if loggingLevel >= 2 {
+	if loggingLevel >= 2 { // Show info.
 		logInfo.Printf("%d rows appended.\n", len(thisSshCerts))
 	}
 
 	// Emit the table.
-	if loggingLevel >= 3 {
+	if loggingLevel >= 3 { // Show spacing.
 		table.Print(&tabby.Config{Spacing: "|", Padding: "."})
 	} else {
 		table.Print(nil)
@@ -92,7 +92,7 @@ func emitSshCertsJson(thisSshCerts []tSshCertificateWithRevocation) {
 
 	fmt.Println(string(jsonInfo))
 
-	if loggingLevel >= 2 {
+	if loggingLevel >= 2 { // Show info.
 		logInfo.Printf("%d records marshalled.\n", len(thisSshCerts))
 	}
 }
@@ -117,7 +117,7 @@ func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWi
 	// Emitting titles.
 	fmt.Println("| " + strings.Join(header, " | ") + " |")
 
-	if loggingLevel >= 1 {
+	if loggingLevel >= 1 { // Show info.
 		logInfo.Println("header printed.")
 	}
 
@@ -130,7 +130,7 @@ func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWi
 	}
 	fmt.Println("| " + strings.Join(separator, " | ") + " |")
 
-	if loggingLevel >= 1 {
+	if loggingLevel >= 1 { // Show info.
 		logInfo.Println("separator printed.")
 	}
 
@@ -153,7 +153,7 @@ func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWi
 		fmt.Println("| " + strings.Join(row, " | ") + " |")
 	}
 
-	if loggingLevel >= 2 {
+	if loggingLevel >= 2 { // Show info.
 		logInfo.Printf("%d rows printed.\n", len(thisSshCertificatesWithRevocations))
 	}
 }

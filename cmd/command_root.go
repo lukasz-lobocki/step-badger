@@ -98,7 +98,7 @@ func checkLogginglevel(thisArgs []string) {
 		logError.Fatalln(fmt.Errorf("%s", rootCmd.Flag("logging").Usage))
 	}
 
-	if loggingLevel >= 1 {
+	if loggingLevel >= 1 { // Show info.
 		logInfo.Printf("len(args): %d. args: %#v\n", len(thisArgs), thisArgs)
 		logInfo.Printf("loggingLevel: %d. config: %#v\n", loggingLevel, config)
 	}

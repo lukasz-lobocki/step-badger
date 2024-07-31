@@ -40,7 +40,7 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateProvisionerRev
 		logError.Panic("Setting header failed. %w", err)
 	}
 
-	if loggingLevel >= 1 {
+	if loggingLevel >= 1 { // Show info.
 		logInfo.Println("header set.")
 	}
 
@@ -63,18 +63,18 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateProvisionerRev
 		if err := table.AppendRow(row); err != nil {
 			logError.Panic(err)
 		}
-		if loggingLevel >= 3 {
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("row [%s] appended.", x509CertWithRevocation.X509Certificate.SerialNumber.String())
 		}
 
 	}
 
-	if loggingLevel >= 2 {
+	if loggingLevel >= 2 { // Show info.
 		logInfo.Printf("%d rows appended.\n", len(thisX509CertsWithRevocations))
 	}
 
 	// Emit the table.
-	if loggingLevel >= 3 {
+	if loggingLevel >= 3 { // Show spacing.
 		table.Print(&tabby.Config{Spacing: "|", Padding: "."})
 	} else {
 		table.Print(nil)
@@ -95,7 +95,7 @@ func emitX509CertsWithRevocationsJson(thisX509CertsWithRevocations []tX509Certif
 
 	fmt.Println(string(jsonInfo))
 
-	if loggingLevel >= 2 {
+	if loggingLevel >= 2 { // Show info.
 		logInfo.Printf("%d records marshalled.\n", len(thisX509CertsWithRevocations))
 	}
 }
@@ -120,7 +120,7 @@ func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateProvisioner
 	// Emitting titles.
 	fmt.Println("| " + strings.Join(header, " | ") + " |")
 
-	if loggingLevel >= 1 {
+	if loggingLevel >= 1 { // Show info.
 		logInfo.Println("header printed.")
 	}
 
@@ -133,7 +133,7 @@ func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateProvisioner
 	}
 	fmt.Println("| " + strings.Join(separator, " | ") + " |")
 
-	if loggingLevel >= 1 {
+	if loggingLevel >= 1 { // Show info.
 		logInfo.Println("separator printed.")
 	}
 
@@ -156,7 +156,7 @@ func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateProvisioner
 		fmt.Println("| " + strings.Join(row, " | ") + " |")
 	}
 
-	if loggingLevel >= 2 {
+	if loggingLevel >= 2 { // Show info.
 		logInfo.Printf("%d rows printed.\n", len(thisX509CertsWithRevocations))
 	}
 }
@@ -184,7 +184,7 @@ func emitOpenSsl(thisX509CertsWithRevocations []tX509CertificateProvisionerRevoc
 			x509CertWithRevocation.Validity[0:1],
 			regexp.MustCompile(`[-T:]+`).
 				ReplaceAllString(x509CertWithRevocation.X509Certificate.NotAfter.UTC().
-					Format(time.RFC3339), "")[2:],
+					Format(time.RFC3339), "")[2:], // Construct NotAfter string in compliance with specification.
 			revokedAt,
 			x509CertWithRevocation.X509Certificate.SerialNumber,
 			"unknown", // As per specification.
