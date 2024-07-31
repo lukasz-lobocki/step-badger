@@ -31,7 +31,6 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateProvisionerRev
 					column.title(),
 				),
 			)
-
 		}
 	}
 

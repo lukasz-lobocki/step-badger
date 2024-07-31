@@ -34,6 +34,7 @@ func getX509Columns() []tX509Column {
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
 				return x.X509Certificate.SerialNumber.String()
 			},
+
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgWhite }, // Static color.
 			contentAlignMD:  ALIGN_RIGHT,
 			contentEscapeMD: false,
@@ -47,6 +48,7 @@ func getX509Columns() []tX509Column {
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
 				return x.X509Certificate.Subject.String()
 			},
+
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgHiWhite }, // Static color.
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
@@ -60,6 +62,7 @@ func getX509Columns() []tX509Column {
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
 				return strings.Join(x.X509Certificate.DNSNames, ", ")
 			},
+
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgWhite }, // Static color.
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
@@ -73,6 +76,7 @@ func getX509Columns() []tX509Column {
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
 				return strings.Join(x.X509Certificate.EmailAddresses, ", ")
 			},
+
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgWhite }, // Static color.
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
@@ -90,6 +94,7 @@ func getX509Columns() []tX509Column {
 				}
 				return strings.Join(ipAddresses, ", ")
 			},
+
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgWhite }, // Static color.
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
@@ -107,6 +112,7 @@ func getX509Columns() []tX509Column {
 				}
 				return strings.Join(uris, ", ")
 			},
+
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgWhite }, // Static color.
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
@@ -120,6 +126,7 @@ func getX509Columns() []tX509Column {
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
 				return strings.Join(x.X509Certificate.CRLDistributionPoints, ", ")
 			},
+
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgWhite }, // Static color.
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
@@ -133,6 +140,7 @@ func getX509Columns() []tX509Column {
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
 				return (x.X509Provisioner.Type + " " + x.X509Provisioner.Name[:min(len(x.X509Provisioner.Name), 6)])
 			},
+
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgWhite }, // Static color.
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
@@ -150,6 +158,7 @@ func getX509Columns() []tX509Column {
 					return x.X509Certificate.NotBefore.UTC().Format(time.RFC3339)
 				}
 			},
+
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgHiBlack }, // Static color.
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
@@ -167,6 +176,7 @@ func getX509Columns() []tX509Column {
 					return x.X509Certificate.NotAfter.UTC().Format(time.RFC3339)
 				}
 			},
+
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgHiBlack }, // Static color.
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
@@ -188,6 +198,7 @@ func getX509Columns() []tX509Column {
 					return ""
 				}
 			},
+
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgHiBlack }, // Static color.
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
@@ -201,6 +212,7 @@ func getX509Columns() []tX509Column {
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
 				return x.Validity
 			},
+
 			contentColor: func(x tX509CertificateProvisionerRevocation) color.Attribute {
 				return getValidityColor()[x.Validity]
 			}, // Dynamic color
