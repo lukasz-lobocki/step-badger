@@ -10,10 +10,15 @@
 			"MD024": false
 		},
 		"cSpell.words": [
+			"badgerv",
+			"dnsnames",
+			"emailaddresses",
 			"fatih",
+			"ipaddresses",
 			"ldflags",
 			"Logginglevel",
-			"nosql"
+			"nosql",
+			"smallstep"
 		]
 	}
 }
