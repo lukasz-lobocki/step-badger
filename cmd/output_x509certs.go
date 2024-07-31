@@ -25,7 +25,6 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateProvisionerRev
 	var header []string
 	for _, column := range columns {
 		if column.isShown(config) {
-
 			header = append(header,
 				color.New(column.titleColor).SprintFunc()(
 					column.title(),

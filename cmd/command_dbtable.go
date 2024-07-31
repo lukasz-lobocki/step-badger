@@ -62,8 +62,7 @@ func dbTableMain(args []string) {
 	}
 
 	// Close the database.
-	err = db.Close()
-	if err != nil {
+	if err = db.Close(); err != nil {
 		logError.Fatalln(err)
 	}
 
