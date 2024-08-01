@@ -48,7 +48,6 @@ func emitX509Table(thisX509CertsWithRevocations []tX509CertificateProvisionerRev
 		// Building slice of columns within a single row.
 		var row []string
 		for _, column := range columns {
-
 			if column.isShown(config) {
 				row = append(row,
 					color.New(column.contentColor(x509CertWithRevocation)).SprintFunc()(
