@@ -24,7 +24,6 @@ func initLoggers() {
 	logInfo = log.New(os.Stderr, hiCyan("╭info\n╰"), 0)
 	logWarning = log.New(os.Stderr, hiYellow("╭warning\n╰"), log.Lshortfile)
 	logError = log.New(os.Stderr, hiRed("╭error\n╰"), log.Lshortfile)
-
 }
 
 /*
