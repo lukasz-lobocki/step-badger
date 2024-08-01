@@ -19,10 +19,10 @@ Flags:
   -e, --emit {t|j|m|o}   emit format: table|json|markdown|openssl (default t)
   -t, --time {i|s}       time format: iso|short (default i)
   -s, --sort {s|f}       sort order: start|finish (default f)
-  -d, --dnsnames         DNSNames column shown
-  -m, --emailaddresses   EmailAddresses column shown
-  -i, --ipaddresses      IPAddresses column shown
-  -u, --uris             URIs column shown
+  -d, --dnsnames         dns names column shown
+  -m, --emailaddresses   email addresses column shown
+  -i, --ipaddresses      ip addresses column shown
+  -u, --uris             uris column shown
   -c, --crl              crl column shown
   -p, --provisioner      provisioner column shown
   -v, --valid            valid certificates shown (default true)
@@ -47,7 +47,7 @@ Flags:
   -e, --emit {t|j|m}   emit format: table|json|markdown (default t)
   -t, --time {i|s}     time format: iso|short (default i)
   -s, --sort {s|f}     sort order: start|finish (default f)
-  -k, --kid            Key ID column shown
+  -k, --kid            key id column shown
   -v, --valid          valid certificates shown (default true)
   -r, --revoked        revoked certificates shown (default true)
   -x, --expired        expired certificates shown

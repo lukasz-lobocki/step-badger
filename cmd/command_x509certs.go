@@ -42,15 +42,16 @@ func init() {
 	//Do not sort flags.
 	x509certsCmd.Flags().SortFlags = false
 
-	x509certsCmd.Flags().VarP(config.emitX509Format, "emit", "e", "emit format: table|json|markdown|openssl") // Choice
-	x509certsCmd.Flags().VarP(config.timeFormat, "time", "t", "time format: iso|short")                       // Choice
-	x509certsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")                      // Choice
+	// Format choice
+	x509certsCmd.Flags().VarP(config.emitX509Format, "emit", "e", "emit format: table|json|markdown|openssl")
+	x509certsCmd.Flags().VarP(config.timeFormat, "time", "t", "time format: iso|short")
+	x509certsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")
 
 	// Columns selection criteria.
-	x509certsCmd.Flags().BoolVarP(&config.showDNSNames, "dnsnames", "d", false, "DNSNames column shown")
-	x509certsCmd.Flags().BoolVarP(&config.showEmailAddresses, "emailaddresses", "m", false, "EmailAddresses column shown")
-	x509certsCmd.Flags().BoolVarP(&config.showIPAddresses, "ipaddresses", "i", false, "IPAddresses column shown")
-	x509certsCmd.Flags().BoolVarP(&config.showURIs, "uris", "u", false, "URIs column shown")
+	x509certsCmd.Flags().BoolVarP(&config.showDNSNames, "dnsnames", "d", false, "dns names column shown")
+	x509certsCmd.Flags().BoolVarP(&config.showEmailAddresses, "emailaddresses", "m", false, "email addresses column shown")
+	x509certsCmd.Flags().BoolVarP(&config.showIPAddresses, "ipaddresses", "i", false, "ip addresses column shown")
+	x509certsCmd.Flags().BoolVarP(&config.showURIs, "uris", "u", false, "uris column shown")
 	x509certsCmd.Flags().BoolVarP(&config.showCrl, "crl", "c", false, "crl column shown")
 	x509certsCmd.Flags().BoolVarP(&config.showProvisioner, "provisioner", "p", false, "provisioner column shown")
 

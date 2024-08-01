@@ -40,10 +40,15 @@ func init() {
 	//Do not sort flags.
 	sshCertsCmd.Flags().SortFlags = false
 
-	sshCertsCmd.Flags().VarP(config.emitSshFormat, "emit", "e", "emit format: table|json|markdown") // Choice
-	sshCertsCmd.Flags().VarP(config.timeFormat, "time", "t", "time format: iso|short")              // Choice
-	sshCertsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")             // Choice
-	sshCertsCmd.Flags().BoolVarP(&config.showKeyId, "kid", "k", false, "Key ID column shown")
+	// Format choice
+	sshCertsCmd.Flags().VarP(config.emitSshFormat, "emit", "e", "emit format: table|json|markdown")
+	sshCertsCmd.Flags().VarP(config.timeFormat, "time", "t", "time format: iso|short")
+	sshCertsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")
+
+	// Columns selection criteria.
+	sshCertsCmd.Flags().BoolVarP(&config.showKeyId, "kid", "k", false, "key id column shown")
+
+	// Records selection criteria.
 	sshCertsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid certificates shown")
 	sshCertsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", true, "revoked certificates shown")
 	sshCertsCmd.Flags().BoolVarP(&config.showExpired, "expired", "x", false, "expired certificates shown")

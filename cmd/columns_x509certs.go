@@ -56,7 +56,7 @@ func getX509Columns() []tX509Column {
 
 		tX509Column{
 			isShown:    func(tc tConfig) bool { return tc.showDNSNames },
-			title:      func() string { return "DNSNames" }, // Static title.
+			title:      func() string { return "DNS names" }, // Static title.
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
@@ -70,7 +70,7 @@ func getX509Columns() []tX509Column {
 
 		tX509Column{
 			isShown:    func(tc tConfig) bool { return tc.showEmailAddresses },
-			title:      func() string { return "EmailAddresses" }, // Static title.
+			title:      func() string { return "Email addresses" }, // Static title.
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
@@ -84,7 +84,7 @@ func getX509Columns() []tX509Column {
 
 		tX509Column{
 			isShown:    func(tc tConfig) bool { return tc.showIPAddresses },
-			title:      func() string { return "IPAddresses" }, // Static title.
+			title:      func() string { return "IP addresses" }, // Static title.
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
@@ -120,7 +120,7 @@ func getX509Columns() []tX509Column {
 
 		tX509Column{
 			isShown:    func(tc tConfig) bool { return tc.showCrl },
-			title:      func() string { return "CRLDistributionPoints" }, // Static title.
+			title:      func() string { return "CRL distribution points" }, // Static title.
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
