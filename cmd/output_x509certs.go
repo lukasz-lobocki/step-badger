@@ -177,13 +177,13 @@ func emitOpenSsl(thisX509CertsWithRevocations []tX509CertificateProvisionerRevoc
 			revokedAt = ""
 		}
 
-		fmt.Printf("%s\t%s\t%s\t%X\t%s\t%s\n",
+		fmt.Printf("%s\t%s\t%s\t%039X\t%s\t%s\n",
 			x509CertWithRevocation.Validity[0:1],
 			regexp.MustCompile(`[-T:]+`).
 				ReplaceAllString(x509CertWithRevocation.X509Certificate.NotAfter.UTC().
 					Format(time.RFC3339), "")[2:], // Construct NotAfter string in compliance with specification.
 			revokedAt,
-			x509CertWithRevocation.X509Certificate.SerialNumber,
+			x509CertWithRevocation.X509Certificate.SerialNumber, // len(HEX)=39
 			"unknown", // As per specification.
 			x509CertWithRevocation.X509Certificate.Subject)
 	}
