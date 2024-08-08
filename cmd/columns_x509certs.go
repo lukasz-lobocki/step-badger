@@ -183,8 +183,8 @@ func getX509Columns() []tX509Column {
 		},
 
 		tX509Column{
-			isShown:    func(_ tConfig) bool { return true },  // Always shown.
-			title:      func() string { return "Revoked at" }, // Static title.
+			isShown:    func(tc tConfig) bool { return tc.showRevoked }, // Always shown.
+			title:      func() string { return "Revoked at" },           // Static title.
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateProvisionerRevocation, tc tConfig) string {

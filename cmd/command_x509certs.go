@@ -42,23 +42,23 @@ func init() {
 	//Do not sort flags.
 	x509certsCmd.Flags().SortFlags = false
 
+	// Records selection criteria.
+	x509certsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid certificates shown")
+	x509certsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", true, "revoked certificates shown")
+	x509certsCmd.Flags().BoolVarP(&config.showExpired, "expired", "x", false, "expired certificates shown")
+
 	// Format choice
 	x509certsCmd.Flags().VarP(config.emitX509Format, "emit", "e", "emit format: table|json|markdown|openssl")
 	x509certsCmd.Flags().VarP(config.timeFormat, "time", "t", "time format: iso|short")
 	x509certsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")
 
 	// Columns selection criteria.
-	x509certsCmd.Flags().BoolVarP(&config.showDNSNames, "dnsnames", "d", false, "dns names column shown")
-	x509certsCmd.Flags().BoolVarP(&config.showEmailAddresses, "emailaddresses", "m", false, "email addresses column shown")
-	x509certsCmd.Flags().BoolVarP(&config.showIPAddresses, "ipaddresses", "i", false, "ip addresses column shown")
-	x509certsCmd.Flags().BoolVarP(&config.showURIs, "uris", "u", false, "uris column shown")
-	x509certsCmd.Flags().BoolVarP(&config.showCrl, "crl", "c", false, "crl column shown")
-	x509certsCmd.Flags().BoolVarP(&config.showProvisioner, "provisioner", "p", false, "provisioner column shown")
-
-	// Records selection criteria.
-	x509certsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid certificates shown")
-	x509certsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", true, "revoked certificates shown")
-	x509certsCmd.Flags().BoolVarP(&config.showExpired, "expired", "x", false, "expired certificates shown")
+	x509certsCmd.Flags().BoolVarP(&config.showDNSNames, "dnsnames", "", false, "dns names column shown")
+	x509certsCmd.Flags().BoolVarP(&config.showEmailAddresses, "emailaddresses", "", false, "email addresses column shown")
+	x509certsCmd.Flags().BoolVarP(&config.showIPAddresses, "ipaddresses", "", false, "ip addresses column shown")
+	x509certsCmd.Flags().BoolVarP(&config.showURIs, "uris", "", false, "uris column shown")
+	x509certsCmd.Flags().BoolVarP(&config.showCrl, "crl", "", false, "crl column shown")
+	x509certsCmd.Flags().BoolVarP(&config.showProvisioner, "provisioner", "", false, "provisioner column shown")
 }
 
 /*
