@@ -27,7 +27,7 @@ func getX509Columns() []tX509Column {
 	columns = append(columns,
 
 		tX509Column{
-			isShown:    func(_ tConfig) bool { return true },     // Always shown.
+			isShown:    func(tc tConfig) bool { return tc.showSerial },
 			title:      func() string { return "Serial number" }, // Static title.
 			titleColor: color.Bold,
 
@@ -50,6 +50,20 @@ func getX509Columns() []tX509Column {
 			},
 
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgHiWhite }, // Static color.
+			contentAlignMD:  ALIGN_LEFT,
+			contentEscapeMD: true,
+		},
+
+		tX509Column{
+			isShown:    func(tc tConfig) bool { return tc.showIssuer },
+			title:      func() string { return "Issuer" }, // Static title.
+			titleColor: color.Bold,
+
+			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
+				return x.X509Certificate.Issuer.CommonName
+			},
+
+			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgWhite }, // Static color.
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
@@ -152,7 +166,7 @@ func getX509Columns() []tX509Column {
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateProvisionerRevocation, tc tConfig) string {
-				if tc.timeFormat.Value == "s" {
+				if tc.timeFormat.Value == TIME_SHORT {
 					return x.X509Certificate.NotBefore.UTC().Format(time.DateOnly)
 				} else {
 					return x.X509Certificate.NotBefore.UTC().Format(time.RFC3339)
@@ -170,7 +184,7 @@ func getX509Columns() []tX509Column {
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateProvisionerRevocation, tc tConfig) string {
-				if tc.timeFormat.Value == "s" {
+				if tc.timeFormat.Value == TIME_SHORT {
 					return x.X509Certificate.NotAfter.UTC().Format(time.DateOnly)
 				} else {
 					return x.X509Certificate.NotAfter.UTC().Format(time.RFC3339)
@@ -189,7 +203,7 @@ func getX509Columns() []tX509Column {
 
 			contentSource: func(x tX509CertificateProvisionerRevocation, tc tConfig) string {
 				if len(x.X509Revocation.ProvisionerID) > 0 {
-					if tc.timeFormat.Value == "s" {
+					if tc.timeFormat.Value == TIME_SHORT {
 						return x.X509Revocation.RevokedAt.UTC().Format(time.DateOnly)
 					} else {
 						return x.X509Revocation.RevokedAt.UTC().Format(time.RFC3339)

@@ -97,7 +97,51 @@ func emitSshCertsJson(thisSshCerts []tSshCertificateWithRevocation) {
 }
 
 /*
-emitX509Markdown prints result in the form of markdown table.
+emitSshCertsPlain prints result in the plain form.
+
+	'thisSshCerts' Slice of structures describing the certs.
+*/
+func emitSshCertsPlain(thisSshCertificatesWithRevocations []tSshCertificateWithRevocation) {
+
+	columns := getSshColumns()
+
+	// Building slice of titles.
+	var header []string
+	for _, column := range columns {
+		if column.isShown(config) {
+			header = append(header, column.title())
+		}
+	}
+
+	// Emitting titles.
+	fmt.Println(strings.Join(header, "\t"))
+
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Println("header printed.")
+	}
+
+	// Iterating through certs.
+	for _, sshCertificateWithRevocation := range thisSshCertificatesWithRevocations {
+
+		// Building slice of columns within a single row.
+		var row []string
+		for _, column := range columns {
+			if column.isShown(config) {
+				row = append(row, column.contentSource(sshCertificateWithRevocation, config))
+			}
+		}
+
+		// Emitting row.
+		fmt.Println(strings.Join(row, "\t"))
+	}
+
+	if loggingLevel >= 2 { // Show info.
+		logInfo.Printf("%d rows printed.\n", len(thisSshCertificatesWithRevocations))
+	}
+}
+
+/*
+emitSshCertsMarkdown prints result in the form of markdown table.
 
 	'thisSshCerts' Slice of structures describing the certs.
 */

@@ -98,6 +98,50 @@ func emitX509CertsWithRevocationsJson(thisX509CertsWithRevocations []tX509Certif
 }
 
 /*
+emitX509Plain prints result in the plain form.
+
+	'thisX509CertsWithRevocations' Slice of certs.
+*/
+func emitX509Plain(thisX509CertsWithRevocations []tX509CertificateProvisionerRevocation) {
+
+	columns := getX509Columns()
+
+	// Building slice of titles.
+	var header []string
+	for _, column := range columns {
+		if column.isShown(config) {
+			header = append(header, column.title())
+		}
+	}
+
+	// Emitting titles.
+	fmt.Println(strings.Join(header, "\t"))
+
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Println("header printed.")
+	}
+
+	// Iterating through certs.
+	for _, x509CertWithRevocation := range thisX509CertsWithRevocations {
+
+		// Building slice of columns within a single row.
+		var row []string
+		for _, column := range columns {
+			if column.isShown(config) {
+				row = append(row, column.contentSource(x509CertWithRevocation, config))
+			}
+		}
+
+		// Emitting row.
+		fmt.Println(strings.Join(row, "\t"))
+	}
+
+	if loggingLevel >= 2 { // Show info.
+		logInfo.Printf("%d rows printed.\n", len(thisX509CertsWithRevocations))
+	}
+}
+
+/*
 emitX509Markdown prints result in the form of markdown table.
 
 	'thisX509CertsWithRevocations' Slice of certs.
@@ -159,11 +203,11 @@ func emitX509Markdown(thisX509CertsWithRevocations []tX509CertificateProvisioner
 }
 
 /*
-emitOpenSsl prints result in the form of markdown table.
+emitX509OpenSsl prints result in the form of markdown table.
 
 	'thisX509CertsWithRevocations' Slice of certs.
 */
-func emitOpenSsl(thisX509CertsWithRevocations []tX509CertificateProvisionerRevocation) {
+func emitX509OpenSsl(thisX509CertsWithRevocations []tX509CertificateProvisionerRevocation) {
 	for _, x509CertWithRevocation := range thisX509CertsWithRevocations {
 
 		var revokedAt string

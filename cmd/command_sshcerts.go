@@ -15,11 +15,11 @@ import (
 
 // sshCertsCmd represents the shell command.
 var sshCertsCmd = &cobra.Command{
-	Use:   "sshCerts PATH",
-	Short: "Export ssh certificates.",
 	Long:  `Export ssh certificates' data out of the badger database of step-ca.`,
+	Short: "Export ssh certificates.",
+	Use:   "sshCerts <PATH>",
 
-	Example: "  step-badger ssCerts ./db",
+	Example: "  step-badger sshCerts ./db",
 
 	Args: cobra.ExactArgs(1),
 
@@ -43,15 +43,16 @@ func init() {
 	// Records selection criteria.
 	sshCertsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid certificates shown")
 	sshCertsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", true, "revoked certificates shown")
-	sshCertsCmd.Flags().BoolVarP(&config.showExpired, "expired", "x", false, "expired certificates shown")
+	sshCertsCmd.Flags().BoolVarP(&config.showExpired, "expired", "e", false, "expired certificates shown")
 
 	// Format choice
-	sshCertsCmd.Flags().VarP(config.emitSshFormat, "emit", "e", "emit format: table|json|markdown")
-	sshCertsCmd.Flags().VarP(config.timeFormat, "time", "t", "time format: iso|short")
-	sshCertsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")
+	sshCertsCmd.Flags().Var(config.emitSshFormat, "emit", "emit format: "+FORMAT_TABLE+"|"+FORMAT_JSON+"|"+FORMAT_MARKDOWN+"|"+FORMAT_PLAIN)
+	sshCertsCmd.Flags().Var(config.timeFormat, "time", "time format: "+TIME_ISO+"|"+TIME_SHORT)
+	sshCertsCmd.Flags().Var(config.sortOrder, "sort", "sort order: "+SORT_START+"|"+SORT_FINISH)
 
 	// Columns selection criteria.
-	sshCertsCmd.Flags().BoolVarP(&config.showKeyId, "keyid", "", false, "key id column shown")
+	sshCertsCmd.Flags().BoolVar(&config.showSerial, "serial", true, "serial column shown")
+	sshCertsCmd.Flags().BoolVar(&config.showKeyId, "keyid", false, "key id column shown")
 }
 
 /*
@@ -138,11 +139,11 @@ func exportSshMain(args []string) {
 
 	// Sort.
 	switch thisSort := config.sortOrder.Value; thisSort {
-	case "f":
+	case SORT_FINISH:
 		sort.SliceStable(sshCertificatesWithRevocations, func(i, j int) bool {
 			return sshCertificatesWithRevocations[i].SshCertificate.ValidBefore < sshCertificatesWithRevocations[j].SshCertificate.ValidBefore
 		})
-	case "s":
+	case SORT_START:
 		sort.SliceStable(sshCertificatesWithRevocations, func(i, j int) bool {
 			return sshCertificatesWithRevocations[i].SshCertificate.ValidAfter < sshCertificatesWithRevocations[j].SshCertificate.ValidAfter
 		})
@@ -150,12 +151,14 @@ func exportSshMain(args []string) {
 
 	// Output.
 	switch format := config.emitSshFormat.Value; format {
-	case "j":
+	case FORMAT_JSON:
 		emitSshCertsJson(sshCertificatesWithRevocations)
-	case "t":
+	case FORMAT_TABLE:
 		emitSshCertsTable(sshCertificatesWithRevocations)
-	case "m":
+	case FORMAT_MARKDOWN:
 		emitSshCertsMarkdown(sshCertificatesWithRevocations)
+	case FORMAT_PLAIN:
+		emitSshCertsPlain(sshCertificatesWithRevocations)
 	}
 }
 

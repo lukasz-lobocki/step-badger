@@ -28,7 +28,7 @@ func getSshColumns() []tSshColumn {
 	columns = append(columns,
 
 		tSshColumn{
-			isShown:    func(_ tConfig) bool { return true },     // Always shown.
+			isShown:    func(tc tConfig) bool { return tc.showSerial },
 			title:      func() string { return "Serial number" }, // Static title.
 			titleColor: color.Bold,
 
@@ -89,7 +89,7 @@ func getSshColumns() []tSshColumn {
 			titleColor: color.Bold,
 
 			contentSource: func(x tSshCertificateWithRevocation, tc tConfig) string {
-				if tc.timeFormat.Value == "s" {
+				if tc.timeFormat.Value == TIME_SHORT {
 					return time.Unix(int64(x.SshCertificate.ValidAfter), 0).UTC().Format(time.DateOnly)
 				} else {
 					return time.Unix(int64(x.SshCertificate.ValidAfter), 0).UTC().Format(time.RFC3339)
@@ -107,7 +107,7 @@ func getSshColumns() []tSshColumn {
 			titleColor: color.Bold,
 
 			contentSource: func(x tSshCertificateWithRevocation, tc tConfig) string {
-				if tc.timeFormat.Value == "s" {
+				if tc.timeFormat.Value == TIME_SHORT {
 					return time.Unix(int64(x.SshCertificate.ValidBefore), 0).UTC().Format(time.DateOnly)
 				} else {
 					return time.Unix(int64(x.SshCertificate.ValidBefore), 0).UTC().Format(time.RFC3339)
@@ -126,7 +126,7 @@ func getSshColumns() []tSshColumn {
 
 			contentSource: func(x tSshCertificateWithRevocation, tc tConfig) string {
 				if len(x.SshCertificateRevocation.ProvisionerID) > 0 {
-					if tc.timeFormat.Value == "s" {
+					if tc.timeFormat.Value == TIME_SHORT {
 						return x.SshCertificateRevocation.RevokedAt.UTC().Format(time.DateOnly)
 					} else {
 						return x.SshCertificateRevocation.RevokedAt.UTC().Format(time.RFC3339)

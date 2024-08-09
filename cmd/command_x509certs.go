@@ -17,9 +17,9 @@ import (
 
 // x509certsCmd represents the shell command.
 var x509certsCmd = &cobra.Command{
-	Use:   "x509Certs PATH",
-	Short: "Export x509 certificates.",
 	Long:  `Export x509 certificates' data out of the badger database of step-ca.`,
+	Short: "Export x509 certificates.",
+	Use:   "x509Certs <PATH>",
 
 	Example: "  step-badger x509certs ./db",
 
@@ -45,20 +45,23 @@ func init() {
 	// Records selection criteria.
 	x509certsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid certificates shown")
 	x509certsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", true, "revoked certificates shown")
-	x509certsCmd.Flags().BoolVarP(&config.showExpired, "expired", "x", false, "expired certificates shown")
+	x509certsCmd.Flags().BoolVarP(&config.showExpired, "expired", "e", false, "expired certificates shown")
 
 	// Format choice
-	x509certsCmd.Flags().VarP(config.emitX509Format, "emit", "e", "emit format: table|json|markdown|openssl")
-	x509certsCmd.Flags().VarP(config.timeFormat, "time", "t", "time format: iso|short")
-	x509certsCmd.Flags().VarP(config.sortOrder, "sort", "s", "sort order: start|finish")
+	x509certsCmd.Flags().Var(config.emitX509Format, "emit", "emit format: "+FORMAT_TABLE+"|"+FORMAT_JSON+"|"+FORMAT_MARKDOWN+
+		"|"+FORMAT_OPENSSL+"|"+FORMAT_PLAIN)
+	x509certsCmd.Flags().Var(config.timeFormat, "time", "time format: "+TIME_ISO+"|"+TIME_SHORT)
+	x509certsCmd.Flags().Var(config.sortOrder, "sort", "sort order: "+SORT_START+"|"+SORT_FINISH)
 
 	// Columns selection criteria.
-	x509certsCmd.Flags().BoolVarP(&config.showDNSNames, "dnsnames", "", false, "dns names column shown")
-	x509certsCmd.Flags().BoolVarP(&config.showEmailAddresses, "emailaddresses", "", false, "email addresses column shown")
-	x509certsCmd.Flags().BoolVarP(&config.showIPAddresses, "ipaddresses", "", false, "ip addresses column shown")
-	x509certsCmd.Flags().BoolVarP(&config.showURIs, "uris", "", false, "uris column shown")
-	x509certsCmd.Flags().BoolVarP(&config.showCrl, "crl", "", false, "crl column shown")
-	x509certsCmd.Flags().BoolVarP(&config.showProvisioner, "provisioner", "", false, "provisioner column shown")
+	x509certsCmd.Flags().BoolVar(&config.showSerial, "serial", true, "serial number column shown")
+	x509certsCmd.Flags().BoolVar(&config.showDNSNames, "dnsnames", false, "dns names column shown")
+	x509certsCmd.Flags().BoolVar(&config.showEmailAddresses, "emailaddresses", false, "email addresses column shown")
+	x509certsCmd.Flags().BoolVar(&config.showIPAddresses, "ipaddresses", false, "ip addresses column shown")
+	x509certsCmd.Flags().BoolVar(&config.showURIs, "uris", false, "uris column shown")
+	x509certsCmd.Flags().BoolVar(&config.showIssuer, "issuer", false, "issuer column shown")
+	x509certsCmd.Flags().BoolVar(&config.showCrl, "crl", false, "crl column shown")
+	x509certsCmd.Flags().BoolVar(&config.showProvisioner, "provisioner", false, "provisioner column shown")
 }
 
 /*
@@ -154,12 +157,12 @@ func exportX509Main(args []string) {
 
 	// Sort.
 	switch thisSort := config.sortOrder.Value; thisSort {
-	case "f":
+	case SORT_FINISH:
 		sort.SliceStable(x509CertificatesProvisionersRevocations, func(i, j int) bool {
 			return x509CertificatesProvisionersRevocations[i].X509Certificate.NotAfter.
 				Before(x509CertificatesProvisionersRevocations[j].X509Certificate.NotAfter)
 		})
-	case "s":
+	case SORT_START:
 		sort.SliceStable(x509CertificatesProvisionersRevocations, func(i, j int) bool {
 			return x509CertificatesProvisionersRevocations[i].X509Certificate.NotBefore.
 				Before(x509CertificatesProvisionersRevocations[j].X509Certificate.NotBefore)
@@ -168,14 +171,16 @@ func exportX509Main(args []string) {
 
 	// Output.
 	switch format := config.emitX509Format.Value; format {
-	case "j":
+	case FORMAT_JSON:
 		emitX509CertsWithRevocationsJson(x509CertificatesProvisionersRevocations)
-	case "t":
+	case FORMAT_TABLE:
 		emitX509Table(x509CertificatesProvisionersRevocations)
-	case "m":
+	case FORMAT_MARKDOWN:
 		emitX509Markdown(x509CertificatesProvisionersRevocations)
-	case "o":
-		emitOpenSsl(x509CertificatesProvisionersRevocations)
+	case FORMAT_OPENSSL:
+		emitX509OpenSsl(x509CertificatesProvisionersRevocations)
+	case FORMAT_PLAIN:
+		emitX509Plain(x509CertificatesProvisionersRevocations)
 	}
 }
 

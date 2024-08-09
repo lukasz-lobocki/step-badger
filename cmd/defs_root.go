@@ -10,7 +10,16 @@ import (
 )
 
 const (
-	MAX_LOGGING_LEVEL int = 3 // Maximum allowed logging level.
+	MAX_LOGGING_LEVEL int    = 3 // Maximum allowed logging level.
+	TIME_SHORT        string = "short"
+	TIME_ISO          string = "iso"
+	SORT_START        string = "start"
+	SORT_FINISH       string = "finish"
+	FORMAT_TABLE      string = "table"
+	FORMAT_JSON       string = "json"
+	FORMAT_MARKDOWN   string = "markdown"
+	FORMAT_OPENSSL    string = "openssl"
+	FORMAT_PLAIN      string = "plain"
 )
 
 /*
@@ -30,10 +39,10 @@ func initLoggers() {
 initChoices sets up Config struct for 'limited choice' flag.
 */
 func initChoices() {
-	config.emitSshFormat = newChoice([]string{"t", "j", "m"}, "t")
-	config.emitX509Format = newChoice([]string{"t", "j", "m", "o"}, "t")
-	config.sortOrder = newChoice([]string{"s", "f"}, "f")
-	config.timeFormat = newChoice([]string{"i", "s"}, "i")
+	config.emitSshFormat = newChoice([]string{FORMAT_TABLE, FORMAT_JSON, FORMAT_MARKDOWN, FORMAT_PLAIN}, FORMAT_TABLE)
+	config.emitX509Format = newChoice([]string{FORMAT_TABLE, FORMAT_JSON, FORMAT_MARKDOWN, FORMAT_OPENSSL, FORMAT_PLAIN}, FORMAT_TABLE)
+	config.sortOrder = newChoice([]string{SORT_START, SORT_FINISH}, SORT_FINISH)
+	config.timeFormat = newChoice([]string{TIME_ISO, TIME_SHORT}, TIME_ISO)
 }
 
 /*
@@ -54,6 +63,8 @@ type tConfig struct {
 	showEmailAddresses bool
 	showIPAddresses    bool
 	showURIs           bool
+	showIssuer         bool
+	showSerial         bool
 }
 
 /*

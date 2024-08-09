@@ -11,7 +11,7 @@ import (
 
 // dbTableCmd represents the shell command.
 var dbTableCmd = &cobra.Command{
-	Use:   "dbTable PATH TABLE",
+	Use:   "dbTable <PATH> <TABLE>",
 	Short: "Export badger table.",
 	Long:  `Export data table out of the badger database of step-ca. For list of tables see: https://raw.githubusercontent.com/smallstep/certificates/master/db/db.go`,
 
