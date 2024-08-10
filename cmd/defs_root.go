@@ -65,6 +65,7 @@ type tConfig struct {
 	showURIs           bool
 	showIssuer         bool
 	showSerial         bool
+	showHostType       bool
 }
 
 /*
