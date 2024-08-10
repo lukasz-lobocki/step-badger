@@ -15,10 +15,17 @@ import (
 
 // sshCertsCmd represents the shell command.
 var sshCertsCmd = &cobra.Command{
-	Long:  `Export ssh certificates' data out of the badger database of step-ca.`,
-	Short: "Export ssh certificates.",
-	Use:   "sshCerts <PATH>",
+	Long: `
+Export ssh certificates' data out of the badger database of step-ca.`,
 
+	Short:                 "Export ssh certificates.",
+	DisableFlagsInUseLine: true,
+	Use: `sshCerts <PATH> [flags]
+
+Arguments:
+  PATH   location of the source database`,
+
+	Aliases: []string{"sshcerts"},
 	Example: "  step-badger sshCerts ./db",
 
 	Args: cobra.ExactArgs(1),
@@ -42,7 +49,7 @@ func init() {
 
 	// Records selection criteria.
 	sshCertsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid certificates shown")
-	sshCertsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", true, "revoked certificates shown")
+	sshCertsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", false, "revoked certificates shown")
 	sshCertsCmd.Flags().BoolVarP(&config.showExpired, "expired", "e", false, "expired certificates shown")
 
 	// Format choice

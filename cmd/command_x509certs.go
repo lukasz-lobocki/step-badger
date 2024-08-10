@@ -17,11 +17,19 @@ import (
 
 // x509certsCmd represents the shell command.
 var x509certsCmd = &cobra.Command{
-	Long:  `Export x509 certificates' data out of the badger database of step-ca.`,
-	Short: "Export x509 certificates.",
-	Use:   "x509Certs <PATH>",
+	Long: `
+Export x509 certificates' data out of the badger database of step-ca.`,
 
-	Example: "  step-badger x509certs ./db",
+	Short:                 "Export x509 certificates.",
+	DisableFlagsInUseLine: true,
+	Use: `x509Certs <PATH> [flags]
+
+Arguments:
+  PATH   location of the source database`,
+
+	Aliases: []string{"x509certs"},
+	Example: `  step-badger x509certs ./db
+  step-badger x509Certs ./db --revoked --valid=false --emit=openssl`,
 
 	Args: cobra.ExactArgs(1),
 
@@ -44,7 +52,7 @@ func init() {
 
 	// Records selection criteria.
 	x509certsCmd.Flags().BoolVarP(&config.showValid, "valid", "v", true, "valid certificates shown")
-	x509certsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", true, "revoked certificates shown")
+	x509certsCmd.Flags().BoolVarP(&config.showRevoked, "revoked", "r", false, "revoked certificates shown")
 	x509certsCmd.Flags().BoolVarP(&config.showExpired, "expired", "e", false, "expired certificates shown")
 
 	// Format choice

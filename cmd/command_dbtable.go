@@ -11,10 +11,21 @@ import (
 
 // dbTableCmd represents the shell command.
 var dbTableCmd = &cobra.Command{
-	Use:   "dbTable <PATH> <TABLE>",
-	Short: "Export badger table.",
-	Long:  `Export data table out of the badger database of step-ca. For list of tables see: https://raw.githubusercontent.com/smallstep/certificates/master/db/db.go`,
+	Long: `
+Export data table out of the badger database of step-ca.`,
 
+	Short:                 "Export badger table.",
+	DisableFlagsInUseLine: true,
+	Use: `dbTable <PATH> <TABLE> [flags]
+
+Arguments:
+  PATH    location of the source database
+  TABLE   name of Badger table to export
+
+Note:
+  For list of tables see: https://raw.githubusercontent.com/smallstep/certificates/master/db/db.go`,
+
+	Aliases: []string{"dbtable"},
 	Example: "  step-badger dbTable ./db ssh_host_principals",
 
 	Args: cobra.ExactArgs(2),
