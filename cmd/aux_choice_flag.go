@@ -40,7 +40,7 @@ func (a *tChoice) Set(p string) error {
 	}
 
 	if !isIncluded(a.Allowed, p) {
-		return fmt.Errorf("%s is not included in {%s}", p, strings.Join(a.Allowed, "|"))
+		return fmt.Errorf("\"%s\" is not included in {%s}", p, strings.Join(a.Allowed, "|"))
 	}
 
 	/* Set the value */
