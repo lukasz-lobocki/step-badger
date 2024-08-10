@@ -58,6 +58,7 @@ func init() {
 	sshCertsCmd.Flags().Var(config.sortOrder, "sort", "sort order: "+SORT_START+"|"+SORT_FINISH)
 
 	// Columns selection criteria.
+	sshCertsCmd.Flags().BoolVar(&config.showHostType, "type", true, "host type column shown")
 	sshCertsCmd.Flags().BoolVar(&config.showSerial, "serial", true, "serial column shown")
 	sshCertsCmd.Flags().BoolVar(&config.showKeyId, "keyid", false, "key id column shown")
 }
