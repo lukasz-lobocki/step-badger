@@ -46,6 +46,7 @@ func getX509Columns() []tX509Column {
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
+				// return x.X509Certificate.SignatureAlgorithm.String()
 				return x.X509Certificate.Subject.String()
 			},
 
@@ -153,6 +154,20 @@ func getX509Columns() []tX509Column {
 
 			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
 				return (x.X509Provisioner.Type + " " + x.X509Provisioner.Name[:min(len(x.X509Provisioner.Name), 6)])
+			},
+
+			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgWhite }, // Static color.
+			contentAlignMD:  ALIGN_LEFT,
+			contentEscapeMD: true,
+		},
+
+		tX509Column{
+			isShown:    func(tc tConfig) bool { return tc.showSignatureAlgorithm },
+			title:      func() string { return "Algorithm" }, // Static title.
+			titleColor: color.Bold,
+
+			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
+				return x.X509Certificate.SignatureAlgorithm.String()
 			},
 
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgWhite }, // Static color.

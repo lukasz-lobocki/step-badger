@@ -70,6 +70,7 @@ func init() {
 	x509certsCmd.Flags().BoolVar(&config.showIssuer, "issuer", false, "issuer column shown")
 	x509certsCmd.Flags().BoolVar(&config.showCrl, "crl", false, "crl column shown")
 	x509certsCmd.Flags().BoolVar(&config.showProvisioner, "provisioner", false, "provisioner column shown")
+	x509certsCmd.Flags().BoolVar(&config.showSignatureAlgorithm, "algorithm", false, "signature algorithm column shown")
 }
 
 /*

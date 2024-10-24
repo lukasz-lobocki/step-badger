@@ -49,23 +49,24 @@ func initChoices() {
 Configuration structure.
 */
 type tConfig struct {
-	emitSshFormat      *tChoice
-	emitX509Format     *tChoice
-	showCrl            bool
-	showKeyId          bool
-	sortOrder          *tChoice
-	showValid          bool
-	showExpired        bool
-	showRevoked        bool
-	showProvisioner    bool
-	timeFormat         *tChoice
-	showDNSNames       bool
-	showEmailAddresses bool
-	showIPAddresses    bool
-	showURIs           bool
-	showIssuer         bool
-	showSerial         bool
-	showHostType       bool
+	emitSshFormat          *tChoice
+	emitX509Format         *tChoice
+	showCrl                bool
+	showKeyId              bool
+	sortOrder              *tChoice
+	showValid              bool
+	showExpired            bool
+	showRevoked            bool
+	showProvisioner        bool
+	timeFormat             *tChoice
+	showDNSNames           bool
+	showEmailAddresses     bool
+	showIPAddresses        bool
+	showURIs               bool
+	showIssuer             bool
+	showSerial             bool
+	showHostType           bool
+	showSignatureAlgorithm bool
 }
 
 /*
