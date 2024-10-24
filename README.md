@@ -16,18 +16,21 @@ step-badger x509Certs PATH [flags]
 
 ```text
 Flags:
-  -v, --valid            valid certificates shown (default true)
-  -r, --revoked          revoked certificates shown (default true)
-  -x, --expired          expired certificates shown
-  -e, --emit {t|j|m|o}   emit format: table|json|markdown|openssl (default t)
-  -t, --time {i|s}       time format: iso|short (default i)
-  -s, --sort {s|f}       sort order: start|finish (default f)
-      --dnsnames         dns names column shown
-      --emailaddresses   email addresses column shown
-      --ipaddresses      ip addresses column shown
-      --uris             uris column shown
-      --crl              crl column shown
-      --provisioner      provisioner column shown
+  -v, --valid                                      valid certificates shown (default true)
+  -r, --revoked                                    revoked certificates shown
+  -e, --expired                                    expired certificates shown
+      --emit {table|json|markdown|openssl|plain}   emit format: table|json|markdown|openssl|plain (default table)
+      --time {iso|short}                           time format: iso|short (default iso)
+      --sort {start|finish}                        sort order: start|finish (default finish)
+      --serial                                     serial number column shown (default true)
+      --dnsnames                                   dns names column shown
+      --emailaddresses                             email addresses column shown
+      --ipaddresses                                ip addresses column shown
+      --uris                                       uris column shown
+      --issuer                                     issuer column shown
+      --crl                                        crl column shown
+      --provisioner                                provisioner column shown
+      --algorithm                                  signature algorithm column shown
 ```
 
 ### Example
@@ -44,13 +47,17 @@ step-badger sshCerts PATH [flags]
 
 ```text
 Flags:
-  -v, --valid          valid certificates shown (default true)
-  -r, --revoked        revoked certificates shown (default true)
-  -x, --expired        expired certificates shown
-  -e, --emit {t|j|m}   emit format: table|json|markdown (default t)
-  -t, --time {i|s}     time format: iso|short (default i)
-  -s, --sort {s|f}     sort order: start|finish (default f)
-      --keyid          key id column shown
+  -v, --valid                              valid certificates shown (default true)
+  -r, --revoked                            revoked certificates shown
+  -e, --expired                            expired certificates shown
+      --emit {table|json|markdown|plain}   emit format: table|json|markdown|plain (default table)
+      --time {iso|short}                   time format: iso|short (default iso)
+      --sort {start|finish}                sort order: start|finish (default finish)
+      --type                               host type column shown (default true)
+      --serial                             serial column shown (default true)
+      --keyid                              key id column shown
+      --algorithm                          signature algorithm column shown
+  -h, --help                               help for sshCerts
 ```
 
 ### Example
