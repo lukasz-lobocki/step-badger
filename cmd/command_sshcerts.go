@@ -61,6 +61,7 @@ func init() {
 	sshCertsCmd.Flags().BoolVar(&config.showHostType, "type", true, "host type column shown")
 	sshCertsCmd.Flags().BoolVar(&config.showSerial, "serial", true, "serial column shown")
 	sshCertsCmd.Flags().BoolVar(&config.showKeyId, "keyid", false, "key id column shown")
+	sshCertsCmd.Flags().BoolVar(&config.showSignatureAlgorithm, "algorithm", false, "signature algorithm column shown")
 }
 
 /*

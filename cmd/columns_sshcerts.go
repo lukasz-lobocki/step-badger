@@ -84,6 +84,20 @@ func getSshColumns() []tSshColumn {
 		},
 
 		tSshColumn{
+			isShown:    func(tc tConfig) bool { return tc.showSignatureAlgorithm },
+			title:      func() string { return "Algorithm" }, // Static title.
+			titleColor: color.Bold,
+
+			contentSource: func(x tSshCertificateWithRevocation, _ tConfig) string {
+				return x.SshCertificate.Signature.Format
+			},
+
+			contentColor:    func(_ tSshCertificateWithRevocation) color.Attribute { return color.FgWhite }, // Static color.
+			contentAlignMD:  ALIGN_LEFT,
+			contentEscapeMD: true,
+		},
+
+		tSshColumn{
 			isShown:    func(_ tConfig) bool { return true }, // Always shown.
 			title:      func() string { return "Start" },     // Static title.
 			titleColor: color.Bold,
