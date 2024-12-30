@@ -79,6 +79,7 @@ func exportSshMain(args []string) {
 
 		sshCertificateWithRevocation   tSshCertificateWithRevocation
 		sshCertificatesWithRevocations []tSshCertificateWithRevocation
+		sshCertificateStringSerials    tCertificateStringSerials
 	)
 
 	// Open the database.
@@ -116,10 +117,15 @@ func exportSshMain(args []string) {
 			logInfo.Printf("RevocationProvisionerID: %s", sshCertificateRevocation.ProvisionerID)
 		}
 
+		// Get serials and embed them as strings. This is to handle uint64 compatibility issues.
+		sshCertificateStringSerials.SerialDec = strconv.FormatUint(sshCertificate.Serial, 10)
+		sshCertificateStringSerials.SerialHex = strconv.FormatUint(sshCertificate.Serial, 16)
+
 		// Populate the child.
 		sshCertificateWithRevocation = tSshCertificateWithRevocation{
-			SshCertificate:           sshCertificate,
-			SshCertificateRevocation: sshCertificateRevocation,
+			SshCertificate:              sshCertificate,
+			SshCertificateRevocation:    sshCertificateRevocation,
+			SshCertificateStringSerials: sshCertificateStringSerials,
 		}
 
 		// Populate child validity info of the certificate.

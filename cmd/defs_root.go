@@ -93,6 +93,11 @@ type tCertificateRevocation struct {
 	ACME          bool      `json:"ACME"`
 }
 
+type tCertificateStringSerials struct {
+	SerialDec string `json:"SerialDec"`
+	SerialHex string `json:"SerialHex"`
+}
+
 const (
 	VALID_STR   string = "Valid"
 	EXPIRED_STR string = "Expired"
