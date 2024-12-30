@@ -88,6 +88,7 @@ func exportX509Main(args []string) {
 
 		x509CertificateProvisionerRevocation    tX509CertificateProvisionerRevocation
 		x509CertificatesProvisionersRevocations []tX509CertificateProvisionerRevocation
+		x509CertificateStringSerials            tCertificateStringSerials
 	)
 
 	// Open the database.
@@ -131,11 +132,16 @@ func exportX509Main(args []string) {
 			logInfo.Printf("Provisioner: %s", x509CertificateData.Provisioner.Type)
 		}
 
+		// Get serials and embed them as strings. This is to handle uint64 compatibility issues.
+		x509CertificateStringSerials.SerialDec = x509Certificate.SerialNumber.String()
+		x509CertificateStringSerials.SerialHex = x509Certificate.SerialNumber.Text(16)
+
 		// Populate the child.
 		x509CertificateProvisionerRevocation = tX509CertificateProvisionerRevocation{
-			X509Certificate: x509Certificate,
-			X509Revocation:  x509CertificateRevocation,
-			X509Provisioner: x509CertificateData.Provisioner,
+			X509Certificate:              x509Certificate,
+			X509Revocation:               x509CertificateRevocation,
+			X509Provisioner:              x509CertificateData.Provisioner,
+			X509CertificateStringSerials: x509CertificateStringSerials,
 		}
 
 		// Populate child validity info of the certificate.
