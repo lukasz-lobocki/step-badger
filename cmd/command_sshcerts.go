@@ -25,7 +25,7 @@ Export ssh certificates' data out of the badger database of step-ca.`,
 Arguments:
   PATH   location of the source database`,
 
-	Aliases: []string{"sshcerts"},
+	Aliases: []string{"sshcerts", "ssh"},
 	Example: "  step-badger sshCerts ./db",
 
 	Args: cobra.ExactArgs(1),

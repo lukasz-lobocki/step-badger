@@ -27,7 +27,7 @@ Export x509 certificates' data out of the badger database of step-ca.`,
 Arguments:
   PATH   location of the source database`,
 
-	Aliases: []string{"x509certs"},
+	Aliases: []string{"x509certs", "x509", "ssl"},
 	Example: `  step-badger x509certs ./db
   step-badger x509Certs ./db --revoked --valid=false --emit=openssl`,
 
