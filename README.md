@@ -1,4 +1,4 @@
-# step-badger ![Static](https://img.shields.io/badge/bulaj-biznes-darkorchid?style=for-the-badge&labelColor=darkslategray)
+# step-badger [![Hits](https://hits.sh/github.com/lukasz-lobocki/step-badger.svg?style=for-the-badge)](https://hits.sh/github.com/lukasz-lobocki/step-badger/) ![Static](https://img.shields.io/badge/bulaj-biznes-darkorchid?style=for-the-badge&labelColor=darkslategray)
 
 This tool has 3 features:
 
