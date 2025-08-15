@@ -1,6 +1,6 @@
 # step-badger
 
-## Build
+## Build a snapshot
 
 ```bash
 goreleaser build --clean --snapshot

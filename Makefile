@@ -18,7 +18,7 @@ release: tidy
 	goreleaser release --clean
 
 patch: tidy
-	git tag "$(shell svu next --force-patch-increment)"
+	git tag "$(shell svu next --always)"
 	git push --tags
 	goreleaser release --clean
 
