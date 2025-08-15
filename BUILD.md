@@ -17,7 +17,7 @@ git commit -m "fix: change"
 ```
 
 ```bash
-git tag "$(svu next --force-patch-increment)"
+git tag "$(svu next --always)"
 git push --tags
 goreleaser release --clean
 ```
