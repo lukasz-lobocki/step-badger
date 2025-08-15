@@ -58,6 +58,9 @@ func dbTableMain(args []string) {
 	if err != nil {
 		logError.Fatalln(err)
 	}
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Printf("Database opened: %s", args[0])
+	}
 
 	// Get records from the bucket.
 	records, err := db.List([]byte(args[1]))
@@ -71,6 +74,9 @@ func dbTableMain(args []string) {
 	// Close the database.
 	if err = db.Close(); err != nil {
 		logError.Fatalln(err)
+	}
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Printf("Database closed: %s", args[0])
 	}
 
 	if loggingLevel >= 2 { // Show info.
