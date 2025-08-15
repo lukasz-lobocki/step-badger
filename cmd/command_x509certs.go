@@ -17,25 +17,21 @@ import (
 
 // x509certsCmd represents the shell command.
 var x509certsCmd = &cobra.Command{
+	Short:   "Export x509 certificates.",
+	Run:     func(cmd *cobra.Command, args []string) { exportX509Main(args) },
+	Args:    cobra.ExactArgs(1),
+	Aliases: []string{"x509certs", "x509", "ssl"},
+
+	DisableFlagsInUseLine: true,
+
+	Example: `  step-badger x509certs ./db
+  step-badger x509Certs ./db --revoked --valid=false --emit=openssl`,
 	Long: `
 Export x509 certificates' data out of the badger database of step-ca.`,
-
-	Short:                 "Export x509 certificates.",
-	DisableFlagsInUseLine: true,
 	Use: `x509Certs <PATH> [flags]
 
 Arguments:
   PATH   location of the source database`,
-
-	Aliases: []string{"x509certs", "x509", "ssl"},
-	Example: `  step-badger x509certs ./db
-  step-badger x509Certs ./db --revoked --valid=false --emit=openssl`,
-
-	Args: cobra.ExactArgs(1),
-
-	Run: func(cmd *cobra.Command, args []string) {
-		exportX509Main(args)
-	},
 }
 
 /*
@@ -96,6 +92,9 @@ func exportX509Main(args []string) {
 	if err != nil {
 		logError.Fatalln(err)
 	}
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Printf("Database opened: %s", args[0])
+	}
 
 	// Get records from the x509_certs bucket.
 	records, err := db.List([]byte("x509_certs"))
@@ -107,7 +106,7 @@ func exportX509Main(args []string) {
 	}
 
 	for _, record := range records {
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("Bucket: %s", record.Bucket)
 			logInfo.Printf("Key: %s", record.Key)
 			logInfo.Printf("Value: %q", record.Value)
@@ -115,20 +114,20 @@ func exportX509Main(args []string) {
 
 		// Get certificate.
 		x509Certificate := parseValueToX509Certificate(record.Value)
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("Serial: %s", x509Certificate.SerialNumber.String())
 			logInfo.Printf("Subject: %s", x509Certificate.Subject)
 		}
 
 		// Get revocation.
 		x509CertificateRevocation := getX509Revocation(db, x509Certificate)
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("RevocationProvisionerID: %s", x509CertificateRevocation.ProvisionerID)
 		}
 
 		// Get provisioner.
 		x509CertificateData := getX509CertificateData(db, x509Certificate)
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("Provisioner: %s", x509CertificateData.Provisioner.Type)
 		}
 
@@ -169,6 +168,9 @@ func exportX509Main(args []string) {
 	if err = db.Close(); err != nil {
 		logError.Fatalln(err)
 	}
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Printf("Database closed: %s", args[0])
+	}
 
 	// Sort.
 	switch thisSort := config.sortOrder.Value; thisSort {
@@ -205,14 +207,14 @@ func getX509Revocation(thisDB database.DB, thisX509Certificate x509.Certificate)
 
 	switch {
 	case errors.Is(err, database.ErrNotFound):
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("key for revocation not found")
 		}
 	case err != nil:
 		logInfo.Panic(err)
 	}
 
-	if loggingLevel >= 2 { // Show info.
+	if loggingLevel >= 3 { // Show info.
 		logInfo.Printf("revocationValue: %s", revocationValue)
 	}
 
@@ -225,14 +227,14 @@ func getX509CertificateData(thisDB database.DB, thisX509Certificate x509.Certifi
 
 	switch {
 	case errors.Is(err, database.ErrNotFound):
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("key for certificate data not found")
 		}
 	case err != nil:
 		logInfo.Panic(err)
 	}
 
-	if loggingLevel >= 2 { // Show info.
+	if loggingLevel >= 3 { // Show info.
 		logInfo.Printf("certsDataValue: %s", certsDataValue)
 	}
 
@@ -278,14 +280,14 @@ func parseValueToX509Certificate(thisValue []byte) x509.Certificate {
 		logError.Panic(err)
 	}
 
-	if loggingLevel >= 2 { // Show info.
+	if loggingLevel >= 3 { // Show info.
 		logInfo.Printf("marshaledValue: %s", marshaledValue)
 	}
 
 	// Adding header and footer.
 	pemBlockValue := makePEM(marshaledValue)
 
-	if loggingLevel >= 2 { // Show info.
+	if loggingLevel >= 3 { // Show info.
 		logInfo.Printf("pemBlockValue: %s", pemBlockValue)
 	}
 

@@ -15,24 +15,20 @@ import (
 
 // sshCertsCmd represents the shell command.
 var sshCertsCmd = &cobra.Command{
+	Short:   "Export ssh certificates.",
+	Run:     func(cmd *cobra.Command, args []string) { exportSshMain(args) },
+	Args:    cobra.ExactArgs(1),
+	Aliases: []string{"sshcerts", "ssh"},
+
+	DisableFlagsInUseLine: true,
+
+	Example: "  step-badger sshCerts ./db",
 	Long: `
 Export ssh certificates' data out of the badger database of step-ca.`,
-
-	Short:                 "Export ssh certificates.",
-	DisableFlagsInUseLine: true,
 	Use: `sshCerts <PATH> [flags]
 
 Arguments:
   PATH   location of the source database`,
-
-	Aliases: []string{"sshcerts", "ssh"},
-	Example: "  step-badger sshCerts ./db",
-
-	Args: cobra.ExactArgs(1),
-
-	Run: func(cmd *cobra.Command, args []string) {
-		exportSshMain(args)
-	},
 }
 
 /*
@@ -87,6 +83,9 @@ func exportSshMain(args []string) {
 	if err != nil {
 		logError.Fatalln(err)
 	}
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Printf("Database opened: %s", args[0])
+	}
 
 	// Get records from the ssh_certs bucket.
 	records, err := db.List([]byte("ssh_certs"))
@@ -98,7 +97,7 @@ func exportSshMain(args []string) {
 	}
 
 	for _, record := range records {
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("Bucket: %s", record.Bucket)
 			logInfo.Printf("Key: %s", record.Key)
 			logInfo.Printf("Value: %q", record.Value)
@@ -106,14 +105,14 @@ func exportSshMain(args []string) {
 
 		// Get certificate.
 		sshCertificate := parseValueToSshCertificate(record.Value)
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("Serial: %s", strconv.FormatUint(sshCertificate.Serial, 10))
 			logInfo.Printf("Subject: %s", strings.Join(sshCertificate.ValidPrincipals, ","))
 		}
 
 		// Get revocation.
 		sshCertificateRevocation := getSshRevocation(db, sshCertificate)
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("RevocationProvisionerID: %s", sshCertificateRevocation.ProvisionerID)
 		}
 
@@ -151,6 +150,9 @@ func exportSshMain(args []string) {
 	if err = db.Close(); err != nil {
 		logError.Fatalln(err)
 	}
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Printf("Database closed: %s", args[0])
+	}
 
 	// Sort.
 	switch thisSort := config.sortOrder.Value; thisSort {
@@ -183,14 +185,14 @@ func getSshRevocation(thisDB database.DB, thisSshCertificate ssh.Certificate) tC
 
 	switch {
 	case errors.Is(err, database.ErrNotFound):
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("key for revocation not found")
 		}
 	case err != nil:
 		logInfo.Panic(err)
 	}
 
-	if loggingLevel >= 2 { // Show info.
+	if loggingLevel >= 3 { // Show info.
 		logInfo.Printf("revocationValue: %s", revocationValue)
 	}
 

@@ -11,11 +11,16 @@ import (
 
 // dbTableCmd represents the shell command.
 var dbTableCmd = &cobra.Command{
+	Short:   "Export badger table.",
+	Run:     func(cmd *cobra.Command, args []string) { dbTableMain(args) },
+	Args:    cobra.ExactArgs(2),
+	Aliases: []string{"dbtable"},
+
+	DisableFlagsInUseLine: true,
+
+	Example: "  step-badger dbTable ./db ssh_host_principals",
 	Long: `
 Export data table out of the badger database of step-ca.`,
-
-	Short:                 "Export badger table.",
-	DisableFlagsInUseLine: true,
 	Use: `dbTable <PATH> <TABLE> [flags]
 
 Arguments:
@@ -24,15 +29,6 @@ Arguments:
 
 Note:
   For list of tables see: https://raw.githubusercontent.com/smallstep/certificates/master/db/db.go`,
-
-	Aliases: []string{"dbtable"},
-	Example: "  step-badger dbTable ./db ssh_host_principals",
-
-	Args: cobra.ExactArgs(2),
-
-	Run: func(cmd *cobra.Command, args []string) {
-		dbTableMain(args)
-	},
 }
 
 // Cobra initiation.
@@ -62,6 +58,9 @@ func dbTableMain(args []string) {
 	if err != nil {
 		logError.Fatalln(err)
 	}
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Printf("Database opened: %s", args[0])
+	}
 
 	// Get records from the bucket.
 	records, err := db.List([]byte(args[1]))
@@ -76,8 +75,11 @@ func dbTableMain(args []string) {
 	if err = db.Close(); err != nil {
 		logError.Fatalln(err)
 	}
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Printf("Database closed: %s", args[0])
+	}
 
-	if loggingLevel >= 2 { // Show info.
+	if loggingLevel >= 3 { // Show info.
 		for _, record := range records {
 			logInfo.Printf("Bucket: %s", record.Bucket)
 			logInfo.Printf("Key: %s", record.Key)
