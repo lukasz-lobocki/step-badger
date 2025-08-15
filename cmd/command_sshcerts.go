@@ -83,6 +83,9 @@ func exportSshMain(args []string) {
 	if err != nil {
 		logError.Fatalln(err)
 	}
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Printf("Database opened: %s", args[0])
+	}
 
 	// Get records from the ssh_certs bucket.
 	records, err := db.List([]byte("ssh_certs"))
@@ -146,6 +149,9 @@ func exportSshMain(args []string) {
 	// Close the database.
 	if err = db.Close(); err != nil {
 		logError.Fatalln(err)
+	}
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Printf("Database closed: %s", args[0])
 	}
 
 	// Sort.
