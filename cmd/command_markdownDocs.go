@@ -10,26 +10,21 @@ import (
 
 // markdownDocsCmd represents the markdownDocs command
 var markdownDocsCmd = &cobra.Command{
+	Short:   "Generate markdown docs.",
+	Run:     func(cmd *cobra.Command, args []string) { exportMarkdownMain(args) },
+	Args:    cobra.ExactArgs(1),
+	Aliases: []string{"markdowndocs"},
+	Hidden:  true, // Hide command from the tree.
+
+	DisableFlagsInUseLine: true,
+
+	Example: `  step-badger markdownDocs ~/tmp`,
 	Long: `
 Generate markdown docs for the entire command tree.`,
-	Short:                 "Generate markdown docs.",
-	DisableFlagsInUseLine: true,
 	Use: `markdownDocs <PATH> [flags]
 
 Arguments:
   PATH   location for the result`,
-
-	Aliases: []string{"markdowndocs"},
-
-	Args: cobra.ExactArgs(1),
-
-	Example: `  step-badger markdownDocs ~/tmp`,
-
-	Hidden: true, // Hide command from the tree.
-
-	Run: func(cmd *cobra.Command, args []string) {
-		exportMarkdownMain(args)
-	},
 }
 
 func init() {

@@ -11,11 +11,16 @@ import (
 
 // dbTableCmd represents the shell command.
 var dbTableCmd = &cobra.Command{
+	Short:   "Export badger table.",
+	Run:     func(cmd *cobra.Command, args []string) { dbTableMain(args) },
+	Args:    cobra.ExactArgs(2),
+	Aliases: []string{"dbtable"},
+
+	DisableFlagsInUseLine: true,
+
+	Example: "  step-badger dbTable ./db ssh_host_principals",
 	Long: `
 Export data table out of the badger database of step-ca.`,
-
-	Short:                 "Export badger table.",
-	DisableFlagsInUseLine: true,
 	Use: `dbTable <PATH> <TABLE> [flags]
 
 Arguments:
@@ -24,15 +29,6 @@ Arguments:
 
 Note:
   For list of tables see: https://raw.githubusercontent.com/smallstep/certificates/master/db/db.go`,
-
-	Aliases: []string{"dbtable"},
-	Example: "  step-badger dbTable ./db ssh_host_principals",
-
-	Args: cobra.ExactArgs(2),
-
-	Run: func(cmd *cobra.Command, args []string) {
-		dbTableMain(args)
-	},
 }
 
 // Cobra initiation.

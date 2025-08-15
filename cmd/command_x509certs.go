@@ -17,25 +17,21 @@ import (
 
 // x509certsCmd represents the shell command.
 var x509certsCmd = &cobra.Command{
+	Short:   "Export x509 certificates.",
+	Run:     func(cmd *cobra.Command, args []string) { exportX509Main(args) },
+	Args:    cobra.ExactArgs(1),
+	Aliases: []string{"x509certs", "x509", "ssl"},
+
+	DisableFlagsInUseLine: true,
+
+	Example: `  step-badger x509certs ./db
+  step-badger x509Certs ./db --revoked --valid=false --emit=openssl`,
 	Long: `
 Export x509 certificates' data out of the badger database of step-ca.`,
-
-	Short:                 "Export x509 certificates.",
-	DisableFlagsInUseLine: true,
 	Use: `x509Certs <PATH> [flags]
 
 Arguments:
   PATH   location of the source database`,
-
-	Aliases: []string{"x509certs", "x509", "ssl"},
-	Example: `  step-badger x509certs ./db
-  step-badger x509Certs ./db --revoked --valid=false --emit=openssl`,
-
-	Args: cobra.ExactArgs(1),
-
-	Run: func(cmd *cobra.Command, args []string) {
-		exportX509Main(args)
-	},
 }
 
 /*

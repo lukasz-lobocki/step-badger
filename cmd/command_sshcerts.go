@@ -15,24 +15,20 @@ import (
 
 // sshCertsCmd represents the shell command.
 var sshCertsCmd = &cobra.Command{
+	Short:   "Export ssh certificates.",
+	Run:     func(cmd *cobra.Command, args []string) { exportSshMain(args) },
+	Args:    cobra.ExactArgs(1),
+	Aliases: []string{"sshcerts", "ssh"},
+
+	DisableFlagsInUseLine: true,
+
+	Example: "  step-badger sshCerts ./db",
 	Long: `
 Export ssh certificates' data out of the badger database of step-ca.`,
-
-	Short:                 "Export ssh certificates.",
-	DisableFlagsInUseLine: true,
 	Use: `sshCerts <PATH> [flags]
 
 Arguments:
   PATH   location of the source database`,
-
-	Aliases: []string{"sshcerts", "ssh"},
-	Example: "  step-badger sshCerts ./db",
-
-	Args: cobra.ExactArgs(1),
-
-	Run: func(cmd *cobra.Command, args []string) {
-		exportSshMain(args)
-	},
 }
 
 /*
