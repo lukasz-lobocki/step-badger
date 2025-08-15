@@ -79,7 +79,7 @@ func dbTableMain(args []string) {
 		logInfo.Printf("Database closed: %s", args[0])
 	}
 
-	if loggingLevel >= 2 { // Show info.
+	if loggingLevel >= 3 { // Show info.
 		for _, record := range records {
 			logInfo.Printf("Bucket: %s", record.Bucket)
 			logInfo.Printf("Key: %s", record.Key)

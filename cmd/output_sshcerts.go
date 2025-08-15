@@ -59,7 +59,7 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 		if err := table.AppendRow(row); err != nil {
 			logError.Panic(err)
 		}
-		if loggingLevel >= 3 { // Show info.
+		if loggingLevel >= 2 { // Show info.
 			logInfo.Printf("row [%s] appended.", strconv.FormatUint(sshCert.SshCertificate.Serial, 10))
 		}
 

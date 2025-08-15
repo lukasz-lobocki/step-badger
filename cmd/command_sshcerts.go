@@ -97,7 +97,7 @@ func exportSshMain(args []string) {
 	}
 
 	for _, record := range records {
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("Bucket: %s", record.Bucket)
 			logInfo.Printf("Key: %s", record.Key)
 			logInfo.Printf("Value: %q", record.Value)
@@ -105,14 +105,14 @@ func exportSshMain(args []string) {
 
 		// Get certificate.
 		sshCertificate := parseValueToSshCertificate(record.Value)
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("Serial: %s", strconv.FormatUint(sshCertificate.Serial, 10))
 			logInfo.Printf("Subject: %s", strings.Join(sshCertificate.ValidPrincipals, ","))
 		}
 
 		// Get revocation.
 		sshCertificateRevocation := getSshRevocation(db, sshCertificate)
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("RevocationProvisionerID: %s", sshCertificateRevocation.ProvisionerID)
 		}
 
@@ -185,14 +185,14 @@ func getSshRevocation(thisDB database.DB, thisSshCertificate ssh.Certificate) tC
 
 	switch {
 	case errors.Is(err, database.ErrNotFound):
-		if loggingLevel >= 2 { // Show info.
+		if loggingLevel >= 3 { // Show info.
 			logInfo.Printf("key for revocation not found")
 		}
 	case err != nil:
 		logInfo.Panic(err)
 	}
 
-	if loggingLevel >= 2 { // Show info.
+	if loggingLevel >= 3 { // Show info.
 		logInfo.Printf("revocationValue: %s", revocationValue)
 	}
 
