@@ -20,6 +20,8 @@ const (
 	FORMAT_MARKDOWN   string = "markdown"
 	FORMAT_OPENSSL    string = "openssl"
 	FORMAT_PLAIN      string = "plain"
+	SERIAL_DEC        string = "dec"
+	SERIAL_HEX        string = "hex"
 )
 
 /*
@@ -43,6 +45,7 @@ func initChoices() {
 	config.emitX509Format = newChoice([]string{FORMAT_TABLE, FORMAT_JSON, FORMAT_MARKDOWN, FORMAT_OPENSSL, FORMAT_PLAIN}, FORMAT_TABLE)
 	config.sortOrder = newChoice([]string{SORT_START, SORT_FINISH}, SORT_FINISH)
 	config.timeFormat = newChoice([]string{TIME_ISO, TIME_SHORT}, TIME_ISO)
+	config.serialFormat = newChoice([]string{SERIAL_DEC, SERIAL_HEX}, SERIAL_DEC)
 }
 
 /*
@@ -64,9 +67,9 @@ type tConfig struct {
 	showIPAddresses        bool
 	showURIs               bool
 	showIssuer             bool
-	showSerial             bool
 	showHostType           bool
 	showSignatureAlgorithm bool
+	serialFormat           *tChoice
 }
 
 /*

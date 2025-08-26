@@ -56,9 +56,9 @@ func init() {
 		"|"+FORMAT_OPENSSL+"|"+FORMAT_PLAIN)
 	x509certsCmd.Flags().Var(config.timeFormat, "time", "time format: "+TIME_ISO+"|"+TIME_SHORT)
 	x509certsCmd.Flags().Var(config.sortOrder, "sort", "sort order: "+SORT_START+"|"+SORT_FINISH)
+	x509certsCmd.Flags().Var(config.serialFormat, "serial", "serial format: "+SERIAL_DEC+"|"+SERIAL_HEX)
 
 	// Columns selection criteria.
-	x509certsCmd.Flags().BoolVar(&config.showSerial, "serial", true, "serial number column shown")
 	x509certsCmd.Flags().BoolVar(&config.showDNSNames, "dnsnames", false, "dns names column shown")
 	x509certsCmd.Flags().BoolVar(&config.showEmailAddresses, "emailaddresses", false, "email addresses column shown")
 	x509certsCmd.Flags().BoolVar(&config.showIPAddresses, "ipaddresses", false, "ip addresses column shown")

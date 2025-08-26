@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"strconv"
 	"strings"
 	"time"
 
@@ -28,12 +27,16 @@ func getSshColumns() []tSshColumn {
 	columns = append(columns,
 
 		tSshColumn{
-			isShown:    func(tc tConfig) bool { return tc.showSerial },
+			isShown:    func(tc tConfig) bool { return true },
 			title:      func() string { return "Serial number" }, // Static title.
 			titleColor: color.Bold,
 
-			contentSource: func(x tSshCertificateWithRevocation, _ tConfig) string {
-				return strconv.FormatUint(x.SshCertificate.Serial, 10)
+			contentSource: func(x tSshCertificateWithRevocation, tc tConfig) string {
+				if tc.serialFormat.Value == SERIAL_DEC {
+					return x.SshCertificateStringSerials.SerialDec
+				} else {
+					return x.SshCertificateStringSerials.SerialHex
+				}
 			},
 
 			contentColor:    func(_ tSshCertificateWithRevocation) color.Attribute { return color.FgWhite }, // Static color.

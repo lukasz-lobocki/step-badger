@@ -52,10 +52,10 @@ func init() {
 	sshCertsCmd.Flags().Var(config.emitSshFormat, "emit", "emit format: "+FORMAT_TABLE+"|"+FORMAT_JSON+"|"+FORMAT_MARKDOWN+"|"+FORMAT_PLAIN)
 	sshCertsCmd.Flags().Var(config.timeFormat, "time", "time format: "+TIME_ISO+"|"+TIME_SHORT)
 	sshCertsCmd.Flags().Var(config.sortOrder, "sort", "sort order: "+SORT_START+"|"+SORT_FINISH)
+	sshCertsCmd.Flags().Var(config.serialFormat, "serial", "serial format: "+SERIAL_DEC+"|"+SERIAL_HEX)
 
 	// Columns selection criteria.
 	sshCertsCmd.Flags().BoolVar(&config.showHostType, "type", true, "host type column shown")
-	sshCertsCmd.Flags().BoolVar(&config.showSerial, "serial", true, "serial column shown")
 	sshCertsCmd.Flags().BoolVar(&config.showKeyId, "keyid", false, "key id column shown")
 	sshCertsCmd.Flags().BoolVar(&config.showSignatureAlgorithm, "algorithm", false, "signature algorithm column shown")
 }
