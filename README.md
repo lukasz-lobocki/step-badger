@@ -22,7 +22,7 @@ Flags:
       --emit {table|json|markdown|openssl|plain}   emit format: table|json|markdown|openssl|plain (default table)
       --time {iso|short}                           time format: iso|short (default iso)
       --sort {start|finish}                        sort order: start|finish (default finish)
-      --serial                                     serial number column shown (default true)
+      --serial {dec|hex}                           serial format: dec|hex (default dec)
       --dnsnames                                   dns names column shown
       --emailaddresses                             email addresses column shown
       --ipaddresses                                ip addresses column shown
@@ -53,11 +53,10 @@ Flags:
       --emit {table|json|markdown|plain}   emit format: table|json|markdown|plain (default table)
       --time {iso|short}                   time format: iso|short (default iso)
       --sort {start|finish}                sort order: start|finish (default finish)
+      --serial {dec|hex}                   serial format: dec|hex (default dec)
       --type                               host type column shown (default true)
-      --serial                             serial column shown (default true)
       --keyid                              key id column shown
       --algorithm                          signature algorithm column shown
-  -h, --help                               help for sshCerts
 ```
 
 ### Example

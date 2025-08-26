@@ -27,12 +27,16 @@ func getX509Columns() []tX509Column {
 	columns = append(columns,
 
 		tX509Column{
-			isShown:    func(tc tConfig) bool { return tc.showSerial },
+			isShown:    func(tc tConfig) bool { return true },
 			title:      func() string { return "Serial number" }, // Static title.
 			titleColor: color.Bold,
 
-			contentSource: func(x tX509CertificateProvisionerRevocation, _ tConfig) string {
-				return x.X509Certificate.SerialNumber.String()
+			contentSource: func(x tX509CertificateProvisionerRevocation, tc tConfig) string {
+				if tc.serialFormat.Value == SERIAL_DEC {
+					return x.X509CertificateStringSerials.SerialDec
+				} else {
+					return x.X509CertificateStringSerials.SerialHex
+				}
 			},
 
 			contentColor:    func(_ tX509CertificateProvisionerRevocation) color.Attribute { return color.FgWhite }, // Static color.
