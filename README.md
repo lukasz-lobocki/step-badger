@@ -79,6 +79,21 @@ step-badger dbTable PATH BUCKET
 
 ## Info
 
+### Badger single-user limitation
+
+As a workaround, copy the badger database directory `db/` to some other temporary location. Stopping with `systemctl stop step-ca` is not required, you can do it on live running CA. Then, run `step-badger` against this temporary copy.
+
+Simplified example. Adjust paths to your environment.
+
+```bash
+source_location='/etc/step-ca/db'
+destination_location='/var/log/step-ca'
+cp --recursive --force "${source_location}" "${destination_location}"
+step-badger sshCerts "${destination_location}/db"
+```
+
+### Other
+
 See [this](https://smallstep.com/docs/step-ca/certificate-authority-server-production/#enable-active-revocation-on-your-intermediate-ca).
 
 ## Build
