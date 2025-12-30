@@ -300,7 +300,7 @@ func parseValueToX509Certificate(thisValue []byte) x509.Certificate {
 	// Parse PEM block into certificate.
 	x509Certificate, err = x509.ParseCertificate(decodedPEMBlock.Bytes)
 	if err != nil {
-		logError.Panicf("failed to parse certificate: " + err.Error())
+		logError.Panicf("failed to parse certificate: %v", err)
 	}
 
 	return *x509Certificate
