@@ -2,9 +2,9 @@
 
 This tool has 3 features:
 
-- display issued [x509 certificates](#step-badger-x509certs) from [step-ca](https://github.com/smallstep/certificates) badger database.
-- display issued [ssh certificates](#step-badger-sshcerts) from [step-ca](https://github.com/smallstep/certificates) badger database.
-- display [content of a given data bucket](#step-badger-dbtable) from [step-ca](https://github.com/smallstep/certificates) badger database.
+- display issued [x509 certificates](#step-badger-x509certs) from [step-ca](https://github.com/smallstep/certificates) [badger](https://github.com/dgraph-io/badger) database.
+- display issued [ssh certificates](#step-badger-sshcerts) from [step-ca](https://github.com/smallstep/certificates) [badger](https://github.com/dgraph-io/badger) database.
+- display [content of a given data bucket](#step-badger-dbtable) from [step-ca](https://github.com/smallstep/certificates) [badger](https://github.com/dgraph-io/badger) database.
 
 ## step-badger x509Certs
 
