@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/smallstep/nosql"
 	"github.com/smallstep/nosql/database"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
@@ -70,31 +69,16 @@ func exportSshMain(args []string) {
 	checkLogginglevel(args)
 
 	var (
-		err error
-		db  database.DB
-
 		sshCertificateWithRevocation   tSshCertificateWithRevocation
 		sshCertificatesWithRevocations []tSshCertificateWithRevocation
 		sshCertificateStringSerials    tCertificateStringSerials
 	)
 
 	// Open the database.
-	db, err = nosql.New("badgerv2", args[0], database.WithValueDir(args[0]))
-	if err != nil {
-		logError.Fatalln(err)
-	}
-	if loggingLevel >= 1 { // Show info.
-		logInfo.Printf("Database opened: %s", args[0])
-	}
+	db := openDB(args[0])
 
 	// Get records from the ssh_certs bucket.
-	records, err := db.List([]byte("ssh_certs"))
-	if err != nil {
-		logError.Fatalln(err)
-	}
-	if records == nil {
-		logError.Fatalln("no records found")
-	}
+	records := listBucket(db, "ssh_certs")
 
 	for _, record := range records {
 		if loggingLevel >= 3 { // Show info.
@@ -128,15 +112,11 @@ func exportSshMain(args []string) {
 		}
 
 		// Populate child validity info of the certificate.
-		if len(sshCertificateRevocation.ProvisionerID) > 0 && time.Now().After(sshCertificateRevocation.RevokedAt) {
-			sshCertificateWithRevocation.Validity = REVOKED_STR
-		} else {
-			if time.Now().After(time.Unix(int64(sshCertificate.ValidBefore), 0)) {
-				sshCertificateWithRevocation.Validity = EXPIRED_STR
-			} else {
-				sshCertificateWithRevocation.Validity = VALID_STR
-			}
-		}
+		sshCertificateWithRevocation.Validity = classifyValidity(
+			sshCertificateRevocation.ProvisionerID,
+			sshCertificateRevocation.RevokedAt,
+			time.Unix(int64(sshCertificate.ValidBefore), 0),
+		)
 
 		// Append child into collection, if record selection criteria are met.
 		if (config.showExpired && sshCertificateWithRevocation.Validity == EXPIRED_STR) ||
@@ -147,12 +127,7 @@ func exportSshMain(args []string) {
 	}
 
 	// Close the database.
-	if err = db.Close(); err != nil {
-		logError.Fatalln(err)
-	}
-	if loggingLevel >= 1 { // Show info.
-		logInfo.Printf("Database closed: %s", args[0])
-	}
+	closeDB(db, args[0])
 
 	// Sort.
 	switch thisSort := config.sortOrder.Value; thisSort {
