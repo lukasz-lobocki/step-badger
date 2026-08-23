@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json.schemastore.org/copilot-hooks.json",
+  "version": 1,
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "actions": [
+          {
+            "type": "command",
+            "command": ".copilot/hooks/session-start.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "shell|runCommands|bash",
+        "actions": [
+          {
+            "type": "command",
+            "command": ".copilot/hooks/guard-command.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "str_replace_editor|create_file|edit",
+        "actions": [
+          {
+            "type": "command",
+            "command": ".copilot/hooks/post-edit-go.sh",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "actions": [
+          {
+            "type": "command",
+            "command": ".copilot/hooks/pre-finish-verify.sh",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
+  }
+}
