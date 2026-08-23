@@ -578,6 +578,32 @@ func FuzzEscapeMarkdown(f *testing.F) {
 	})
 }
 
+// FuzzParseValueToCertificateRevocation fuzzes the JSON revocation parser. The
+// production code panics (logError.Panic) on malformed JSON; recover so only
+// unexpected crashes surface.
+func FuzzParseValueToCertificateRevocation(f *testing.F) {
+	f.Add([]byte(`{"ProvisionerID":"p1","ReasonCode":1,"Reason":"unspecified"}`))
+	f.Add([]byte(`{}`))
+	f.Add([]byte(`not json`))
+	f.Add([]byte{})
+	f.Fuzz(func(t *testing.T, data []byte) {
+		defer func() { _ = recover() }()
+		_ = parseValueToCertificateRevocation(data)
+	})
+}
+
+// FuzzParseValueToX509CertificateData fuzzes the JSON provisioner-data parser.
+func FuzzParseValueToX509CertificateData(f *testing.F) {
+	f.Add([]byte(`{"Provisioner":{"ID":"i1","Name":"n1","Type":"x509"}}`))
+	f.Add([]byte(`{}`))
+	f.Add([]byte(`not json`))
+	f.Add([]byte{})
+	f.Fuzz(func(t *testing.T, data []byte) {
+		defer func() { _ = recover() }()
+		_ = parseValueToX509CertificateData(data)
+	})
+}
+
 // TestDbTableMain runs the dbTable subcommand against a seeded badger DB and
 // asserts the bucket records are emitted as JSON.
 func TestDbTableMain(t *testing.T) {
