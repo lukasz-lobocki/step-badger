@@ -420,12 +420,14 @@ func TestExportX509Main(t *testing.T) {
 func TestEmitSmoke(t *testing.T) {
 	resetConfig()
 	now := time.Now()
+
 	sshCert := makeSSHCert(t, 1, now.Add(-time.Hour), now.Add(time.Hour))
 	sshRow := tSshCertificateWithRevocation{
 		SshCertificate:              sshCert,
 		Validity:                    VALID_STR,
 		SshCertificateStringSerials: tCertificateStringSerials{SerialDec: "1", SerialHex: "1"},
 	}
+	sshCols := getSshColumns()
 
 	x509Cert := makeX509Cert(t, 2, now.Add(-time.Hour), now.Add(time.Hour))
 	x509Row := tX509CertificateProvisionerRevocation{
@@ -433,19 +435,22 @@ func TestEmitSmoke(t *testing.T) {
 		Validity:                     VALID_STR,
 		X509CertificateStringSerials: tCertificateStringSerials{SerialDec: "2", SerialHex: "2"},
 	}
+	x509Cols := getX509Columns()
 
 	for name, fn := range map[string]func() string{
 		"table": func() string {
-			return emitNoPanic(t, "ssh/table", func() { emitSshCertsTable([]tSshCertificateWithRevocation{sshRow}) })
+			return emitNoPanic(t, "ssh/table", func() {
+				emitTable([]tSshCertificateWithRevocation{sshRow}, sshCols, func(r tSshCertificateWithRevocation) string { return r.SshCertificateStringSerials.SerialDec })
+			})
 		},
 		"json": func() string {
-			return emitNoPanic(t, "ssh/json", func() { emitSshCertsJson([]tSshCertificateWithRevocation{sshRow}) })
+			return emitNoPanic(t, "ssh/json", func() { emitJson([]tSshCertificateWithRevocation{sshRow}) })
 		},
 		"markdown": func() string {
-			return emitNoPanic(t, "ssh/markdown", func() { emitSshCertsMarkdown([]tSshCertificateWithRevocation{sshRow}) })
+			return emitNoPanic(t, "ssh/markdown", func() { emitMarkdown([]tSshCertificateWithRevocation{sshRow}, sshCols) })
 		},
 		"plain": func() string {
-			return emitNoPanic(t, "ssh/plain", func() { emitSshCertsPlain([]tSshCertificateWithRevocation{sshRow}) })
+			return emitNoPanic(t, "ssh/plain", func() { emitPlain([]tSshCertificateWithRevocation{sshRow}, sshCols) })
 		},
 	} {
 		t.Run("ssh/"+name, func(t *testing.T) {
@@ -457,16 +462,18 @@ func TestEmitSmoke(t *testing.T) {
 
 	for name, fn := range map[string]func() string{
 		"table": func() string {
-			return emitNoPanic(t, "x509/table", func() { emitX509Table([]tX509CertificateProvisionerRevocation{x509Row}) })
+			return emitNoPanic(t, "x509/table", func() {
+				emitTable([]tX509CertificateProvisionerRevocation{x509Row}, x509Cols, func(r tX509CertificateProvisionerRevocation) string { return r.X509CertificateStringSerials.SerialDec })
+			})
 		},
 		"json": func() string {
-			return emitNoPanic(t, "x509/json", func() { emitX509CertsWithRevocationsJson([]tX509CertificateProvisionerRevocation{x509Row}) })
+			return emitNoPanic(t, "x509/json", func() { emitJson([]tX509CertificateProvisionerRevocation{x509Row}) })
 		},
 		"markdown": func() string {
-			return emitNoPanic(t, "x509/markdown", func() { emitX509Markdown([]tX509CertificateProvisionerRevocation{x509Row}) })
+			return emitNoPanic(t, "x509/markdown", func() { emitMarkdown([]tX509CertificateProvisionerRevocation{x509Row}, x509Cols) })
 		},
 		"plain": func() string {
-			return emitNoPanic(t, "x509/plain", func() { emitX509Plain([]tX509CertificateProvisionerRevocation{x509Row}) })
+			return emitNoPanic(t, "x509/plain", func() { emitPlain([]tX509CertificateProvisionerRevocation{x509Row}, x509Cols) })
 		},
 		"openssl": func() string {
 			return emitNoPanic(t, "x509/openssl", func() { emitX509OpenSsl([]tX509CertificateProvisionerRevocation{x509Row}) })
@@ -616,7 +623,7 @@ func TestExportMarkdownMain(t *testing.T) {
 }
 
 // findX509Col returns the first column whose title matches, or nil.
-func findX509Col(cols []tX509Column, title string) *tX509Column {
+func findX509Col(cols []tColumn[tX509CertificateProvisionerRevocation], title string) *tColumn[tX509CertificateProvisionerRevocation] {
 	for i := range cols {
 		if cols[i].title() == title {
 			return &cols[i]
@@ -741,10 +748,10 @@ func TestSshColumnsContent(t *testing.T) {
 }
 
 func TestGetCertTypeMaps(t *testing.T) {
-	if getCertType()[1] != "User" || getCertType()[2] != "Host" {
+	if certTypeMap[1] != "User" || certTypeMap[2] != "Host" {
 		t.Error("unexpected cert type map")
 	}
-	if getCertTypeColor()[1] == 0 || getCertTypeColor()[2] == 0 {
+	if certTypeColors[1] == 0 || certTypeColors[2] == 0 {
 		t.Error("expected non-zero cert type colors")
 	}
 }

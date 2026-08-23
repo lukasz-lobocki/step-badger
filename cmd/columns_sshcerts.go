@@ -7,26 +7,16 @@ import (
 	"github.com/fatih/color"
 )
 
-type tSshColumn struct {
-	isShown         func(tConfig) bool
-	title           func() string
-	titleColor      color.Attribute
-	contentSource   func(tSshCertificateWithRevocation, tConfig) string
-	contentColor    func(tSshCertificateWithRevocation) color.Attribute
-	contentAlignMD  int
-	contentEscapeMD bool
-}
-
 /*
-getX509Columns defines look and content of table's emitted columns.
+getSshColumns defines look and content of table's emitted columns.
 */
-func getSshColumns() []tSshColumn {
+func getSshColumns() []tColumn[tSshCertificateWithRevocation] {
 
-	var columns []tSshColumn
+	var columns []tColumn[tSshCertificateWithRevocation]
 
 	columns = append(columns,
 
-		tSshColumn{
+		tColumn[tSshCertificateWithRevocation]{
 			isShown:    func(tc tConfig) bool { return true },
 			title:      func() string { return "Serial number" }, // Static title.
 			titleColor: color.Bold,
@@ -44,7 +34,7 @@ func getSshColumns() []tSshColumn {
 			contentEscapeMD: false,
 		},
 
-		tSshColumn{
+		tColumn[tSshCertificateWithRevocation]{
 			isShown:    func(_ tConfig) bool { return true },        // Always shown.
 			title:      func() string { return "Valid principals" }, // Static title.
 			titleColor: color.Bold,
@@ -58,23 +48,23 @@ func getSshColumns() []tSshColumn {
 			contentEscapeMD: true,
 		},
 
-		tSshColumn{
+		tColumn[tSshCertificateWithRevocation]{
 			isShown:    func(tc tConfig) bool { return tc.showHostType },
 			title:      func() string { return "Type" }, // Static title.
 			titleColor: color.Bold,
 
 			contentSource: func(x tSshCertificateWithRevocation, _ tConfig) string {
-				return getCertType()[int(x.SshCertificate.CertType)]
+				return certTypeMap[int(x.SshCertificate.CertType)]
 			},
 
 			contentColor: func(x tSshCertificateWithRevocation) color.Attribute {
-				return getCertTypeColor()[int(x.SshCertificate.CertType)]
+				return certTypeColors[int(x.SshCertificate.CertType)]
 			}, // Dynamic color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,
 		},
 
-		tSshColumn{
+		tColumn[tSshCertificateWithRevocation]{
 			isShown:    func(tc tConfig) bool { return tc.showKeyId },
 			title:      func() string { return "Key ID" }, // Static title.
 			titleColor: color.Bold,
@@ -86,7 +76,7 @@ func getSshColumns() []tSshColumn {
 			contentEscapeMD: true,
 		},
 
-		tSshColumn{
+		tColumn[tSshCertificateWithRevocation]{
 			isShown:    func(tc tConfig) bool { return tc.showSignatureAlgorithm },
 			title:      func() string { return "Algorithm" }, // Static title.
 			titleColor: color.Bold,
@@ -100,7 +90,7 @@ func getSshColumns() []tSshColumn {
 			contentEscapeMD: true,
 		},
 
-		tSshColumn{
+		tColumn[tSshCertificateWithRevocation]{
 			isShown:    func(_ tConfig) bool { return true }, // Always shown.
 			title:      func() string { return "Start" },     // Static title.
 			titleColor: color.Bold,
@@ -118,7 +108,7 @@ func getSshColumns() []tSshColumn {
 			contentEscapeMD: true,
 		},
 
-		tSshColumn{
+		tColumn[tSshCertificateWithRevocation]{
 			isShown:    func(_ tConfig) bool { return true }, // Always shown.
 			title:      func() string { return "Finish" },    // Static title.
 			titleColor: color.Bold,
@@ -136,7 +126,7 @@ func getSshColumns() []tSshColumn {
 			contentEscapeMD: true,
 		},
 
-		tSshColumn{
+		tColumn[tSshCertificateWithRevocation]{
 			isShown:    func(tc tConfig) bool { return tc.showRevoked }, // Always shown.
 			title:      func() string { return "Revoked at" },           // Static title.
 			titleColor: color.Bold,
@@ -158,7 +148,7 @@ func getSshColumns() []tSshColumn {
 			contentEscapeMD: true,
 		},
 
-		tSshColumn{
+		tColumn[tSshCertificateWithRevocation]{
 			isShown:    func(_ tConfig) bool { return true }, // Always shown.
 			title:      func() string { return "Validity" },  // Static title.
 			titleColor: color.Bold,
@@ -179,21 +169,17 @@ func getSshColumns() []tSshColumn {
 }
 
 /*
-getCertType maps given CertType to string to be displayed.
+certTypeMap maps given CertType to string to be displayed.
 */
-func getCertType() map[int]string {
-	return map[int]string{
-		1: "User",
-		2: "Host",
-	}
+var certTypeMap = map[int]string{
+	1: "User",
+	2: "Host",
 }
 
 /*
-getCertTypeColor maps given CertType to color to be used.
+certTypeColors maps given CertType to color to be used.
 */
-func getCertTypeColor() map[int]color.Attribute {
-	return map[int]color.Attribute{
-		1: color.FgCyan,
-		2: color.FgMagenta,
-	}
+var certTypeColors = map[int]color.Attribute{
+	1: color.FgCyan,
+	2: color.FgMagenta,
 }

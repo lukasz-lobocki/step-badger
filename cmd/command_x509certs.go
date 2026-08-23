@@ -189,15 +189,15 @@ func exportX509Main(args []string) {
 	// Output.
 	switch format := config.emitX509Format.Value; format {
 	case FORMAT_JSON:
-		emitX509CertsWithRevocationsJson(x509CertificatesProvisionersRevocations)
+		emitJson(x509CertificatesProvisionersRevocations)
 	case FORMAT_TABLE:
-		emitX509Table(x509CertificatesProvisionersRevocations)
+		emitTable(x509CertificatesProvisionersRevocations, getX509Columns(), func(x tX509CertificateProvisionerRevocation) string { return x.X509CertificateStringSerials.SerialDec })
 	case FORMAT_MARKDOWN:
-		emitX509Markdown(x509CertificatesProvisionersRevocations)
+		emitMarkdown(x509CertificatesProvisionersRevocations, getX509Columns())
 	case FORMAT_OPENSSL:
 		emitX509OpenSsl(x509CertificatesProvisionersRevocations)
 	case FORMAT_PLAIN:
-		emitX509Plain(x509CertificatesProvisionersRevocations)
+		emitPlain(x509CertificatesProvisionersRevocations, getX509Columns())
 	}
 }
 

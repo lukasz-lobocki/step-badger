@@ -7,26 +7,16 @@ import (
 	"github.com/fatih/color"
 )
 
-type tX509Column struct {
-	isShown         func(tConfig) bool
-	title           func() string
-	titleColor      color.Attribute
-	contentSource   func(tX509CertificateProvisionerRevocation, tConfig) string
-	contentColor    func(tX509CertificateProvisionerRevocation) color.Attribute
-	contentAlignMD  int
-	contentEscapeMD bool
-}
-
 /*
 getX509Columns defines look and content of table's emitted columns.
 */
-func getX509Columns() []tX509Column {
+func getX509Columns() []tColumn[tX509CertificateProvisionerRevocation] {
 
-	var columns []tX509Column
+	var columns []tColumn[tX509CertificateProvisionerRevocation]
 
 	columns = append(columns,
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(tc tConfig) bool { return true },
 			title:      func() string { return "Serial number" }, // Static title.
 			titleColor: color.Bold,
@@ -44,7 +34,7 @@ func getX509Columns() []tX509Column {
 			contentEscapeMD: false,
 		},
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(_ tConfig) bool { return true }, // Always shown.
 			title:      func() string { return "Subject" },   // Static title.
 			titleColor: color.Bold,
@@ -59,7 +49,7 @@ func getX509Columns() []tX509Column {
 			contentEscapeMD: true,
 		},
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(tc tConfig) bool { return tc.showIssuer },
 			title:      func() string { return "Issuer" }, // Static title.
 			titleColor: color.Bold,
@@ -73,7 +63,7 @@ func getX509Columns() []tX509Column {
 			contentEscapeMD: true,
 		},
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(tc tConfig) bool { return tc.showDNSNames },
 			title:      func() string { return "DNS names" }, // Static title.
 			titleColor: color.Bold,
@@ -87,7 +77,7 @@ func getX509Columns() []tX509Column {
 			contentEscapeMD: true,
 		},
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(tc tConfig) bool { return tc.showEmailAddresses },
 			title:      func() string { return "Email addresses" }, // Static title.
 			titleColor: color.Bold,
@@ -101,7 +91,7 @@ func getX509Columns() []tX509Column {
 			contentEscapeMD: true,
 		},
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(tc tConfig) bool { return tc.showIPAddresses },
 			title:      func() string { return "IP addresses" }, // Static title.
 			titleColor: color.Bold,
@@ -119,7 +109,7 @@ func getX509Columns() []tX509Column {
 			contentEscapeMD: true,
 		},
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(tc tConfig) bool { return tc.showURIs },
 			title:      func() string { return "URIs" }, // Static title.
 			titleColor: color.Bold,
@@ -137,7 +127,7 @@ func getX509Columns() []tX509Column {
 			contentEscapeMD: true,
 		},
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(tc tConfig) bool { return tc.showCrl },
 			title:      func() string { return "CRL distribution points" }, // Static title.
 			titleColor: color.Bold,
@@ -151,7 +141,7 @@ func getX509Columns() []tX509Column {
 			contentEscapeMD: true,
 		},
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(tc tConfig) bool { return tc.showProvisioner },
 			title:      func() string { return "Provisioner" }, // Static title.
 			titleColor: color.Bold,
@@ -165,7 +155,7 @@ func getX509Columns() []tX509Column {
 			contentEscapeMD: true,
 		},
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(tc tConfig) bool { return tc.showSignatureAlgorithm },
 			title:      func() string { return "Algorithm" }, // Static title.
 			titleColor: color.Bold,
@@ -179,7 +169,7 @@ func getX509Columns() []tX509Column {
 			contentEscapeMD: true,
 		},
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(_ tConfig) bool { return true }, // Always shown.
 			title:      func() string { return "Start" },     // Static title.
 			titleColor: color.Bold,
@@ -197,7 +187,7 @@ func getX509Columns() []tX509Column {
 			contentEscapeMD: true,
 		},
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(_ tConfig) bool { return true }, // Always shown.
 			title:      func() string { return "Finish" },    // Static title.
 			titleColor: color.Bold,
@@ -215,7 +205,7 @@ func getX509Columns() []tX509Column {
 			contentEscapeMD: true,
 		},
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(tc tConfig) bool { return tc.showRevoked }, // Always shown.
 			title:      func() string { return "Revoked at" },           // Static title.
 			titleColor: color.Bold,
@@ -237,7 +227,7 @@ func getX509Columns() []tX509Column {
 			contentEscapeMD: true,
 		},
 
-		tX509Column{
+		tColumn[tX509CertificateProvisionerRevocation]{
 			isShown:    func(_ tConfig) bool { return true }, // Always shown.
 			title:      func() string { return "Validity" },  // Static title.
 			titleColor: color.Bold,

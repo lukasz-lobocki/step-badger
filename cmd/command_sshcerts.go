@@ -169,13 +169,13 @@ func exportSshMain(args []string) {
 	// Output.
 	switch format := config.emitSshFormat.Value; format {
 	case FORMAT_JSON:
-		emitSshCertsJson(sshCertificatesWithRevocations)
+		emitJson(sshCertificatesWithRevocations)
 	case FORMAT_TABLE:
-		emitSshCertsTable(sshCertificatesWithRevocations)
+		emitTable(sshCertificatesWithRevocations, getSshColumns(), func(x tSshCertificateWithRevocation) string { return x.SshCertificateStringSerials.SerialDec })
 	case FORMAT_MARKDOWN:
-		emitSshCertsMarkdown(sshCertificatesWithRevocations)
+		emitMarkdown(sshCertificatesWithRevocations, getSshColumns())
 	case FORMAT_PLAIN:
-		emitSshCertsPlain(sshCertificatesWithRevocations)
+		emitPlain(sshCertificatesWithRevocations, getSshColumns())
 	}
 }
 
