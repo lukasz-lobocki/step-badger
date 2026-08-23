@@ -1,6 +1,10 @@
-# Task: Prepare the Go solution for release
+---
+mode: agent
+description: Prepare the Go solution for release
+agent: Go Reviewer
+---
 
-## Context
+# Context
 
 **Goal:** bring the codebase to a shippable, reproducible, secure, observable and well-documented
 release state, then produce everything needed to cut the tag.
@@ -10,7 +14,7 @@ Every behavioural change must be called out explicitly in the PR description wit
 
 ---
 
-## Phase 0 — Reconnaissance (do this first, report before changing anything)
+# Phase 0 — Reconnaissance (do this first, report before changing anything)
 
 Produce a short written assessment covering:
 1. Repository layout: packages, entrypoints (`cmd/`), internal vs public API surface (`internal/`, `pkg/`).
@@ -25,9 +29,9 @@ Stop and summarise. Then proceed through the phases below.
 
 ---
 
-## Phase 1 — Correctness & code health
+# Phase 1 — Correctness & code health
 
-### Module hygiene
+## Module hygiene
 - `go mod tidy` — `go.mod`/`go.sum` must be clean and committed.
 - `go mod verify` passes.
 - Confirm the `go` directive matches the true minimum supported version; do not bump it casually
@@ -39,7 +43,7 @@ Stop and summarise. Then proceed through the phases below.
 - Check for duplicate/overlapping dependencies (two YAML libs, two logging libs, etc.).
 - Check the dependency tree depth and any unexpectedly heavy transitive deps (`go mod graph`, `go mod why`).
 
-### Static analysis
+## Static analysis
 - `go build ./...` — zero errors, including with `-tags '[buildtags]'` if build tags are used.
 - `go vet ./...` — zero findings.
 - `gofmt -l .` (or `gofumpt -l .`) — empty output.
@@ -51,7 +55,7 @@ Stop and summarise. Then proceed through the phases below.
 - Every remaining `//nolint:...` must have an explanatory comment.
 - `go test ./... -run XXX -vet=all` sanity pass.
 
-### Code review sweep
+## Code review sweep
 - Error handling: all errors wrapped with `%w` where the caller may need `errors.Is/As`; sentinel errors
   exported where appropriate; no `err != nil { return err }` that loses context; no swallowed errors.
 - `context.Context` propagated through all I/O paths; no `context.TODO()` in production paths;
@@ -74,7 +78,7 @@ Stop and summarise. Then proceed through the phases below.
 
 ---
 
-## Phase 2 — Testing
+# Phase 2 — Testing
 
 - `go test ./... -race -count=1` passes cleanly.
 - `go test ./... -count=5` to catch flakiness; also run with `-shuffle=on`.
@@ -95,7 +99,7 @@ Stop and summarise. Then proceed through the phases below.
 
 ---
 
-## Phase 3 — Build, versioning & reproducibility
+# Phase 3 — Build, versioning & reproducibility
 
 - Version information embedded at build time:
   ```
@@ -123,7 +127,7 @@ Stop and summarise. Then proceed through the phases below.
 
 ---
 
-## Phase 4 — CI/CD
+# Phase 4 — CI/CD
 
 - **PR workflow** (`.github/workflows/ci.yml`): matrix over `[os] × [go-version]`; steps: checkout,
   setup-go with module+build cache, `go mod download`, build, vet, `golangci-lint`, `go test -race -coverprofile`,
@@ -140,7 +144,7 @@ Stop and summarise. Then proceed through the phases below.
 
 ---
 
-## Phase 5 — Security & supply chain
+# Phase 5 — Security & supply chain
 
 - `govulncheck ./...` — every finding either fixed or documented with justification and tracking issue.
 - `gosec ./...` — review findings, especially file permissions, command execution, TLS config, weak crypto, path traversal.
@@ -158,7 +162,7 @@ Stop and summarise. Then proceed through the phases below.
 
 ---
 
-## Phase 6 — Operability (for services/daemons)
+# Phase 6 — Operability (for services/daemons)
 
 - Structured logging (`log/slog`), configurable level, no secrets logged, consistent field names.
 - Metrics (Prometheus) and/or OpenTelemetry traces on key paths; documented metric names and labels.
@@ -170,7 +174,7 @@ Stop and summarise. Then proceed through the phases below.
 
 ---
 
-## Phase 7 — Documentation
+# Phase 7 — Documentation
 
 - `README.md`: badges, one-paragraph description, feature list, installation for every distribution channel,
   quick start with copy-pasteable commands, full flags/env/config reference table, worked examples,
@@ -189,7 +193,7 @@ Stop and summarise. Then proceed through the phases below.
 
 ---
 
-## Phase 8 — Release readiness checklist
+# Phase 8 — Release readiness checklist
 
 Produce this as a filled-in checklist in the PR description:
 
@@ -207,7 +211,7 @@ Produce this as a filled-in checklist in the PR description:
 
 ---
 
-## Deliverables
+# Deliverables
 
 1. A pull request with all changes, split into **logical, reviewable commits**
    (e.g. `chore(deps):`, `fix(lint):`, `test:`, `ci:`, `docs:`, `build:`), following Conventional Commits.
@@ -229,7 +233,7 @@ Produce this as a filled-in checklist in the PR description:
 
 ---
 
-## Constraints & rules of engagement
+# Constraints & rules of engagement
 
 - Do **not** modify the public API surface without flagging it prominently in the PR description.
 - Do **not** commit generated artifacts (`dist/`, binaries, `coverage.out`, `*.test`); ensure `.gitignore` covers them.
