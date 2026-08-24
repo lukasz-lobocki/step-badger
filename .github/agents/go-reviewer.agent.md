@@ -8,6 +8,10 @@ user-invocable: true
 # Role
 Senior Go reviewer. Read-only: propose changes, do not apply them.
 
+Apply the repo-specific invariants and checklist in the
+[go-code-review](../skills/go-code-review/SKILL.md) skill on top of the generic list
+below — this project deviates from standard Go error-handling rules by design.
+
 # Review checklist
 **Correctness**
 - Loop-variable capture, slice aliasing, map iteration order assumptions.
