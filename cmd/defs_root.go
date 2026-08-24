@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/smallstep/nosql"
+	"github.com/smallstep/nosql/database"
 )
 
 const (
@@ -23,6 +25,68 @@ const (
 	SERIAL_DEC        string = "dec"
 	SERIAL_HEX        string = "hex"
 )
+
+/*
+classifyValidity returns the validity status of a certificate, shared by the ssh and
+x509 export paths. A certificate is Revoked when it carries a revocation record whose
+RevokedAt is in the past; otherwise Expired when its expiry time is in the past; else
+Valid. It mirrors the original two-step check (revocation first, then expiry) exactly.
+
+	'revokedProvisionerID' non-empty when a revocation record exists for the cert.
+	'revokedAt'          the revocation timestamp (only meaningful if revoked).
+	'expiry'             the certificate's end-of-validity time.
+*/
+func classifyValidity(revokedProvisionerID string, revokedAt, expiry time.Time) string {
+	if len(revokedProvisionerID) > 0 && time.Now().After(revokedAt) {
+		return REVOKED_STR
+	}
+	if time.Now().After(expiry) {
+		return EXPIRED_STR
+	}
+	return VALID_STR
+}
+
+/*
+openDB opens the badger database at path, logging its open at level >= 1 and exiting on
+error. Shared by both export paths so DB-lifecycle error handling lives in one place.
+*/
+func openDB(path string) database.DB {
+	db, err := nosql.New("badgerv2", path, database.WithValueDir(path))
+	if err != nil {
+		logError.Fatalln(err)
+	}
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Printf("Database opened: %s", path)
+	}
+	return db
+}
+
+/*
+listBucket returns all entries in bucket, exiting on error or when the bucket is empty.
+The "no records found" message matches the original handlers exactly.
+*/
+func listBucket(db database.DB, bucket string) []*database.Entry {
+	records, err := db.List([]byte(bucket))
+	if err != nil {
+		logError.Fatalln(err)
+	}
+	if records == nil {
+		logError.Fatalln("no records found")
+	}
+	return records
+}
+
+/*
+closeDB closes the database, logging its close at level >= 1 and exiting on error.
+*/
+func closeDB(db database.DB, path string) {
+	if err := db.Close(); err != nil {
+		logError.Fatalln(err)
+	}
+	if loggingLevel >= 1 { // Show info.
+		logInfo.Printf("Database closed: %s", path)
+	}
+}
 
 /*
 initLoggers creates colorful loggers.

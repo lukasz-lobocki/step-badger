@@ -7,10 +7,8 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/pkg/errors"
-	"github.com/smallstep/nosql"
 	"github.com/smallstep/nosql/database"
 	"github.com/spf13/cobra"
 )
@@ -79,31 +77,16 @@ func exportX509Main(args []string) {
 	checkLogginglevel(args)
 
 	var (
-		err error
-		db  database.DB
-
 		x509CertificateProvisionerRevocation    tX509CertificateProvisionerRevocation
 		x509CertificatesProvisionersRevocations []tX509CertificateProvisionerRevocation
 		x509CertificateStringSerials            tCertificateStringSerials
 	)
 
 	// Open the database.
-	db, err = nosql.New("badgerv2", args[0], database.WithValueDir(args[0]))
-	if err != nil {
-		logError.Fatalln(err)
-	}
-	if loggingLevel >= 1 { // Show info.
-		logInfo.Printf("Database opened: %s", args[0])
-	}
+	db := openDB(args[0])
 
 	// Get records from the x509_certs bucket.
-	records, err := db.List([]byte("x509_certs"))
-	if err != nil {
-		logError.Fatalln(err)
-	}
-	if records == nil {
-		logError.Fatalln("no records found")
-	}
+	records := listBucket(db, "x509_certs")
 
 	for _, record := range records {
 		if loggingLevel >= 3 { // Show info.
@@ -144,15 +127,11 @@ func exportX509Main(args []string) {
 		}
 
 		// Populate child validity info of the certificate.
-		if len(x509CertificateRevocation.ProvisionerID) > 0 && time.Now().After(x509CertificateRevocation.RevokedAt) {
-			x509CertificateProvisionerRevocation.Validity = REVOKED_STR
-		} else {
-			if time.Now().After(x509Certificate.NotAfter) {
-				x509CertificateProvisionerRevocation.Validity = EXPIRED_STR
-			} else {
-				x509CertificateProvisionerRevocation.Validity = VALID_STR
-			}
-		}
+		x509CertificateProvisionerRevocation.Validity = classifyValidity(
+			x509CertificateRevocation.ProvisionerID,
+			x509CertificateRevocation.RevokedAt,
+			x509Certificate.NotAfter,
+		)
 
 		// Append child into collection, if record selection criteria are met.
 		if (config.showExpired && x509CertificateProvisionerRevocation.Validity == EXPIRED_STR) ||
@@ -165,12 +144,7 @@ func exportX509Main(args []string) {
 	}
 
 	// Close the database.
-	if err = db.Close(); err != nil {
-		logError.Fatalln(err)
-	}
-	if loggingLevel >= 1 { // Show info.
-		logInfo.Printf("Database closed: %s", args[0])
-	}
+	closeDB(db, args[0])
 
 	// Sort.
 	switch thisSort := config.sortOrder.Value; thisSort {
@@ -189,15 +163,15 @@ func exportX509Main(args []string) {
 	// Output.
 	switch format := config.emitX509Format.Value; format {
 	case FORMAT_JSON:
-		emitX509CertsWithRevocationsJson(x509CertificatesProvisionersRevocations)
+		emitJson(x509CertificatesProvisionersRevocations)
 	case FORMAT_TABLE:
-		emitX509Table(x509CertificatesProvisionersRevocations)
+		emitTable(x509CertificatesProvisionersRevocations, getX509Columns(), func(x tX509CertificateProvisionerRevocation) string { return x.X509CertificateStringSerials.SerialDec })
 	case FORMAT_MARKDOWN:
-		emitX509Markdown(x509CertificatesProvisionersRevocations)
+		emitMarkdown(x509CertificatesProvisionersRevocations, getX509Columns())
 	case FORMAT_OPENSSL:
 		emitX509OpenSsl(x509CertificatesProvisionersRevocations)
 	case FORMAT_PLAIN:
-		emitX509Plain(x509CertificatesProvisionersRevocations)
+		emitPlain(x509CertificatesProvisionersRevocations, getX509Columns())
 	}
 }
 

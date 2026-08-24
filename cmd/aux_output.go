@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/fatih/color"
@@ -11,14 +10,15 @@ import (
 )
 
 /*
-emitSshCertsTable prints result in the form of a table.
+emitTable prints rows in the form of a table.
 
-	'thisSshCerts' Slice of structures describing the ssh certificates.
+	'rows' slice of structures describing the records.
+	'columns' the column definitions to render.
+	'rowLabel' returns a human-readable label for a row, used in logging.
 */
-func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
+func emitTable[T any](rows []T, columns []tColumn[T], rowLabel func(T) string) {
 
 	table := new(tabby.Table)
-	columns := getSshColumns()
 
 	// Building slice of titles.
 	var header []string
@@ -42,31 +42,31 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 	}
 
 	// Populate the table.
-	for _, sshCert := range thisSshCerts {
+	for _, row := range rows {
 
 		// Building slice of columns within a single row.
-		var row []string
+		var cells []string
 		for _, column := range columns {
 			if column.isShown(config) {
-				row = append(row,
-					color.New(column.contentColor(sshCert)).SprintFunc()(
-						column.contentSource(sshCert, config),
+				cells = append(cells,
+					color.New(column.contentColor(row)).SprintFunc()(
+						column.contentSource(row, config),
 					),
 				)
 			}
 		}
 
-		if err := table.AppendRow(row); err != nil {
+		if err := table.AppendRow(cells); err != nil {
 			logError.Panic(err)
 		}
 		if loggingLevel >= 2 { // Show info.
-			logInfo.Printf("row [%s] appended.", strconv.FormatUint(sshCert.SshCertificate.Serial, 10))
+			logInfo.Printf("row [%s] appended.", rowLabel(row))
 		}
 
 	}
 
 	if loggingLevel >= 2 { // Show info.
-		logInfo.Printf("%d rows appended.\n", len(thisSshCerts))
+		logInfo.Printf("%d rows appended.\n", len(rows))
 	}
 
 	// Emit the table.
@@ -78,13 +78,13 @@ func emitSshCertsTable(thisSshCerts []tSshCertificateWithRevocation) {
 }
 
 /*
-emitSshCertsJson prints result in the form of a json.
+emitJson prints rows in the form of a json.
 
-	'thisSshCerts' Slice of structures describing the ssh certificates.
+	'rows' slice of structures describing the records.
 */
-func emitSshCertsJson(thisSshCerts []tSshCertificateWithRevocation) {
+func emitJson[T any](rows []T) {
 
-	jsonInfo, err := json.MarshalIndent(thisSshCerts, "", "  ")
+	jsonInfo, err := json.MarshalIndent(rows, "", "  ")
 	if err != nil {
 		logError.Panic(err)
 	}
@@ -92,18 +92,17 @@ func emitSshCertsJson(thisSshCerts []tSshCertificateWithRevocation) {
 	fmt.Println(string(jsonInfo))
 
 	if loggingLevel >= 2 { // Show info.
-		logInfo.Printf("%d records marshalled.\n", len(thisSshCerts))
+		logInfo.Printf("%d records marshalled.\n", len(rows))
 	}
 }
 
 /*
-emitSshCertsPlain prints result in the plain form.
+emitPlain prints rows in the plain form.
 
-	'thisSshCerts' Slice of structures describing the certs.
+	'rows' slice of structures describing the records.
+	'columns' the column definitions to render.
 */
-func emitSshCertsPlain(thisSshCertificatesWithRevocations []tSshCertificateWithRevocation) {
-
-	columns := getSshColumns()
+func emitPlain[T any](rows []T, columns []tColumn[T]) {
 
 	// Building slice of titles.
 	var header []string
@@ -120,34 +119,33 @@ func emitSshCertsPlain(thisSshCertificatesWithRevocations []tSshCertificateWithR
 		logInfo.Println("header printed.")
 	}
 
-	// Iterating through certs.
-	for _, sshCertificateWithRevocation := range thisSshCertificatesWithRevocations {
+	// Iterating through rows.
+	for _, row := range rows {
 
 		// Building slice of columns within a single row.
-		var row []string
+		var cells []string
 		for _, column := range columns {
 			if column.isShown(config) {
-				row = append(row, column.contentSource(sshCertificateWithRevocation, config))
+				cells = append(cells, column.contentSource(row, config))
 			}
 		}
 
 		// Emitting row.
-		fmt.Println(strings.Join(row, "\t"))
+		fmt.Println(strings.Join(cells, "\t"))
 	}
 
 	if loggingLevel >= 2 { // Show info.
-		logInfo.Printf("%d rows printed.\n", len(thisSshCertificatesWithRevocations))
+		logInfo.Printf("%d rows printed.\n", len(rows))
 	}
 }
 
 /*
-emitSshCertsMarkdown prints result in the form of markdown table.
+emitMarkdown prints rows in the form of a markdown table.
 
-	'thisSshCerts' Slice of structures describing the certs.
+	'rows' slice of structures describing the records.
+	'columns' the column definitions to render.
 */
-func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWithRevocation) {
-
-	columns := getSshColumns()
+func emitMarkdown[T any](rows []T, columns []tColumn[T]) {
 
 	// Building slice of titles.
 	var header []string
@@ -177,26 +175,26 @@ func emitSshCertsMarkdown(thisSshCertificatesWithRevocations []tSshCertificateWi
 		logInfo.Println("separator printed.")
 	}
 
-	// Iterating through certs.
-	for _, sshCertificateWithRevocation := range thisSshCertificatesWithRevocations {
+	// Iterating through rows.
+	for _, row := range rows {
 
 		// Building slice of columns within a single row.
-		var row []string
+		var cells []string
 		for _, column := range columns {
 			if column.isShown(config) {
 				if column.contentEscapeMD {
-					row = append(row, escapeMarkdown(column.contentSource(sshCertificateWithRevocation, config)))
+					cells = append(cells, escapeMarkdown(column.contentSource(row, config)))
 				} else {
-					row = append(row, column.contentSource(sshCertificateWithRevocation, config))
+					cells = append(cells, column.contentSource(row, config))
 				}
 			}
 		}
 
 		// Emitting row.
-		fmt.Println("| " + strings.Join(row, " | ") + " |")
+		fmt.Println("| " + strings.Join(cells, " | ") + " |")
 	}
 
 	if loggingLevel >= 2 { // Show info.
-		logInfo.Printf("%d rows printed.\n", len(thisSshCertificatesWithRevocations))
+		logInfo.Printf("%d rows printed.\n", len(rows))
 	}
 }

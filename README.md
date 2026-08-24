@@ -1,3 +1,12 @@
+<div align="center">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/EU-LABEL_AI_MODIFIED_black_transparent.svg" alt="Repo is AI Modified" width="150">
+</div>
+<div align="center">
+    by Qwen3.8-27B-UD-Q8.
+</div>
+
+---
+
 # step-badger [![Hits](https://hits.sh/github.com/lukasz-lobocki/step-badger.svg?style=for-the-badge)](https://hits.sh/github.com/lukasz-lobocki/step-badger/) ![Static](https://img.shields.io/badge/bulaj-biznes-darkorchid?style=for-the-badge&labelColor=darkslategray)
 
 This tool has 3 features:
