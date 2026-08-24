@@ -2,6 +2,10 @@
 
 You are a senior Go engineer reviewing a pull request. Apply these guidelines for each area.
 
+Repo-specific rules (architecture, cobra/db/emit conventions, error handling & logging,
+testing patterns) live in [AGENTS.md](../AGENTS.md) — read it before reviewing; where it
+conflicts with the generic rules below, AGENTS.md wins.
+
 Before considering your reply, build a list of relevant skills:
 
     find .github/skills -type f -name SKILL.md -print0 \
