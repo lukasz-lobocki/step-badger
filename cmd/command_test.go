@@ -788,3 +788,92 @@ func TestTChoiceType(t *testing.T) {
 		t.Errorf("Type() = %q, want %q", got, want)
 	}
 }
+
+// TestEmitAtMaxLoggingLevel runs every shared emitter with loggingLevel set to
+// MAX_LOGGING_LEVEL so the info/spacing log branches gated on loggingLevel >= 1/2/3 are
+// exercised, including emitTable's alternate Print(&tabby.Config{Spacing, Padding}) path.
+func TestEmitAtMaxLoggingLevel(t *testing.T) {
+	resetConfig()
+	prev := loggingLevel
+	loggingLevel = MAX_LOGGING_LEVEL
+	defer func() { loggingLevel = prev }()
+
+	now := time.Now()
+	sshRow := tSshCertificateWithRevocation{
+		SshCertificate:              makeSSHCert(t, 1, now.Add(-time.Hour), now.Add(time.Hour)),
+		Validity:                    VALID_STR,
+		SshCertificateStringSerials: tCertificateStringSerials{SerialDec: "1", SerialHex: "1"},
+	}
+
+	cases := map[string]func() string{
+		"table": func() string {
+			return emitNoPanic(t, "lvl/table", func() {
+				emitTable([]tSshCertificateWithRevocation{sshRow}, getSshColumns(),
+					func(r tSshCertificateWithRevocation) string { return r.SshCertificateStringSerials.SerialDec })
+			})
+		},
+		"json": func() string {
+			return emitNoPanic(t, "lvl/json", func() { emitJson([]tSshCertificateWithRevocation{sshRow}) })
+		},
+		"plain": func() string {
+			return emitNoPanic(t, "lvl/plain", func() { emitPlain([]tSshCertificateWithRevocation{sshRow}, getSshColumns()) })
+		},
+		"markdown": func() string {
+			return emitNoPanic(t, "lvl/markdown", func() { emitMarkdown([]tSshCertificateWithRevocation{sshRow}, getSshColumns()) })
+		},
+	}
+	for name, fn := range cases {
+		t.Run(name, func(t *testing.T) {
+			if got := fn(); len(strings.TrimSpace(got)) == 0 {
+				t.Errorf("%s produced no output at max logging level", name)
+			}
+		})
+	}
+}
+
+// TestSshColumnsFormatBranches covers the serial dec/hex and time short/iso branches in the
+// ssh column contentSource closures, which the default-config TestSshColumnsContent does not
+// reach (it only exercises the dec + iso defaults).
+func TestSshColumnsFormatBranches(t *testing.T) {
+	resetConfig()
+	now := time.Now()
+	cert := makeSSHCert(t, 255, now.Add(-time.Hour), now.Add(time.Hour))
+	row := tSshCertificateWithRevocation{
+		SshCertificate:              cert,
+		Validity:                    VALID_STR,
+		SshCertificateStringSerials: tCertificateStringSerials{SerialDec: "255", SerialHex: "ff"},
+	}
+
+	cols := getSshColumns()
+	findCol := func(title string) *tColumn[tSshCertificateWithRevocation] {
+		for i := range cols {
+			if cols[i].title() == title {
+				return &cols[i]
+			}
+		}
+		return nil
+	}
+
+	t.Run("serial hex", func(t *testing.T) {
+		s := findCol("Serial number")
+		if s == nil {
+			t.Fatal("no Serial number column")
+		}
+		config.serialFormat.Value = SERIAL_HEX
+		if got := s.contentSource(row, config); got != "ff" {
+			t.Errorf("serial hex = %q, want %q", got, "ff")
+		}
+	})
+
+	t.Run("start time short", func(t *testing.T) {
+		st := findCol("Start")
+		if st == nil {
+			t.Fatal("no Start column")
+		}
+		config.timeFormat.Value = TIME_SHORT
+		want := time.Unix(int64(cert.ValidAfter), 0).UTC().Format(time.DateOnly)
+		if got := st.contentSource(row, config); got != want {
+			t.Errorf("Start short = %q, want date-only %q", got, want)
+		}
+	})
+}
