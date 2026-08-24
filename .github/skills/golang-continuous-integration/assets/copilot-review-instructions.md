@@ -11,7 +11,7 @@ You are a senior Go engineer reviewing a pull request. Review the diff thoroughl
 
 The available skills can be discovered from the local skill files:
 
-    find .copilot/skills -type f -name SKILL.md -print0 \
+    find .github/skills -type f -name SKILL.md -print0 \
       | xargs -0 yq -o=json \
       | jq -r '{name, description}'
 
@@ -21,18 +21,18 @@ Relevant skills should be loaded before reviewing the diff.
 
 Cover each area below. Where a dedicated skill is listed, apply its guidance.
 
-- **Code style** — formatting, comment quality, idiomatic Go patterns (`.copilot/skills/golang-code-style/SKILL.md`)
-- **Naming** — packages, types, variables, functions, constants (`.copilot/skills/golang-naming/SKILL.md`)
-- **Error handling** — wrapping, sentinel errors, log-and-return, swallowed errors (`.copilot/skills/golang-error-handling/SKILL.md`)
-- **Concurrency** — goroutine lifecycle, mutex usage, channel patterns, context propagation, data races (`.copilot/skills/golang-concurrency/SKILL.md`)
-- **Code safety** — nil dereference, map/slice aliasing, integer overflows, uninitialized state (`.copilot/skills/golang-safety/SKILL.md`)
-- **Tests** — coverage of new code, test quality, table-driven tests, use of t.Helper() (`.copilot/skills/golang-testing/SKILL.md`)
-- **Performance** — unnecessary allocations, inefficient data structures, missing bounds (`.copilot/skills/golang-performance/SKILL.md`)
-- **Security** — injection, auth, crypto misuse, sensitive data exposure, input validation (`.copilot/skills/golang-security/SKILL.md`)
-- **Dependencies** — new imports, license compatibility, known vulnerabilities (`.copilot/skills/golang-dependency-management/SKILL.md`)
-- **Documentation** — exported symbols, package docs, README impact (`.copilot/skills/golang-documentation/SKILL.md`)
-- **Observability** — logging, metrics, tracing added for new code paths (`.copilot/skills/golang-observability/SKILL.md`)
-- **Modernize code** — outdated patterns replaced with Go 1.21+ idioms (`.copilot/skills/golang-modernize/SKILL.md`)
+- **Code style** — formatting, comment quality, idiomatic Go patterns (`.github/skills/golang-code-style/SKILL.md`)
+- **Naming** — packages, types, variables, functions, constants (`.github/skills/golang-naming/SKILL.md`)
+- **Error handling** — wrapping, sentinel errors, log-and-return, swallowed errors (`.github/skills/golang-error-handling/SKILL.md`)
+- **Concurrency** — goroutine lifecycle, mutex usage, channel patterns, context propagation, data races (`.github/skills/golang-concurrency/SKILL.md`)
+- **Code safety** — nil dereference, map/slice aliasing, integer overflows, uninitialized state (`.github/skills/golang-safety/SKILL.md`)
+- **Tests** — coverage of new code, test quality, table-driven tests, use of t.Helper() (`.github/skills/golang-testing/SKILL.md`)
+- **Performance** — unnecessary allocations, inefficient data structures, missing bounds (`.github/skills/golang-performance/SKILL.md`)
+- **Security** — injection, auth, crypto misuse, sensitive data exposure, input validation (`.github/skills/golang-security/SKILL.md`)
+- **Dependencies** — new imports, license compatibility, known vulnerabilities (`.github/skills/golang-dependency-management/SKILL.md`)
+- **Documentation** — exported symbols, package docs, README impact (`.github/skills/golang-documentation/SKILL.md`)
+- **Observability** — logging, metrics, tracing added for new code paths (`.github/skills/golang-observability/SKILL.md`)
+- **Modernize code** — outdated patterns replaced with Go 1.21+ idioms (`.github/skills/golang-modernize/SKILL.md`)
 
 ## Review Priority
 
