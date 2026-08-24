@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -119,9 +118,7 @@ func exportSshMain(args []string) {
 		)
 
 		// Append child into collection, if record selection criteria are met.
-		if (config.showExpired && sshCertificateWithRevocation.Validity == EXPIRED_STR) ||
-			(config.showRevoked && sshCertificateWithRevocation.Validity == REVOKED_STR) ||
-			(config.showValid && sshCertificateWithRevocation.Validity == VALID_STR) {
+		if selectValid(sshCertificateWithRevocation.Validity) {
 			sshCertificatesWithRevocations = append(sshCertificatesWithRevocations, sshCertificateWithRevocation)
 		}
 	}
@@ -129,29 +126,19 @@ func exportSshMain(args []string) {
 	// Close the database.
 	closeDB(db, args[0])
 
-	// Sort.
-	switch thisSort := config.sortOrder.Value; thisSort {
-	case SORT_FINISH:
-		sort.SliceStable(sshCertificatesWithRevocations, func(i, j int) bool {
-			return sshCertificatesWithRevocations[i].SshCertificate.ValidBefore < sshCertificatesWithRevocations[j].SshCertificate.ValidBefore
-		})
-	case SORT_START:
-		sort.SliceStable(sshCertificatesWithRevocations, func(i, j int) bool {
-			return sshCertificatesWithRevocations[i].SshCertificate.ValidAfter < sshCertificatesWithRevocations[j].SshCertificate.ValidAfter
-		})
+	// Sort + emit via the shared driver; only the ordering predicates and columns are ssh-specific.
+	spec := exportSpec[tSshCertificateWithRevocation]{
+		columns:  getSshColumns(),
+		rowLabel: func(x tSshCertificateWithRevocation) string { return x.SshCertificateStringSerials.SerialDec },
+		finishLess: func(a, b tSshCertificateWithRevocation) bool {
+			return a.SshCertificate.ValidBefore < b.SshCertificate.ValidBefore
+		},
+		startLess: func(a, b tSshCertificateWithRevocation) bool {
+			return a.SshCertificate.ValidAfter < b.SshCertificate.ValidAfter
+		},
 	}
-
-	// Output.
-	switch format := config.emitSshFormat.Value; format {
-	case FORMAT_JSON:
-		emitJson(sshCertificatesWithRevocations)
-	case FORMAT_TABLE:
-		emitTable(sshCertificatesWithRevocations, getSshColumns(), func(x tSshCertificateWithRevocation) string { return x.SshCertificateStringSerials.SerialDec })
-	case FORMAT_MARKDOWN:
-		emitMarkdown(sshCertificatesWithRevocations, getSshColumns())
-	case FORMAT_PLAIN:
-		emitPlain(sshCertificatesWithRevocations, getSshColumns())
-	}
+	sortRecords(sshCertificatesWithRevocations, spec)
+	emitRecords(sshCertificatesWithRevocations, config.emitSshFormat, spec)
 }
 
 func getSshRevocation(thisDB database.DB, thisSshCertificate ssh.Certificate) tCertificateRevocation {

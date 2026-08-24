@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -134,9 +133,7 @@ func exportX509Main(args []string) {
 		)
 
 		// Append child into collection, if record selection criteria are met.
-		if (config.showExpired && x509CertificateProvisionerRevocation.Validity == EXPIRED_STR) ||
-			(config.showRevoked && x509CertificateProvisionerRevocation.Validity == REVOKED_STR) ||
-			(config.showValid && x509CertificateProvisionerRevocation.Validity == VALID_STR) {
+		if selectValid(x509CertificateProvisionerRevocation.Validity) {
 			x509CertificatesProvisionersRevocations = append(x509CertificatesProvisionersRevocations,
 				x509CertificateProvisionerRevocation)
 		}
@@ -146,33 +143,20 @@ func exportX509Main(args []string) {
 	// Close the database.
 	closeDB(db, args[0])
 
-	// Sort.
-	switch thisSort := config.sortOrder.Value; thisSort {
-	case SORT_FINISH:
-		sort.SliceStable(x509CertificatesProvisionersRevocations, func(i, j int) bool {
-			return x509CertificatesProvisionersRevocations[i].X509Certificate.NotAfter.
-				Before(x509CertificatesProvisionersRevocations[j].X509Certificate.NotAfter)
-		})
-	case SORT_START:
-		sort.SliceStable(x509CertificatesProvisionersRevocations, func(i, j int) bool {
-			return x509CertificatesProvisionersRevocations[i].X509Certificate.NotBefore.
-				Before(x509CertificatesProvisionersRevocations[j].X509Certificate.NotBefore)
-		})
+	// Sort + emit via the shared driver; ordering predicates, columns and the openssl format are x509-specific.
+	spec := exportSpec[tX509CertificateProvisionerRevocation]{
+		columns:  getX509Columns(),
+		rowLabel: func(x tX509CertificateProvisionerRevocation) string { return x.X509CertificateStringSerials.SerialDec },
+		finishLess: func(a, b tX509CertificateProvisionerRevocation) bool {
+			return a.X509Certificate.NotAfter.Before(b.X509Certificate.NotAfter)
+		},
+		startLess: func(a, b tX509CertificateProvisionerRevocation) bool {
+			return a.X509Certificate.NotBefore.Before(b.X509Certificate.NotBefore)
+		},
+		otherEmit: emitX509OpenSsl,
 	}
-
-	// Output.
-	switch format := config.emitX509Format.Value; format {
-	case FORMAT_JSON:
-		emitJson(x509CertificatesProvisionersRevocations)
-	case FORMAT_TABLE:
-		emitTable(x509CertificatesProvisionersRevocations, getX509Columns(), func(x tX509CertificateProvisionerRevocation) string { return x.X509CertificateStringSerials.SerialDec })
-	case FORMAT_MARKDOWN:
-		emitMarkdown(x509CertificatesProvisionersRevocations, getX509Columns())
-	case FORMAT_OPENSSL:
-		emitX509OpenSsl(x509CertificatesProvisionersRevocations)
-	case FORMAT_PLAIN:
-		emitPlain(x509CertificatesProvisionersRevocations, getX509Columns())
-	}
+	sortRecords(x509CertificatesProvisionersRevocations, spec)
+	emitRecords(x509CertificatesProvisionersRevocations, config.emitX509Format, spec)
 }
 
 func getX509Revocation(thisDB database.DB, thisX509Certificate x509.Certificate) tCertificateRevocation {
