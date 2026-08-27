@@ -109,6 +109,25 @@ See [this](https://smallstep.com/docs/step-ca/certificate-authority-server-produ
 
 See [BUILD.md](BUILD.md) file.
 
+## Testing
+
+Run the unit tests:
+
+```bash
+go test ./... -race -count=1
+```
+
+The golden tests (`cmd/golden_test.go`) additionally run `sshCerts -e -r --emit=json` and `x509Certs -e -r --emit=json` against the step-ca badger database snapshot at `db/` and compare the output with the golden files in `test_results/`. The `Validity` field is excluded from the comparison because it depends on the current time. Both fixtures are git-ignored, so these tests skip cleanly when they are absent (e.g. in CI) and run fully on a machine where the snapshot exists.
+
+To regenerate the golden files, copy the database first (see [Badger single-user limitation](#badger-single-user-limitation)) and redirect the output:
+
+```bash
+cp --recursive ./db /tmp/step-badger-db
+go build -o bin/step-badger .
+bin/step-badger sshCerts  -e -r --emit=json /tmp/step-badger-db > test_results/sshCerts.json
+bin/step-badger x509Certs -e -r --emit=json /tmp/step-badger-db > test_results/x509Certs.json
+```
+
 ## License
 
 `step-badger` was created by Lukasz Lobocki. It is licensed under the terms of the CC0 v1.0 Universal license.
@@ -117,6 +136,7 @@ All components used retain their original licenses.
 
 ## Credits
 
-Inspired by [github.com/maraino](https://gist.github.com/maraino/4dcb64cb051b17ef6d421892cb4e55a8#file-listcerts-go).
 
-`step-badger` was created with [cookiecutter](https://cookiecutter.readthedocs.io/en/latest/) and [template](https://github.com/lukasz-lobocki/go-cookiecutter).
+1. `step-badger` was created with [cookiecutter](https://cookiecutter.readthedocs.io/en/latest/) and [template](https://github.com/lukasz-lobocki/go-cookiecutter).
+1. Inspired by [github.com/maraino](https://gist.github.com/maraino/4dcb64cb051b17ef6d421892cb4e55a8#file-listcerts-go).
+1. Coding skills by [github.com/samber/cc-skills-golang](https://github.com/samber/cc-skills-golang).
