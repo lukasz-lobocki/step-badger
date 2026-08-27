@@ -1,4 +1,5 @@
 bin/*
 *.code-workspace
 dist/*
-db*/*
+db/*
+test_results/*
