@@ -49,11 +49,10 @@ func init() {
 	x509certsCmd.Flags().BoolVarP(&config.showExpired, "expired", "e", false, "expired certificates shown")
 
 	// Format choice
-	x509certsCmd.Flags().Var(config.emitX509Format, "emit", "emit format: "+FORMAT_TABLE+"|"+FORMAT_JSON+"|"+FORMAT_MARKDOWN+
-		"|"+FORMAT_OPENSSL+"|"+FORMAT_PLAIN)
-	x509certsCmd.Flags().Var(config.timeFormat, "time", "time format: "+TIME_ISO+"|"+TIME_SHORT)
-	x509certsCmd.Flags().Var(config.sortOrder, "sort", "sort order: "+SORT_START+"|"+SORT_FINISH)
-	x509certsCmd.Flags().Var(config.serialFormat, "serial", "serial format: "+SERIAL_DEC+"|"+SERIAL_HEX)
+	x509certsCmd.Flags().Var(config.emitX509Format, "emit", "emit format: "+config.emitX509Format.Type())
+	x509certsCmd.Flags().Var(config.timeFormat, "time", "time format: "+config.timeFormat.Type())
+	x509certsCmd.Flags().Var(config.sortOrder, "sort", "sort order: "+config.sortOrder.Type())
+	x509certsCmd.Flags().Var(config.serialFormat, "serial", "serial format: "+config.serialFormat.Type())
 
 	// Columns selection criteria.
 	x509certsCmd.Flags().BoolVar(&config.showDNSNames, "dnsnames", false, "dns names column shown")
@@ -77,7 +76,7 @@ func exportX509Main(args []string) {
 
 	var (
 		x509CertificateProvisionerRevocation    tX509CertificateProvisionerRevocation
-		x509CertificatesProvisionersRevocations []tX509CertificateProvisionerRevocation
+		x509CertificatesProvisionersRevocations = make([]tX509CertificateProvisionerRevocation, 0)
 		x509CertificateStringSerials            tCertificateStringSerials
 	)
 
@@ -161,7 +160,9 @@ func exportX509Main(args []string) {
 
 func getX509Revocation(thisDB database.DB, thisX509Certificate x509.Certificate) tCertificateRevocation {
 
-	revocationValue, err := thisDB.Get([]byte("revoked_x509_certs"), []byte(thisX509Certificate.SerialNumber.String()))
+	serial := thisX509Certificate.SerialNumber.String()
+
+	revocationValue, err := thisDB.Get([]byte("revoked_x509_certs"), []byte(serial))
 
 	switch {
 	case errors.Is(err, database.ErrNotFound):
@@ -169,7 +170,7 @@ func getX509Revocation(thisDB database.DB, thisX509Certificate x509.Certificate)
 			logInfo.Printf("key for revocation not found")
 		}
 	case err != nil:
-		logInfo.Panic(err)
+		logError.Panicf("lookup revocation for x509 serial %s: %v", serial, err)
 	}
 
 	if loggingLevel >= 3 { // Show info.
@@ -181,7 +182,9 @@ func getX509Revocation(thisDB database.DB, thisX509Certificate x509.Certificate)
 
 func getX509CertificateData(thisDB database.DB, thisX509Certificate x509.Certificate) tX509CertificateData {
 
-	certsDataValue, err := thisDB.Get([]byte("x509_certs_data"), []byte(thisX509Certificate.SerialNumber.String()))
+	serial := thisX509Certificate.SerialNumber.String()
+
+	certsDataValue, err := thisDB.Get([]byte("x509_certs_data"), []byte(serial))
 
 	switch {
 	case errors.Is(err, database.ErrNotFound):
@@ -189,7 +192,7 @@ func getX509CertificateData(thisDB database.DB, thisX509Certificate x509.Certifi
 			logInfo.Printf("key for certificate data not found")
 		}
 	case err != nil:
-		logInfo.Panic(err)
+		logError.Panicf("lookup data for x509 serial %s: %v", serial, err)
 	}
 
 	if loggingLevel >= 3 { // Show info.

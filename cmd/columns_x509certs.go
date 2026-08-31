@@ -206,8 +206,8 @@ func getX509Columns() []tColumn[tX509CertificateProvisionerRevocation] {
 		},
 
 		tColumn[tX509CertificateProvisionerRevocation]{
-			isShown:    func(tc tConfig) bool { return tc.showRevoked }, // Always shown.
-			title:      func() string { return "Revoked at" },           // Static title.
+			isShown:    func(tc tConfig) bool { return tc.showRevoked },
+			title:      func() string { return "Revoked at" }, // Static title.
 			titleColor: color.Bold,
 
 			contentSource: func(x tX509CertificateProvisionerRevocation, tc tConfig) string {
@@ -237,7 +237,7 @@ func getX509Columns() []tColumn[tX509CertificateProvisionerRevocation] {
 			},
 
 			contentColor: func(x tX509CertificateProvisionerRevocation) color.Attribute {
-				return getValidityColor()[x.Validity]
+				return validityColors[x.Validity]
 			}, // Dynamic color
 			contentAlignMD:  ALIGN_LEFT,
 			contentEscapeMD: true,

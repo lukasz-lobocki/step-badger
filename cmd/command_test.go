@@ -23,7 +23,10 @@ import (
 )
 
 // TestMain wires the package globals that init() would normally populate so
-// unit tests can exercise emit/column logic without running cobra.
+// unit tests can exercise emit/column logic without running cobra. Note that
+// initChoices() here installs *fresh* tChoice values: they are NOT the pointers
+// cobra bound to the flags in command_*.go's init(), because these tests never
+// parse a command line. Set config.<choice>.Value directly to drive behaviour.
 func TestMain(m *testing.M) {
 	initLoggers()
 	initChoices()
@@ -263,19 +266,17 @@ func TestTChoiceSet(t *testing.T) {
 	}
 }
 
-func TestGetValidityColor(t *testing.T) {
-	m := getValidityColor()
+func TestValidityColors(t *testing.T) {
 	for _, s := range []string{VALID_STR, EXPIRED_STR, REVOKED_STR} {
-		if _, ok := m[s]; !ok {
+		if _, ok := validityColors[s]; !ok {
 			t.Errorf("missing color for %q", s)
 		}
 	}
 }
 
-func TestGetAlignChar(t *testing.T) {
-	m := getAlignChar()
+func TestAlignChars(t *testing.T) {
 	for i := ALIGN_LEFT; i <= ALIGN_RIGHT; i++ {
-		if _, ok := m[i]; !ok {
+		if _, ok := alignChars[i]; !ok {
 			t.Errorf("missing align char for %d", i)
 		}
 	}
@@ -876,4 +877,27 @@ func TestSshColumnsFormatBranches(t *testing.T) {
 			t.Errorf("Start short = %q, want date-only %q", got, want)
 		}
 	})
+}
+
+// TestEmitJsonEmptySelectionIsArray guards against json emission of "null" when no
+// record passes the selection filter: consumers expect an array. Reverting the
+// make([]T, 0) initialisation in the handlers fails this test.
+func TestEmitJsonEmptySelectionIsArray(t *testing.T) {
+	resetConfig()
+	config.showValid = false // showExpired/showRevoked default to false -> nothing selected
+
+	dir := seedSSHDB(t, time.Now())
+
+	config.emitSshFormat.Value = FORMAT_JSON
+	out := emitNoPanic(t, "ssh/empty-json", func() { exportSshMain([]string{dir}) })
+	if got := strings.TrimSpace(out); got != "[]" {
+		t.Errorf("ssh empty selection JSON = %q, want []", got)
+	}
+
+	config.emitX509Format.Value = FORMAT_JSON
+	dirX := seedX509DB(t, time.Now())
+	out = emitNoPanic(t, "x509/empty-json", func() { exportX509Main([]string{dirX}) })
+	if got := strings.TrimSpace(out); got != "[]" {
+		t.Errorf("x509 empty selection JSON = %q, want []", got)
+	}
 }

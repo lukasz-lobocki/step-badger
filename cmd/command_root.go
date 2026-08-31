@@ -96,7 +96,7 @@ For convenience it also emits some log if loggingLevel >= 1.
 */
 func checkLogginglevel(thisArgs []string) {
 	if loggingLevel > MAX_LOGGING_LEVEL {
-		logError.Fatalln(fmt.Errorf("%s", rootCmd.Flag("logging").Usage))
+		logError.Fatalf("logging level %d exceeds maximum %d", loggingLevel, MAX_LOGGING_LEVEL)
 	}
 
 	if loggingLevel >= 1 { // Show info.

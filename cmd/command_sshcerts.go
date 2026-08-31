@@ -47,10 +47,10 @@ func init() {
 	sshCertsCmd.Flags().BoolVarP(&config.showExpired, "expired", "e", false, "expired certificates shown")
 
 	// Format choice
-	sshCertsCmd.Flags().Var(config.emitSshFormat, "emit", "emit format: "+FORMAT_TABLE+"|"+FORMAT_JSON+"|"+FORMAT_MARKDOWN+"|"+FORMAT_PLAIN)
-	sshCertsCmd.Flags().Var(config.timeFormat, "time", "time format: "+TIME_ISO+"|"+TIME_SHORT)
-	sshCertsCmd.Flags().Var(config.sortOrder, "sort", "sort order: "+SORT_START+"|"+SORT_FINISH)
-	sshCertsCmd.Flags().Var(config.serialFormat, "serial", "serial format: "+SERIAL_DEC+"|"+SERIAL_HEX)
+	sshCertsCmd.Flags().Var(config.emitSshFormat, "emit", "emit format: "+config.emitSshFormat.Type())
+	sshCertsCmd.Flags().Var(config.timeFormat, "time", "time format: "+config.timeFormat.Type())
+	sshCertsCmd.Flags().Var(config.sortOrder, "sort", "sort order: "+config.sortOrder.Type())
+	sshCertsCmd.Flags().Var(config.serialFormat, "serial", "serial format: "+config.serialFormat.Type())
 
 	// Columns selection criteria.
 	sshCertsCmd.Flags().BoolVar(&config.showHostType, "type", true, "host type column shown")
@@ -69,7 +69,7 @@ func exportSshMain(args []string) {
 
 	var (
 		sshCertificateWithRevocation   tSshCertificateWithRevocation
-		sshCertificatesWithRevocations []tSshCertificateWithRevocation
+		sshCertificatesWithRevocations = make([]tSshCertificateWithRevocation, 0)
 		sshCertificateStringSerials    tCertificateStringSerials
 	)
 
@@ -143,7 +143,9 @@ func exportSshMain(args []string) {
 
 func getSshRevocation(thisDB database.DB, thisSshCertificate ssh.Certificate) tCertificateRevocation {
 
-	revocationValue, err := thisDB.Get([]byte("revoked_ssh_certs"), []byte(strconv.FormatUint(thisSshCertificate.Serial, 10)))
+	serial := strconv.FormatUint(thisSshCertificate.Serial, 10)
+
+	revocationValue, err := thisDB.Get([]byte("revoked_ssh_certs"), []byte(serial))
 
 	switch {
 	case errors.Is(err, database.ErrNotFound):
@@ -151,7 +153,7 @@ func getSshRevocation(thisDB database.DB, thisSshCertificate ssh.Certificate) tC
 			logInfo.Printf("key for revocation not found")
 		}
 	case err != nil:
-		logInfo.Panic(err)
+		logError.Panicf("lookup revocation for ssh serial %s: %v", serial, err)
 	}
 
 	if loggingLevel >= 3 { // Show info.

@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/smallstep/nosql"
-	"github.com/smallstep/nosql/database"
 	"github.com/spf13/cobra"
 )
 
@@ -37,6 +35,9 @@ func init() {
 
 	// Hide help command.
 	dbTableCmd.SetHelpCommand(&cobra.Command{Hidden: true})
+
+	//Do not sort flags.
+	dbTableCmd.Flags().SortFlags = false
 }
 
 /*
@@ -46,38 +47,16 @@ dbTable main function.
 */
 func dbTableMain(args []string) {
 
-	var (
-		err error
-		db  database.DB
-	)
-
 	checkLogginglevel(args)
 
 	// Open the database.
-	db, err = nosql.New("badgerv2", args[0], database.WithValueDir(args[0]))
-	if err != nil {
-		logError.Fatalln(err)
-	}
-	if loggingLevel >= 1 { // Show info.
-		logInfo.Printf("Database opened: %s", args[0])
-	}
+	db := openDB(args[0])
 
 	// Get records from the bucket.
-	records, err := db.List([]byte(args[1]))
-	if err != nil {
-		logError.Fatalln(err)
-	}
-	if records == nil {
-		logError.Fatalln("no records found")
-	}
+	records := listBucket(db, args[1])
 
 	// Close the database.
-	if err = db.Close(); err != nil {
-		logError.Fatalln(err)
-	}
-	if loggingLevel >= 1 { // Show info.
-		logInfo.Printf("Database closed: %s", args[0])
-	}
+	closeDB(db, args[0])
 
 	if loggingLevel >= 3 { // Show info.
 		for _, record := range records {
@@ -88,13 +67,13 @@ func dbTableMain(args []string) {
 	}
 
 	// Marshal into json.
-	json, err := json.MarshalIndent(records, "", "  ")
+	jsonInfo, err := json.MarshalIndent(records, "", "  ")
 	if err != nil {
 		logError.Panic(err)
 	}
 
 	// Emit.
-	fmt.Println(string(json))
+	fmt.Println(string(jsonInfo))
 
 	if loggingLevel >= 2 { // Show info.
 		logInfo.Printf("%d records marshalled.\n", len(records))

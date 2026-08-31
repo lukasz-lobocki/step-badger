@@ -172,26 +172,47 @@ const (
 )
 
 /*
-getValidityColor maps given status string to appropriate color.
+validityColors maps a validity status string to its display color. Package-level so
+per-cell colouring does not reallocate the map for every rendered cell.
 */
-func getValidityColor() map[string]color.Attribute {
-	return map[string]color.Attribute{
-		VALID_STR:   color.FgGreen,
-		EXPIRED_STR: color.FgHiBlack,
-		REVOKED_STR: color.FgHiYellow,
-	}
+var validityColors = map[string]color.Attribute{
+	VALID_STR:   color.FgGreen,
+	EXPIRED_STR: color.FgHiBlack,
+	REVOKED_STR: color.FgHiYellow,
 }
 
 /*
-getAlignChar amps given alignment to appropriate markdown string to be used in header separator.
+alignChars maps an ALIGN_* constant to its markdown header-separator marker.
 */
-func getAlignChar() map[int]string {
-	return map[int]string{
-		ALIGN_LEFT:   `:-`,
-		ALIGN_CENTER: `:-:`,
-		ALIGN_RIGHT:  `-:`,
-	}
+var alignChars = map[int]string{
+	ALIGN_LEFT:   `:-`,
+	ALIGN_CENTER: `:-:`,
+	ALIGN_RIGHT:  `-:`,
 }
+
+/*
+markdownEscaper escapes the characters that would otherwise be interpreted by
+Markdown. The backslash rule comes first, so pre-existing backslashes are escaped
+before any new escape is introduced — the same result as the old sequential
+strings.Replace loop, in a single pass.
+*/
+var markdownEscaper = strings.NewReplacer(
+	`\`, `\\`,
+	"`", "\\`",
+	"*", `\*`,
+	"_", `\_`,
+	"{", `\{`,
+	"}", `\}`,
+	"[", `\[`,
+	"]", `\]`,
+	"(", `\(`,
+	")", `\)`,
+	"#", `\#`,
+	".", `\.`,
+	"!", `\!`,
+	"+", `\+`,
+	"-", `\-`,
+)
 
 /*
 escapeMarkdown returns same string but safeguarded against markdown interpretation.
@@ -199,20 +220,5 @@ escapeMarkdown returns same string but safeguarded against markdown interpretati
 	'text' Text to be safeguarded.
 */
 func escapeMarkdown(thisText string) string {
-
-	// These characters need to be escaped in Markdown in order to appear as literal characters instead of performing some markdown functions
-	needEscape := []string{
-		`\`, "`", "*", "_",
-		"{", "}",
-		"[", "]",
-		"(", ")",
-		"#", ".", "!",
-		"+", "-",
-	}
-
-	for _, need := range needEscape {
-		thisText = strings.Replace(thisText, need, `\`+need, -1)
-	}
-
-	return thisText
+	return markdownEscaper.Replace(thisText)
 }

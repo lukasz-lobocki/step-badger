@@ -174,13 +174,15 @@ func TestExportX509MainFixture(t *testing.T) {
 // cover the >=1 info-emission branch. The >MAX_LOGGING_LEVEL branch calls
 // logError.Fatalln (os.Exit) and is intentionally not exercised in-process.
 func TestCheckLogginglevelLevels(t *testing.T) {
+	prev := loggingLevel
+	defer func() { loggingLevel = prev }()
+
 	for _, level := range []int{0, 1, 2, MAX_LOGGING_LEVEL} {
 		t.Run("level_"+strconv.Itoa(level), func(t *testing.T) {
 			loggingLevel = level
 			emitNoPanic(t, "checkLogginglevel", func() {
 				checkLogginglevel([]string{"sshCerts", "./db"})
 			})
-			loggingLevel = 0
 		})
 	}
 }

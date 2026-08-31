@@ -34,7 +34,7 @@ func emitTable[T any](rows []T, columns []tColumn[T], rowLabel func(T) string) {
 
 	// Set the header.
 	if err := table.SetHeader(header); err != nil {
-		logError.Panic("Setting header failed. %w", err)
+		logError.Panicf("setting header failed: %v", err)
 	}
 
 	if loggingLevel >= 1 { // Show info.
@@ -166,7 +166,7 @@ func emitMarkdown[T any](rows []T, columns []tColumn[T]) {
 	var separator []string
 	for _, column := range columns {
 		if column.isShown(config) {
-			separator = append(separator, getAlignChar()[column.contentAlignMD])
+			separator = append(separator, alignChars[column.contentAlignMD])
 		}
 	}
 	fmt.Println("| " + strings.Join(separator, " | ") + " |")
